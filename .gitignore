@@ -80,3 +80,4 @@ crashlytics-build.properties
 /[Aa]ssets/[Bb]akery.meta
 /[Aa]ssets/[Ee]ditor/x64.meta
 /[Aa]ssets/[Ee]ditor/x64/*
+/[Bb]akery_times.log

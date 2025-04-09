@@ -2,7 +2,10 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
+
+#if UNITY_EDITOR
 using System.IO;
+#endif
 
 public class AtlasCreatorExample : MonoBehaviour {
 
@@ -17,7 +20,7 @@ public class AtlasCreatorExample : MonoBehaviour {
     [SerializeField] private Texture3DAtlasGenerator.Atlas3D Atlas;
     [SerializeField] private Vector3[] boundsWMin;
     [SerializeField] private Vector3[] boundsWMax;
-
+#if UNITY_EDITOR
     [ContextMenu("Generate 3D Atlas")]
     private void GenerateAtlas() {
 
@@ -51,6 +54,7 @@ public class AtlasCreatorExample : MonoBehaviour {
 
 
     }
+#endif
 
     [ContextMenu("SetSaderVars")]
     private void SetVars() {
@@ -102,7 +106,7 @@ public class AtlasCreatorExample : MonoBehaviour {
         Shader.SetGlobalVectorArray("_UdonLightVolumeUvwMax", LightVolumeUvwMax);
 
     }
-
+#if UNITY_EDITOR
     public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
         if (textureToSave == null) {
             Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: texture is null");
@@ -137,5 +141,6 @@ public class AtlasCreatorExample : MonoBehaviour {
             return false;
         }
     }
+#endif
 
 }
