@@ -47,7 +47,7 @@ public class AtlasCreatorExample : MonoBehaviour {
             boundsWMax[i] = BakeryVolumes[i].bounds.max;
         }
 
-        SaveTexture3DAsAsset(generatedAtlas, "Atlas3D.asset", true);
+        SaveTexture3DAsAsset(generatedAtlas, "Assets/BakeryLightmaps/Atlas3D.asset");
 
 
     }
@@ -103,91 +103,37 @@ public class AtlasCreatorExample : MonoBehaviour {
 
     }
 
-    public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath, bool overwriteExisting = false) {
+    public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
         if (textureToSave == null) {
-            Debug.LogError("Ошибка сохранения Texture3D: Переданная текстура равна null.");
+            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: texture is null");
             return false;
         }
 
         if (string.IsNullOrEmpty(assetPath)) {
-            Debug.LogError("Ошибка сохранения Texture3D: Путь для сохранения не может быть пустым.");
+            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: Saving path is null");
             return false;
         }
 
-        // 1. Нормализация пути и проверка префикса "Assets/"
-        string normalizedPath = assetPath.Replace("\\", "/");
-        if (!normalizedPath.StartsWith("Assets/", System.StringComparison.OrdinalIgnoreCase)) {
-            // Если путь не начинается с Assets/, пытаемся добавить его.
-            // Считаем, что пользователь указал путь внутри Assets.
-            if (normalizedPath.StartsWith("/")) // Убираем ведущий слэш, если он есть
-            {
-                normalizedPath = normalizedPath.Substring(1);
-            }
-            normalizedPath = "Assets/" + normalizedPath;
-            Debug.LogWarning($"Путь '{assetPath}' не начинался с 'Assets/'. Используется путь '{normalizedPath}'.");
-        }
-
-
-        // 2. Проверка и добавление расширения .asset
-        string extension = Path.GetExtension(normalizedPath);
-        if (string.IsNullOrEmpty(extension)) {
-            // Расширение отсутствует, добавляем .asset
-            normalizedPath += ".asset";
-            Debug.Log($"Добавлено расширение '.asset'. Итоговый путь: '{normalizedPath}'.");
-        } else if (!extension.Equals(".asset", System.StringComparison.OrdinalIgnoreCase)) {
-            // Указано другое расширение, это может быть ошибкой
-            Debug.LogWarning($"Путь '{assetPath}' имеет расширение '{extension}', а не '.asset'. Сохранение Texture3D обычно выполняется в .asset файл.");
-            // Тем не менее, попробуем сохранить с указанным расширением, если пользователь так хочет.
-        }
-
-
-        // 3. Создание директории, если она не существует
         try {
-            string directoryPath = Path.GetDirectoryName(normalizedPath);
+            string directoryPath = Path.GetDirectoryName(assetPath);
             if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
                 Directory.CreateDirectory(directoryPath);
-                Debug.Log($"Создана директория: '{directoryPath}'");
-                // Важно обновить базу данных ассетов ПОСЛЕ создания директории,
-                // чтобы Unity ее "увидел" перед созданием ассета внутри нее.
                 AssetDatabase.Refresh();
             }
         } catch (System.Exception e) {
-            Debug.LogError($"Ошибка при создании директории для '{normalizedPath}': {e.Message}");
+            Debug.LogError($"[LightVolumeAtlaser] Error while creating folders '{assetPath}': {e.Message}");
             return false;
         }
 
-        // 4. Обработка существующего файла / Генерация уникального пути
-        string finalPath = normalizedPath;
-        if (!overwriteExisting && File.Exists(finalPath)) // Используем File.Exists для проверки, т.к. AssetDatabase может не сразу обновиться
-        {
-            finalPath = AssetDatabase.GenerateUniqueAssetPath(normalizedPath);
-            Debug.Log($"Файл '{normalizedPath}' уже существует. Генерируется уникальный путь: '{finalPath}'.");
-        } else if (overwriteExisting && File.Exists(finalPath)) {
-            Debug.LogWarning($"Перезапись существующего файла: '{finalPath}'.");
-        }
-
-
-        // 5. Создание ассета
         try {
-            // Создаем ассет в базе данных Unity
-            AssetDatabase.CreateAsset(textureToSave, finalPath);
-
-            // Опционально, но рекомендуется: пометить ассет как "грязный", чтобы изменения точно сохранились
+            AssetDatabase.CreateAsset(textureToSave, assetPath);
             EditorUtility.SetDirty(textureToSave);
-
-            // Сохраняем изменения в базе данных ассетов
             AssetDatabase.SaveAssets();
-
-            // Опционально: Обновить окно проекта, чтобы показать новый файл
             AssetDatabase.Refresh();
-
-            // Опционально: Выделить созданный ассет в окне проекта
-            // EditorGUIUtility.PingObject(textureToSave);
-
-            Debug.Log($"Texture3D успешно сохранена как ассет по пути: '{finalPath}'");
+            Debug.Log($"[LightVolumeAtlaser] 3D Atlas saved at path: '{assetPath}'");
             return true;
         } catch (System.Exception e) {
-            Debug.LogError($"Ошибка при создании или сохранении ассета Texture3D по пути '{finalPath}': {e.Message}");
+            Debug.LogError($"[LightVolumeAtlaser] Error saving 3D Atlas at path: '{assetPath}': {e.Message}");
             return false;
         }
     }
