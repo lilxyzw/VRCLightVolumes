@@ -11,8 +11,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: 7efac947df003bf4388cb28bfc090a4c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - BICUBIC_LIGHT_VOLUME_SAMPLING_ENABLED
+  m_ValidKeywords: []
   m_InvalidKeywords:
   - _EMISSION
   m_LightmapFlags: 0
@@ -73,7 +72,7 @@ Material:
     m_Floats:
     - TRILINEAR_LIGHT_VOLUME_SAMPLING_ENABLED: 0
     - _AmbientOcclusion: 1
-    - _BicubicLightVolumeSampling: 1
+    - _BicubicLightVolumeSampling: 0
     - _Brightness: 1
     - _BumpScale: 1
     - _Cutoff: 0.5

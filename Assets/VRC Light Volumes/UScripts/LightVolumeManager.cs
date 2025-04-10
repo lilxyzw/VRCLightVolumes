@@ -1,56 +1,78 @@
-﻿
-using UdonSharp;
+﻿using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
-using VRC.Udon;
 
 public class LightVolumeManager : UdonSharpBehaviour {
 
     public Texture3D LightVolume;
-    public float[] BakeryVolumesWeights;
-    [SerializeField] private Vector3[] boundsWorldMin;
-    [SerializeField] private Vector3[] boundsWorldMax;
-    [SerializeField] private Vector3[] boundsUvwMin;
-    [SerializeField] private Vector3[] boundsUvwMax;
-    [SerializeField] private float EdgeBlend;
+    [Range(0, 1f)] public float VolumesBlend = 0.5f;
+    [Space]
+    public float[] VolumesWeights;
+    [Space]
+    public Vector3[] BoundsWorldMin;
+    public Vector3[] BoundsWorldMax;
+    [Space]
+    public Vector3[] BoundsUvwMin;
+    public Vector3[] BoundsUvwMax;
 
-    void Start() {
+    private void Start() {
+        SetShaderProperties();
+    }
 
+    private void OnValidate() {
+        SetShaderProperties();
+    }
+
+    [ContextMenu("Set Shader Properties")]
+    public void SetShaderProperties() {
+
+        if(LightVolume == null) {
+            VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 0);
+            return;
+        }
+
+        // Initializing max volume count possible
         float[] LightVolumeWeight = new float[256];
         Vector4[] LightVolumeWorldMin = new Vector4[256];
         Vector4[] LightVolumeWorldMax = new Vector4[256];
         Vector4[] LightVolumeUvwMin = new Vector4[768];
         Vector4[] LightVolumeUvwMax = new Vector4[768];
 
-        for (int i = 0; i < BakeryVolumesWeights.Length; i++) {
-
-            // Weight
-            LightVolumeWeight[i] = BakeryVolumesWeights.Length > 0 ? BakeryVolumesWeights[Mathf.Clamp(i, 0, BakeryVolumesWeights.Length)] : 0;
-
-            // World bounds
-            LightVolumeWorldMin[i] = boundsWorldMin[i];
-            LightVolumeWorldMax[i] = boundsWorldMax[i];
-
+        // Per volumes loop
+        for (int i = 0; i < VolumesWeights.Length; i++) {
+            LightVolumeWeight[i] = VolumesWeights[i];
+            LightVolumeWorldMin[i] = BoundsWorldMin[i];
+            LightVolumeWorldMax[i] = BoundsWorldMax[i];
         }
 
-        for (int i = 0; i < boundsUvwMin.Length; i++) {
-            LightVolumeUvwMin[i] = boundsUvwMin[i];
-            LightVolumeUvwMax[i] = boundsUvwMax[i];
+        // Per volumes loop x3
+        for (int i = 0; i < BoundsUvwMin.Length; i++) {
+            LightVolumeUvwMin[i] = BoundsUvwMin[i];
+            LightVolumeUvwMax[i] = BoundsUvwMax[i];
         }
 
-        Vector3 size = new Vector3(LightVolume.width, LightVolume.height, LightVolume.depth);
-        VRCShader.SetGlobalVector(VRCShader.PropertyToID("_UdonLightVolumeTexelSize"), new Vector3(1f / size.x, 1f / size.y, 1f / size.z));
-        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeBlend"), Mathf.Max(EdgeBlend, 0.0001f));
+        // 3D texture and it's parameters
+        VRCShader.SetGlobalTexture(VRCShader.PropertyToID("_UdonLightVolume"), LightVolume);
+        VRCShader.SetGlobalVector(VRCShader.PropertyToID("_UdonLightVolumeTexelSize"), new Vector3(1f / LightVolume.width, 1f / LightVolume.height, 1f / LightVolume.depth));
+
+        // Light volumes blending radius
+        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeBlend"), Mathf.Max(VolumesBlend, 0.0001f));
+
+        // All light volumes weights
         VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeWeight"), LightVolumeWeight);
+
+        // All light volumes world bounds
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeWorldMin"), LightVolumeWorldMin);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeWorldMax"), LightVolumeWorldMax);
 
+        // All light volumes UVW
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMin"), LightVolumeUvwMin);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMax"), LightVolumeUvwMax);
 
-        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeCount"), BakeryVolumesWeights.Length);
-        VRCShader.SetGlobalTexture(VRCShader.PropertyToID("_UdonLightVolume"), LightVolume);
+        // All light volumes count
+        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeCount"), VolumesWeights.Length);
 
+        // Defines if Light Volumes enabled in scene
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 1);
 
     }
