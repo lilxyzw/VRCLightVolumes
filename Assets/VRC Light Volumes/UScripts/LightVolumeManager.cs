@@ -47,5 +47,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeCount"), BakeryVolumesWeights.Length);
         VRCShader.SetGlobalTexture(VRCShader.PropertyToID("_UdonLightVolume"), LightVolume);
 
+        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 1);
+
     }
 }

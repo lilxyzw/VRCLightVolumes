@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 #endif
 
+[ExecuteAlways]
 public class AtlasCreatorExample : MonoBehaviour {
 
     public BakeryVolume[] BakeryVolumes;
@@ -20,6 +21,7 @@ public class AtlasCreatorExample : MonoBehaviour {
     [SerializeField] private Texture3DAtlasGenerator.Atlas3D Atlas;
     [SerializeField] private Vector3[] boundsWMin;
     [SerializeField] private Vector3[] boundsWMax;
+    [SerializeField] private bool IsEnabled;
 #if UNITY_EDITOR
     [ContextMenu("Generate 3D Atlas")]
     private void GenerateAtlas() {
@@ -62,7 +64,6 @@ public class AtlasCreatorExample : MonoBehaviour {
     }
 
     private void Update() {
-        if (Atlas.Texture != null && BakeryVolumes != null && BakeryVolumes.Length != 0)
         SetShaderVariables(BakeryVolumes);
     }
 
@@ -95,6 +96,10 @@ public class AtlasCreatorExample : MonoBehaviour {
 
         }
 
+        Vector3 size = new Vector3(generatedAtlas.width, generatedAtlas.height, generatedAtlas.depth);
+        Shader.SetGlobalVector("_UdonLightVolumeTexelSize", new Vector3(1f / size.x, 1f / size.y, 1f / size.z));
+
+
         Shader.SetGlobalFloat("_UdonLightVolumeCount", volumes.Length);
         Shader.SetGlobalTexture("_UdonLightVolume", generatedAtlas);
 
@@ -104,6 +109,8 @@ public class AtlasCreatorExample : MonoBehaviour {
 
         Shader.SetGlobalVectorArray("_UdonLightVolumeUvwMin", LightVolumeUvwMin);
         Shader.SetGlobalVectorArray("_UdonLightVolumeUvwMax", LightVolumeUvwMax);
+
+        Shader.SetGlobalFloat(Shader.PropertyToID("_UdonLightVolumeEnabled"), IsEnabled ? 1 : 0);
 
     }
 #if UNITY_EDITOR

@@ -4,17 +4,22 @@ Shader "Light Volume" {
 		_MainTex("Albedo", 2D) = "white" {}
 		_BumpMap("Normal", 2D) = "bump" {}
 		_NormalPower("Normal Power", Float) = 1
+		[Toggle(BICUBIC_LIGHT_VOLUME_SAMPLING_ENABLED)] _BicubicLightVolumeSampling("Bicubic Sampling", Float) = 0
 		[HideInInspector] _texcoord( "", 2D ) = "white" {}
 	}
 
 	SubShader {
 
 		Tags { "RenderType"="Opaque" }
-		LOD 100
+		//LOD 100
 
 		CGINCLUDE
 		#include "LightVolumes.cginc"
-		#pragma target 3.0
+		#include "UnityPBSLighting.cginc"
+		#include "Lighting.cginc"
+
+		#pragma target 3.5
+
 		ENDCG
 		Blend Off
 		AlphaToMask Off
@@ -36,8 +41,6 @@ Shader "Light Volume" {
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_instancing
-			#include "UnityCG.cginc"
-			#include "UnityStandardUtils.cginc"
 
 			struct appdata {
 				float4 vertex : POSITION;

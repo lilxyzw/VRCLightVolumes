@@ -1,12 +1,16 @@
+uniform float _UdonLightVolumeEnabled;
 uniform float _UdonLightVolumeCount;
 uniform sampler3D _UdonLightVolume;
+uniform float3 _UdonLightVolumeTexelSize;
 
 uniform float4 _UdonLightVolumeWorldMin[256];
 uniform float4 _UdonLightVolumeWorldMax[256];
 uniform float4 _UdonLightVolumeUvwMin[768];
 uniform float4 _UdonLightVolumeUvwMax[768];
 uniform float _UdonLightVolumeWeight[768];
-			
+
+#pragma shader_feature_local BICUBIC_LIGHT_VOLUME_SAMPLING_ENABLED
+
 // Calculate single SH L1 channel
 float EvaluateSHL1(float L0, float3 L1, float3 n) {
 	float R0 = L0;
@@ -49,8 +53,68 @@ float3 Remap(float3 value, float3 minOld, float3 maxOld, float3 minNew, float3 m
 	return minNew + (value - minOld) * (maxNew - minNew) / (maxOld - minOld);
 }
 
+// Default light probes
+float3 EvaluateLightProbe(float3 worldNormal) {
+    float3 color;
+    float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+    color.r = EvaluateSHL1(L0.r, unity_SHAr.xyz, worldNormal);
+    color.g = EvaluateSHL1(L0.g, unity_SHAg.xyz, worldNormal);
+    color.b = EvaluateSHL1(L0.b, unity_SHAb.xyz, worldNormal);
+    
+    return color;
+}
+
+// B-spline for bicubic sampling
+float BSplineWeight(float x) {
+    x = abs(x);
+    float x2 = x * x;
+    float x3 = x2 * x;
+    if (x < 1.0)
+        return (0.5 * x3 - x2 + 2.0 / 3.0);
+    if (x < 2.0)
+        return (-1.0 / 6.0 * x3 + x2 - 2.0 * x + 4.0 / 3.0);
+    return 0.0;
+}
+
+// Bicubic 3D texture sampling
+float4 SampleBicubic3D(sampler3D tex, float3 texelSize, float3 uvw) {
+    
+    float3 texCoord = uvw / texelSize;
+    float3 floorCoord = floor(texCoord - 0.5);
+    float3 fractCoord = texCoord - (floorCoord + 0.5);
+    float4 result = float4(0.0, 0.0, 0.0, 0.0);
+
+    for (int k = -1; k <= 2; ++k) {
+        for (int j = -1; j <= 2; ++j) {
+            for (int i = -1; i <= 2; ++i) {
+                
+                float3 currentTexelIntCoord = floorCoord + float3(i, j, k);
+                float3 sampleUVW = (currentTexelIntCoord + 0.5) * texelSize;
+                float4 sampleValue = tex3D(tex, sampleUVW);
+
+                float weightU = BSplineWeight(fractCoord.x - i);
+                float weightV = BSplineWeight(fractCoord.y - j);
+                float weightW = BSplineWeight(fractCoord.z - k);
+
+                float totalWeight = weightU * weightV * weightW;
+
+                result += sampleValue * totalWeight;
+                
+            }
+        }
+    }
+    
+    return result;
+    
+}
+
 float3 CalculateLightVolume(float3 worldNormal, float3 worldPos) {
 
+    // Return white and skip all the calculations if light volumes are not enabled
+    if (!_UdonLightVolumeEnabled) {
+        return float4(1,1,1,1);
+    }
+    
 	float maxWeight = -9999;
 	int volumeID = 0;
 
@@ -83,9 +147,16 @@ float3 CalculateLightVolume(float3 worldNormal, float3 worldPos) {
     float3 volumeUV1 = clamp(Remap(worldPos, worldMin, worldMax, uvMin1, uvMax1), uvMin1, uvMax1);
     float3 volumeUV2 = clamp(Remap(worldPos, worldMin, worldMax, uvMin2, uvMax2), uvMin2, uvMax2);
 
+    #ifndef BICUBIC_LIGHT_VOLUME_SAMPLING_ENABLED
     float4 tex0 = tex3D(_UdonLightVolume, volumeUV0);
     float4 tex1 = tex3D(_UdonLightVolume, volumeUV1);
     float4 tex2 = tex3D(_UdonLightVolume, volumeUV2);
+    #else
+    float4 tex0 = SampleBicubic3D(_UdonLightVolume, _UdonLightVolumeTexelSize, volumeUV0);
+    float4 tex1 = SampleBicubic3D(_UdonLightVolume, _UdonLightVolumeTexelSize, volumeUV1);
+    float4 tex2 = SampleBicubic3D(_UdonLightVolume, _UdonLightVolumeTexelSize, volumeUV2);
+    #endif
+    
     return EvaluateLightVolume(tex0, tex1, tex2, worldNormal);
 
 }
