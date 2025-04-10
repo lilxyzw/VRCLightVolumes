@@ -118,12 +118,11 @@ public class LightVolumeSetupEditor : Editor {
                     return;
 
                 DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-
                 if (eventType == EventType.DragPerform) {
                     DragAndDrop.AcceptDrag();
-
                     foreach (Object draggedObject in DragAndDrop.objectReferences) {
-                        if (draggedObject is BakeryVolume volume) {
+                        GameObject go = (GameObject)draggedObject;
+                        if (go.TryGetComponent(out BakeryVolume volume)) {
                             int newIndex = volumesProp.arraySize;
                             volumesProp.arraySize++;
                             weightsProp.arraySize = volumesProp.arraySize;
