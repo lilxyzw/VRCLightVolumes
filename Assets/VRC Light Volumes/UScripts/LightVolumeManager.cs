@@ -12,6 +12,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
     [SerializeField] private Vector3[] boundsWorldMax;
     [SerializeField] private Vector3[] boundsUvwMin;
     [SerializeField] private Vector3[] boundsUvwMax;
+    [SerializeField] private float EdgeBlend;
 
     void Start() {
 
@@ -37,6 +38,9 @@ public class LightVolumeManager : UdonSharpBehaviour {
             LightVolumeUvwMax[i] = boundsUvwMax[i];
         }
 
+        Vector3 size = new Vector3(LightVolume.width, LightVolume.height, LightVolume.depth);
+        VRCShader.SetGlobalVector(VRCShader.PropertyToID("_UdonLightVolumeTexelSize"), new Vector3(1f / size.x, 1f / size.y, 1f / size.z));
+        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeBlend"), Mathf.Max(EdgeBlend, 0.0001f));
         VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeWeight"), LightVolumeWeight);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeWorldMin"), LightVolumeWorldMin);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeWorldMax"), LightVolumeWorldMax);
