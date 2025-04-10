@@ -104,7 +104,7 @@ Shader "Light Volume" {
 				float3 tanNormal = UnpackScaleNormal(tex2D(_BumpMap, bumpMapUV), _NormalPower);
 				float3 worldNormal = CalculateWorldNormal(i.normal, i.tangent, i.bitangent, tanNormal);
 
-				float4 shColor = float4(CalculateLightVolume(worldNormal, i.worldPos), 1);
+				float4 shColor = float4(LightVolume(worldNormal, i.worldPos), 1);
 				
 				float4 color = tex2D(_MainTex, mainTexUV);
 

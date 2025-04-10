@@ -21,6 +21,7 @@ public class AtlasCreatorExample : MonoBehaviour {
     [SerializeField] private Texture3DAtlasGenerator.Atlas3D Atlas;
     [SerializeField] private Vector3[] boundsWMin;
     [SerializeField] private Vector3[] boundsWMax;
+    [SerializeField] private float EdgeBlend = 0.5f;
     [SerializeField] private bool IsEnabled;
 #if UNITY_EDITOR
     [ContextMenu("Generate 3D Atlas")]
@@ -101,6 +102,7 @@ public class AtlasCreatorExample : MonoBehaviour {
 
 
         Shader.SetGlobalFloat("_UdonLightVolumeCount", volumes.Length);
+        Shader.SetGlobalFloat("_UdonLightVolumeBlend", Mathf.Max(EdgeBlend, 0.0001f));
         Shader.SetGlobalTexture("_UdonLightVolume", generatedAtlas);
 
         Shader.SetGlobalFloatArray("_UdonLightVolumeWeight", LightVolumeWeight);
