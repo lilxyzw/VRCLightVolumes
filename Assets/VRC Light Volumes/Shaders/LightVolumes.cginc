@@ -150,24 +150,42 @@ float3 LightVolume(float3 worldNormal, float3 worldPos) {
         return float4(1,1,1,1);
     }
     
-    float maxWeight = 1.175494e-38f; // Min float value. Use 6.10352e-05 for half
-    int volumeID_B = 0; // Secondary volume ID to blend fragments with on overlap
+    float maxWeightA = 1.175494e-38f; // Min float value. Use 6.10352e-05 for half
+    float maxWeightB = 1.175494e-38f; // Min float value. Use 6.10352e-05 for half
+    
     int volumeID_A = 0; // Main volume ID
+    int volumeID_B = 0; // Secondary volume ID to blend fragments with on overlap
     
 	// Iterating through all light volumes and checking bounds
     for (int id = 0; id < _UdonLightVolumeCount; id++) {
 
-        float weight = _UdonLightVolumeWeight[id];
         float3 min = _UdonLightVolumeWorldMin[id].xyz;
         float3 max = _UdonLightVolumeWorldMax[id].xyz;
 
-		if(weight > maxWeight && PointAABB(worldPos, min, max)) { // If inside of this volume and has greater weight
-            volumeID_B = volumeID_A;
-            volumeID_A = id;
-			maxWeight = weight;
-		}
+        if (PointAABB(worldPos, min, max)) {
+            
+            float weight = _UdonLightVolumeWeight[id];
 
-	}
+            if (weight > maxWeightA) {
+                
+                maxWeightB = maxWeightA;
+                volumeID_B = volumeID_A;
+
+                maxWeightA = weight;
+                volumeID_A = id;
+                
+            } else if (weight > maxWeightB && id != volumeID_A) {
+                
+                maxWeightB = weight;
+                volumeID_B = id;
+                
+            }
+            
+        }
+        
+    }
+    
+    volumeID_A = max(0, volumeID_A);
     
     // Sampling main volume
     float3 color_A = SampleLightVolumeID(volumeID_A, worldPos, worldNormal);
@@ -185,7 +203,7 @@ float3 LightVolume(float3 worldNormal, float3 worldPos) {
             
             // Sampling secondary volume
             float3 color_B = SampleLightVolumeID(volumeID_B, worldPos, worldNormal);
-        
+            
             // Blending
             return lerp(color_B, color_A, mask);
             
