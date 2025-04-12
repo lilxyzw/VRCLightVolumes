@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using System.IO;
 using UnityEditor.SceneManagement;
+#endif
 
 public class LightVolumeSetup : MonoBehaviour {
 
@@ -20,6 +22,8 @@ public class LightVolumeSetup : MonoBehaviour {
         if (_udonLightVolumeManager == null) return;
             _udonLightVolumeManager.SetShaderVariables();
     }
+
+#if UNITY_EDITOR
 
     // Generates atlas and setups udon script
     public void GenerateAtlas() {
@@ -110,8 +114,9 @@ public class LightVolumeSetup : MonoBehaviour {
 
     }
 
+
     public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
-#if UNITY_EDITOR
+
         if (textureToSave == null) {
             Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: texture is null");
             return false;
@@ -144,8 +149,9 @@ public class LightVolumeSetup : MonoBehaviour {
             Debug.LogError($"[LightVolumeAtlaser] Error saving 3D Atlas at path: '{assetPath}': {e.Message}");
             return false;
         }
-#endif
+
     }
+
 
     // Check if it's previewed as a prefab, or it's a part of a scene
     bool IsInPrefabAsset(Object obj) {
@@ -154,5 +160,6 @@ public class LightVolumeSetup : MonoBehaviour {
         var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
         return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
     }
+#endif
 
 }

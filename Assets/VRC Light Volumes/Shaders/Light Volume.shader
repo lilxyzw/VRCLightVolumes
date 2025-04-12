@@ -8,12 +8,12 @@ Shader "Light Volume" {
 
 	SubShader {
 
-		Tags { "RenderType"="Opaque" }
+		Tags { "RenderType"="Opaque" "LightMode" = "ForwardBase" }
 		//LOD 100
 
 		CGINCLUDE
+		#include "UnityCG.cginc"
 		#include "LightVolumes.cginc"
-		#include "UnityPBSLighting.cginc"
 		#include "Lighting.cginc"
 
 		#pragma target 3.5
@@ -64,6 +64,14 @@ Shader "Light Volume" {
 			uniform sampler2D _BumpMap;
 			uniform float4 _BumpMap_ST;
 			uniform float _NormalPower;
+
+			// Calculate world normal
+			float3 CalculateWorldNormal(float3 normal, float3 tangent, float3 bitangent, float3 tanNormal) {
+				float3 tanToWorld0 = float3(tangent.x, bitangent.x, normal.x);
+				float3 tanToWorld1 = float3(tangent.y, bitangent.y, normal.y);
+				float3 tanToWorld2 = float3(tangent.z, bitangent.z, normal.z);
+				return normalize(float3(dot(tanToWorld0, tanNormal), dot(tanToWorld1, tanNormal), dot(tanToWorld2, tanNormal)));
+			}
 
 			// VERTEX
 			v2f vert ( appdata v ) {
