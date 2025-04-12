@@ -81,8 +81,12 @@ public class LightVolumeSetup : MonoBehaviour {
         if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
         if (_udonLightVolumeManager == null) return;
 
+        if(BakeryVolumesWeights == null || BakeryVolumesWeights.Length != BakeryVolumes.Length) {
+            BakeryVolumesWeights = new float[BakeryVolumes.Length];
+        }
+
         // Update Weights because can be desynced
-        for (int i = 0; i < BakeryVolumesWeights.Length; i++) {
+        for (int i = 0; i < LightVolumeDataList.Count; i++) {
             LightVolumeDataList[i] = new LightVolumeData(
                 i < BakeryVolumesWeights.Length ? BakeryVolumesWeights[i] : 0,
                 LightVolumeDataList[i].WorldMin,
