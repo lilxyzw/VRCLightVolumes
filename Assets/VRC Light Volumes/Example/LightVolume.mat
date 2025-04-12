@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: LightVolume
-  m_Shader: {fileID: 4800000, guid: 7efac947df003bf4388cb28bfc090a4c, type: 3}
+  m_Shader: {fileID: 4800000, guid: 8134c7cbd67acb9488a2b1b3e69c5dd6, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

@@ -2,15 +2,11 @@ uniform float _UdonLightVolumeEnabled;
 uniform float _UdonLightVolumeCount;
 uniform float _UdonLightVolumeBlend;
 uniform sampler3D _UdonLightVolume;
-uniform float3 _UdonLightVolumeTexelSize;
 
 uniform float4 _UdonLightVolumeWorldMin[256];
 uniform float4 _UdonLightVolumeWorldMax[256];
 uniform float4 _UdonLightVolumeUvwMin[768];
 uniform float4 _UdonLightVolumeUvwMax[768];
-uniform float _UdonLightVolumeWeight[768];
-
-#pragma shader_feature_local BICUBIC_LIGHT_VOLUME_SAMPLING_ENABLED
 
 // Calculate single SH L1 channel
 float EvaluateSHL1(float L0, float3 L1, float3 n) {
@@ -57,53 +53,29 @@ float3 RemapClamped(float3 value, float3 minOld, float3 maxOld, float3 minNew, f
     return clamp(Remap(value, minOld, maxOld, minNew, maxNew), minNew, maxNew);
 }
 
-// Default light probes
-float3 EvaluateLightProbe(float3 worldNormal) {
+// Default light probes and also return ambient color
+float3 EvaluateLightProbe(float3 worldNormal, out float3 ambientColor) {
     float3 color;
     float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
     color.r = EvaluateSHL1(L0.r, unity_SHAr.xyz, worldNormal);
     color.g = EvaluateSHL1(L0.g, unity_SHAg.xyz, worldNormal);
     color.b = EvaluateSHL1(L0.b, unity_SHAb.xyz, worldNormal);
+    ambientColor = L0;
     return color;
 }
-
-// B-spline for bicubic sampling
-float BSplineWeight(float x) {
-    x = abs(x);
-    float x2 = x * x;
-    float x3 = x2 * x;
-    if (x < 1.0)
-        return (0.5 * x3 - x2 + 2.0 / 3.0);
-    if (x < 2.0)
-        return (-1.0 / 6.0 * x3 + x2 - 2.0 * x + 4.0 / 3.0);
-    return 0.0;
+// Default light probes
+float3 EvaluateLightProbe(float3 worldNormal) {
+    float3 dummy;
+    return EvaluateLightProbe(worldNormal, dummy);
 }
 
-// Bicubic 3D texture sampling
-float4 SampleTexture3DBicubic(sampler3D tex, float3 uvw, float3 texelSize) {
-    float3 texCoord = uvw / texelSize;
-    float3 floorCoord = floor(texCoord - 0.5);
-    float3 fractCoord = texCoord - (floorCoord + 0.5);
-    float4 result = float4(0.0, 0.0, 0.0, 0.0);
-    for (int k = -1; k <= 2; ++k) {
-        for (int j = -1; j <= 2; ++j) {
-            for (int i = -1; i <= 2; ++i) {
-                float3 currentTexelIntCoord = floorCoord + float3(i, j, k);
-                float3 sampleUVW = (currentTexelIntCoord + 0.5) * texelSize;
-                float4 sampleValue = tex3D(tex, sampleUVW);
-                float weightU = BSplineWeight(fractCoord.x - i);
-                float weightV = BSplineWeight(fractCoord.y - j);
-                float weightW = BSplineWeight(fractCoord.z - k);
-                float totalWeight = weightU * weightV * weightW;
-                result += sampleValue * totalWeight;
-            }
-        }
-    }
-    return result;
+// Default light probes but only ambient color
+float3 EvaluateLightProbeAmbient() {
+    return float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
 }
 
-// Sample light Volume by ID
-float3 SampleLightVolumeID(int volumeID, float3 worldPos, float3 worldNormal) {
+// Sample light Volume by ID and return L0 ambient color
+float3 SampleLightVolumeID(int volumeID, float3 worldPos, float3 worldNormal, out float3 ambientColor) {
     
     // World bounds
     float3 worldMin = _UdonLightVolumeWorldMin[volumeID].xyz;
@@ -118,21 +90,42 @@ float3 SampleLightVolumeID(int volumeID, float3 worldPos, float3 worldNormal) {
     float3 uvwMin2 = _UdonLightVolumeUvwMin[uvwID.z].xyz;
     float3 uvwMax2 = _UdonLightVolumeUvwMax[uvwID.z].xyz;
 				
-    float3 volumeUV0 = RemapClamped(worldPos, worldMin, worldMax, uvwMin0, uvwMax0);
-    float3 volumeUV1 = RemapClamped(worldPos, worldMin, worldMax, uvwMin1, uvwMax1);
-    float3 volumeUV2 = RemapClamped(worldPos, worldMin, worldMax, uvwMin2, uvwMax2);
+    float3 volumeUVW0 = RemapClamped(worldPos, worldMin, worldMax, uvwMin0, uvwMax0);
+    float3 volumeUVW1 = RemapClamped(worldPos, worldMin, worldMax, uvwMin1, uvwMax1);
+    float3 volumeUVW2 = RemapClamped(worldPos, worldMin, worldMax, uvwMin2, uvwMax2);
 
-    #ifndef BICUBIC_LIGHT_VOLUME_SAMPLING_ENABLED
-    float4 tex0 = tex3D(_UdonLightVolume, volumeUV0);
-    float4 tex1 = tex3D(_UdonLightVolume, volumeUV1);
-    float4 tex2 = tex3D(_UdonLightVolume, volumeUV2);
-    #else
-    float4 tex0 = SampleTexture3DBicubic(_UdonLightVolume, volumeUV0, _UdonLightVolumeTexelSize);
-    float4 tex1 = SampleTexture3DBicubic(_UdonLightVolume, volumeUV1, _UdonLightVolumeTexelSize);
-    float4 tex2 = SampleTexture3DBicubic(_UdonLightVolume, volumeUV2, _UdonLightVolumeTexelSize);
-    #endif
+    float4 tex0 = tex3D(_UdonLightVolume, volumeUVW0);
+    float4 tex1 = tex3D(_UdonLightVolume, volumeUVW1);
+    float4 tex2 = tex3D(_UdonLightVolume, volumeUVW2);
+    
+    // Also returning ambient color
+    ambientColor = tex0.rgb;
     
     return EvaluateLightVolume(tex0, tex1, tex2, worldNormal);
+}
+// Sample light Volume by ID
+float3 SampleLightVolumeID(int volumeID, float3 worldPos, float3 worldNormal) {
+    float3 dummy;
+    return SampleLightVolumeID(volumeID, worldPos, worldNormal, dummy);
+}
+
+// Sample only light Volume L0 ambient color by ID
+float3 SampleLightVolumeAmbientID(int volumeID, float3 worldPos) {
+    
+    // World bounds
+    float3 worldMin = _UdonLightVolumeWorldMin[volumeID].xyz;
+    float3 worldMax = _UdonLightVolumeWorldMax[volumeID].xyz;
+	
+    // UVW bounds
+    int uvwID = volumeID * 3;
+    float3 uvwMin = _UdonLightVolumeUvwMin[uvwID].xyz;
+    float3 uvwMax = _UdonLightVolumeUvwMax[uvwID].xyz;
+	
+    // Sample ambient color texture
+    float3 volumeUVW = RemapClamped(worldPos, worldMin, worldMax, uvwMin, uvwMax);
+    float4 tex0 = tex3D(_UdonLightVolume, volumeUVW);
+    return tex0.rgb;
+    
 }
 
 // Bounds mask
@@ -143,80 +136,111 @@ float BoundsMask(float3 pos, float3 minBounds, float3 maxBounds, float edgeSmoot
     return fade.x * fade.y * fade.z;
 }
 
+// Calculates final Light Volumes color based on world position and world normal
 float3 LightVolume(float3 worldNormal, float3 worldPos) {
 
-    // Return white and skip all the calculations if light volumes are not enabled
-    if (!_UdonLightVolumeEnabled) {
-        return float4(1,1,1,1);
-    }
+    // Fallback to default light probes if Light Volume are not enabled
+    if (!_UdonLightVolumeEnabled) return EvaluateLightProbe(worldNormal);
     
-    float maxWeightA = 1.175494e-38f; // Min float value. Use 6.10352e-05 for half
-    float maxWeightB = 1.175494e-38f; // Min float value. Use 6.10352e-05 for half
+    int volumeID_A = -1; // Main, dominant volume ID
+    int volumeID_B = -1; // Secondary volume ID to blend main with
     
-    int volumeID_A = 0; // Main volume ID
-    int volumeID_B = 0; // Secondary volume ID to blend fragments with on overlap
-    
-	// Iterating through all light volumes and checking bounds
+    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     for (int id = 0; id < _UdonLightVolumeCount; id++) {
-
-        float3 min = _UdonLightVolumeWorldMin[id].xyz;
-        float3 max = _UdonLightVolumeWorldMax[id].xyz;
-
-        if (PointAABB(worldPos, min, max)) {
-            
-            float weight = _UdonLightVolumeWeight[id];
-
-            if (weight > maxWeightA) {
-                
-                maxWeightB = maxWeightA;
-                volumeID_B = volumeID_A;
-
-                maxWeightA = weight;
-                volumeID_A = id;
-                
-            } else if (weight > maxWeightB && id != volumeID_A) {
-                
-                maxWeightB = weight;
-                volumeID_B = id;
-                
-            }
-            
+        if (PointAABB(worldPos, _UdonLightVolumeWorldMin[id].xyz, _UdonLightVolumeWorldMax[id].xyz)) {
+            if (volumeID_A != -1) { volumeID_B = id; break; }
+            else volumeID_A = id;
         }
-        
     }
     
-    volumeID_A = max(0, volumeID_A);
+    // If no volumes found, using fallback to light probes
+    if (volumeID_A == -1) return EvaluateLightProbe(worldNormal); 
     
-    // Sampling main volume
-    float3 color_A = SampleLightVolumeID(volumeID_A, worldPos, worldNormal);
+    // If at least, main, dominant volume found
+    float3 color_A = SampleLightVolumeID(volumeID_A, worldPos, worldNormal); // Sampling main volume
+    float mask = BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
+        
+    if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
+        float3 color_B; // Color to blend with
+        if (volumeID_B != -1) color_B = SampleLightVolumeID(volumeID_B, worldPos, worldNormal); // Sampling secondary volume
+        else color_B = EvaluateLightProbe(worldNormal); // Fallback to light probes
+        return lerp(color_B, color_A, mask); // Blending
+    } else {
+        return color_A; // Just return main light volume color if no need for blending
+    }
+
+}
+
+// Calculates final Light Volumes color based on world position and world normal, also returns ambient color
+float3 LightVolume(float3 worldNormal, float3 worldPos, out float3 ambientColor) {
+
+    // Return white and skip all the calculations if light volumes are not enabled
+    if (!_UdonLightVolumeEnabled) return EvaluateLightProbe(worldNormal, ambientColor);
     
-    if (volumeID_A != volumeID_B) { // Need to blend when inside of two intersecting light volumes
-        
-        // Main volume world bounds
-        float3 worldMin = _UdonLightVolumeWorldMin[volumeID_A].xyz;
-        float3 worldMax = _UdonLightVolumeWorldMax[volumeID_A].xyz;
-        
-        // Mask to blend volumes
-        float mask = BoundsMask(worldPos, worldMin, worldMax, _UdonLightVolumeBlend);
-        
-        if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
-            
-            // Sampling secondary volume
-            float3 color_B = SampleLightVolumeID(volumeID_B, worldPos, worldNormal);
-            
-            // Blending
-            return lerp(color_B, color_A, mask);
-            
-        } else {
-            
-            return color_A;
-            
+    int volumeID_A = -1; // Main, dominant volume ID
+    int volumeID_B = -1; // Secondary volume ID to blend main with
+    
+    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
+    for (int id = 0; id < _UdonLightVolumeCount; id++) {
+        if (PointAABB(worldPos, _UdonLightVolumeWorldMin[id].xyz, _UdonLightVolumeWorldMax[id].xyz)) {
+            if (volumeID_A != -1) { volumeID_B = id; break; }
+            else volumeID_A = id;
         }
+    }
+    
+    // If no volumes found, using fallback to light probes
+    if (volumeID_A == -1) return EvaluateLightProbe(worldNormal, ambientColor); 
+    
+    // If at least, main, dominant volume found
+    float3 ambient_A;
+    float3 color_A = SampleLightVolumeID(volumeID_A, worldPos, worldNormal, ambient_A); // Sampling main volume
+    float mask = BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
         
-    } else { // No need to blend, when inside of a single light volume or not on it's side
+    if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
+        float3 ambient_B;
+        float3 color_B; // Color to blend with
+        if (volumeID_B != -1) color_B = SampleLightVolumeID(volumeID_B, worldPos, worldNormal, ambient_B); // Sampling secondary volume
+        else color_B = EvaluateLightProbe(worldNormal, ambient_B); // Fallback to light probes
+        ambientColor = lerp(ambient_B, ambient_A, mask);
+        return lerp(color_B, color_A, mask); // Blending
+    } else {
+        ambientColor = ambient_A;
+        return color_A; // Just return main light volume color if no need for blending
+    }
+
+}
+
+// Calculates final Light Volumes ambient color based on world position
+float3 LightVolumeAmbient(float3 worldPos) {
+
+    // Fallback to default light probes if Light Volume are not enabled
+    if (!_UdonLightVolumeEnabled) return EvaluateLightProbeAmbient();
+    
+    int volumeID_A = -1; // Main, dominant volume ID
+    int volumeID_B = -1; // Secondary volume ID to blend main with
+    
+    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
+    for (int id = 0; id < _UdonLightVolumeCount; id++) {
+        if (PointAABB(worldPos, _UdonLightVolumeWorldMin[id].xyz, _UdonLightVolumeWorldMax[id].xyz)) {
+            if (volumeID_A != -1) { volumeID_B = id; break; }
+            else volumeID_A = id;
+        }
+    }
+    
+    // If no volumes found, using fallback to light probes
+    if (volumeID_A == -1) return EvaluateLightProbeAmbient(); 
+    
+    // If at least, main, dominant volume found
+    float3 color_A = SampleLightVolumeAmbientID(volumeID_A, worldPos); // Sampling main volume
+    float mask = BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
         
-        return color_A;
-        
+    if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
+        float3 color_B; // Color to blend with
+        if (volumeID_B != -1) color_B = SampleLightVolumeAmbientID(volumeID_B, worldPos); // Sampling secondary volume
+        else color_B = EvaluateLightProbeAmbient(); // Fallback to light probes
+        return lerp(color_B, color_A, mask); // Blending
+    } else {
+        return color_A; // Just return main light volume color if no need for blending
     }
 
 }

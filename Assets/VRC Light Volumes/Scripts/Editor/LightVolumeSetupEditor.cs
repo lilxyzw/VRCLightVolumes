@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
-using System.IO;
+
 using UnityEditor.SceneManagement;
 
 [CustomEditor(typeof(LightVolumeSetup))]
@@ -12,7 +12,6 @@ public class LightVolumeSetupEditor : Editor {
     private ReorderableList reorderableList;
 
     private LightVolumeSetup _lightVolumeSetup;
-    private LightVolumeManager _udonLightVolumeManager;
 
     private bool _isMultipleInstancesError = false;
 
@@ -78,9 +77,9 @@ public class LightVolumeSetupEditor : Editor {
             list.serializedProperty.arraySize++;
             weightsProp.arraySize = list.serializedProperty.arraySize;
             list.serializedProperty.GetArrayElementAtIndex(index).objectReferenceValue = null;
-            weightsProp.GetArrayElementAtIndex(index).floatValue = 1.0f;
+            weightsProp.GetArrayElementAtIndex(index).floatValue = 0;
             list.index = index;
-            SetupUdonBehaviour();
+            _lightVolumeSetup.SetupUdonBehaviour();
         };
 
         // On Removing element
@@ -95,7 +94,7 @@ public class LightVolumeSetupEditor : Editor {
             if (list.index >= list.serializedProperty.arraySize - 1) {
                 list.index = list.serializedProperty.arraySize - 1;
             }
-            SetupUdonBehaviour();
+            _lightVolumeSetup.SetupUdonBehaviour();
         };
 
         // On Moving element around
@@ -107,7 +106,7 @@ public class LightVolumeSetupEditor : Editor {
                 weightsProp.arraySize = volumesProp.arraySize;
                 EditorUtility.SetDirty(target);
             }
-            SetupUdonBehaviour();
+            _lightVolumeSetup.SetupUdonBehaviour();
         };
 
         // On Drag and Drop
@@ -127,19 +126,19 @@ public class LightVolumeSetupEditor : Editor {
                             volumesProp.arraySize++;
                             weightsProp.arraySize = volumesProp.arraySize;
                             volumesProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = volume;
-                            weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 1.0f;
+                            weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 0;
                         }
                     }
                     Event.current.Use();
                 }
             }
-            SetupUdonBehaviour();
+            _lightVolumeSetup.SetupUdonBehaviour();
         };
 
     }
 
     private void OnValidate() {
-        SetupUdonBehaviour();
+        _lightVolumeSetup.SetupUdonBehaviour();
     }
 
     public override void OnInspectorGUI() {
@@ -169,118 +168,12 @@ public class LightVolumeSetupEditor : Editor {
         reorderableList.DoLayoutList();
         serializedObject.ApplyModifiedProperties();
 
-        string[] hiddenFields = new string[] { "m_Script", "BakeryVolumes", "BakeryVolumesWeights" };
+        string[] hiddenFields = new string[] { "m_Script", "BakeryVolumes", "BakeryVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
         DrawPropertiesExcluding(serializedObject, hiddenFields);
 
-        if(GUILayout.Button("Pack Light Volumes")){
-            GenerateAtlas();
+        if (GUILayout.Button("Pack Light Volumes")){
+            _lightVolumeSetup.GenerateAtlas();
         }
-    }
-
-    // Setups udon script
-    private void SetupUdonBehaviour() {
-
-        if (IsInPrefabAsset(_lightVolumeSetup)) return;
-        if (_udonLightVolumeManager == null) _udonLightVolumeManager = _lightVolumeSetup.GetComponent<LightVolumeManager>();
-        if (_udonLightVolumeManager == null) return;
-
-        var bakeryVolumes = _lightVolumeSetup.BakeryVolumes;
-
-        Vector3[] boundsWorldMin = new Vector3[bakeryVolumes.Length];
-        Vector3[] boundsWorldMax = new Vector3[bakeryVolumes.Length];
-
-        for (int i = 0; i < bakeryVolumes.Length; i++) {
-            if (bakeryVolumes[i] == null) continue;
-            boundsWorldMin[i] = bakeryVolumes[i].bounds.min;
-            boundsWorldMax[i] = bakeryVolumes[i].bounds.max;
-        }
-
-        _udonLightVolumeManager.BoundsWorldMin = boundsWorldMin;
-        _udonLightVolumeManager.BoundsWorldMax = boundsWorldMax;
-
-        _udonLightVolumeManager.VolumesWeights = _lightVolumeSetup.BakeryVolumesWeights;
-
-        _lightVolumeSetup.SetShaderVariables();
-
-    }
-
-    // Generates atlas and setups udon script
-    private void GenerateAtlas() {
-
-        if (IsInPrefabAsset(_lightVolumeSetup)) return;
-        if (_udonLightVolumeManager == null) _udonLightVolumeManager = _lightVolumeSetup.GetComponent<LightVolumeManager>();
-        if (_udonLightVolumeManager == null) {
-            Debug.LogError("[LightVolumeAtlaser] Udon LightVolumeManager component must be setuped on this game object!");
-            return;
-        }
-
-        var bakeryVolumes = _lightVolumeSetup.BakeryVolumes;
-
-        if (bakeryVolumes.Length == 0) return;
-
-        Texture3D[] textures = new Texture3D[bakeryVolumes.Length * 3];
-
-        for (int i = 0; i < bakeryVolumes.Length; i++) {
-            if (bakeryVolumes[i] == null) {
-                Debug.LogError("[LightVolumeAtlaser] One of the bakery volumes is not setuped!");
-                return;
-            }
-            if (bakeryVolumes[i].bakedTexture0 == null || bakeryVolumes[i].bakedTexture1 == null || bakeryVolumes[i].bakedTexture2 == null) {
-                Debug.LogError("[LightVolumeAtlaser] One of the bakery volumes is not baked!");
-                return;
-            }
-            textures[i * 3] = bakeryVolumes[i].bakedTexture0;
-            textures[i * 3 + 1] = bakeryVolumes[i].bakedTexture1;
-            textures[i * 3 + 2] = bakeryVolumes[i].bakedTexture2;
-        }
-
-        var atlas = Texture3DAtlasGenerator.CreateAtlasStochastic(textures, _lightVolumeSetup.StochasticIterations);
-
-        _udonLightVolumeManager.LightVolume = atlas.Texture;
-        _udonLightVolumeManager.BoundsUvwMin = atlas.BoundsUvwMin;
-        _udonLightVolumeManager.BoundsUvwMax = atlas.BoundsUvwMax;
-
-        SaveTexture3DAsAsset(atlas.Texture, "Assets/BakeryLightmaps/Atlas3D.asset");
-
-        SetupUdonBehaviour();
-
-    }
-
-    public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
-
-        if (textureToSave == null) {
-            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: texture is null");
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(assetPath)) {
-            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: Saving path is null");
-            return false;
-        }
-
-        try {
-            string directoryPath = Path.GetDirectoryName(assetPath);
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
-                Directory.CreateDirectory(directoryPath);
-                AssetDatabase.Refresh();
-            }
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeAtlaser] Error while creating folders '{assetPath}': {e.Message}");
-            return false;
-        }
-
-        try {
-            AssetDatabase.CreateAsset(textureToSave, assetPath);
-            EditorUtility.SetDirty(textureToSave);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log($"[LightVolumeAtlaser] 3D Atlas saved at path: '{assetPath}'");
-            return true;
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeAtlaser] Error saving 3D Atlas at path: '{assetPath}': {e.Message}");
-            return false;
-        }
-
     }
 
     // Check if it's previewed as a prefab, or it's a part of a scene
@@ -288,10 +181,7 @@ public class LightVolumeSetupEditor : Editor {
         var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
         var prefabType = PrefabUtility.GetPrefabAssetType(obj);
         var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
-
-        return prefabStatus == PrefabInstanceStatus.NotAPrefab &&
-               prefabType != PrefabAssetType.NotAPrefab &&
-               prefabStage == null;
+        return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
     }
 
 }

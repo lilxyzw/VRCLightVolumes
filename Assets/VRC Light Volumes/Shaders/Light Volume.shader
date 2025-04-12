@@ -4,8 +4,6 @@ Shader "Light Volume" {
 		_MainTex("Albedo", 2D) = "white" {}
 		_BumpMap("Normal", 2D) = "bump" {}
 		_NormalPower("Normal Power", Float) = 1
-		[Toggle(BICUBIC_LIGHT_VOLUME_SAMPLING_ENABLED)] _BicubicLightVolumeSampling("Bicubic Sampling", Float) = 0
-		[HideInInspector] _texcoord( "", 2D ) = "white" {}
 	}
 
 	SubShader {
