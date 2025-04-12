@@ -16,7 +16,7 @@ Shader "Light Volume" {
 		#include "LightVolumes.cginc"
 		#include "Lighting.cginc"
 
-		#pragma target 3.5
+		#pragma target 5.0
 
 		ENDCG
 		Blend Off

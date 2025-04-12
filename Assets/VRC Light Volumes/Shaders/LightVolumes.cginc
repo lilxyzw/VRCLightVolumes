@@ -49,8 +49,22 @@ float3 LV_RemapClamped(float3 value, float3 minOld, float3 maxOld, float3 minNew
     return clamp(LV_Remap(value, minOld, maxOld, minNew, maxNew), minNew, maxNew);
 }
 
-// Non-linear light probes and also return ambient color
+// Default light probes
+float3 LV_EvaluateLightProbe(float3 worldNormal) {
+    return ShadeSH9(float4(worldNormal, 1.0));
+}
+// Default light probes but only ambient color
+float3 LV_EvaluateLightProbeAmbient() {
+    return ShadeSH9(float4(0, 0, 0, 1.0));
+}
+// Default light probes and also return ambient color
 float3 LV_EvaluateLightProbe(float3 worldNormal, out float3 ambientColor) {
+    ambientColor = LV_EvaluateLightProbeAmbient();
+    return LV_EvaluateLightProbe(worldNormal);
+}
+
+// Non-linear light probes and also return ambient color
+float3 LV_EvaluateLightProbeNonLinear(float3 worldNormal, out float3 ambientColor) {
     float3 color;
     float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
     color.r = LV_EvaluateSHL1(L0.r, unity_SHAr.xyz, worldNormal);
@@ -60,13 +74,12 @@ float3 LV_EvaluateLightProbe(float3 worldNormal, out float3 ambientColor) {
     return color;
 }
 // Non-linear light probes
-float3 LV_EvaluateLightProbe(float3 worldNormal) {
+float3 LV_EvaluateLightProbeNonLinear(float3 worldNormal) {
     float3 dummy;
-    return LV_EvaluateLightProbe(worldNormal, dummy);
+    return LV_EvaluateLightProbeNonLinear(worldNormal, dummy);
 }
-
-// Default light probes but only ambient color
-float3 LV_EvaluateLightProbeAmbient() {
+// Non-linear light probes but only ambient color
+float3 LV_EvaluateLightProbeNonLinearAmbient() {
     return float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
 }
 
