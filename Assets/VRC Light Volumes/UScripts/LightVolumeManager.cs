@@ -28,7 +28,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
     // Initializing IDs and 
     private void InitializeShaderVariables() {
 
-        if (!_isInitialized) return;
+        if (_isInitialized) return;
 
         _lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
         _lightVolumeBlendID = VRCShader.PropertyToID("_UdonLightVolumeBlend");
