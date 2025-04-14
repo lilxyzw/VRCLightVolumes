@@ -112,7 +112,7 @@ public class LightVolumeSetup : MonoBehaviour {
         _udonLightVolumeManager.BoundsUvwMax = boundsUvwMax;
         _udonLightVolumeManager.BoundsWorldMin = boundsWorldMin;
         _udonLightVolumeManager.BoundsWorldMax = boundsWorldMax;
-        _udonLightVolumeManager.LightVolume = LightVolumeAtlas;
+        _udonLightVolumeManager.LightVolumeAtlas = LightVolumeAtlas;
 
         SetShaderVariables();
 
