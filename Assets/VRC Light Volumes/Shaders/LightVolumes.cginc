@@ -12,6 +12,16 @@ uniform float4 _UdonLightVolumeUvwMax[768];
 // All the internal functions here uses LV_ (LightVolumes) prefix to avoid name conflicts in other shaders
 //
 
+// LV_Remaps value
+float3 LV_Remap(float3 value, float3 minOld, float3 maxOld, float3 minNew, float3 maxNew) {
+	return minNew + (value - minOld) * (maxNew - minNew) / (maxOld - minOld);
+}
+
+// LV_Remaps value and clamps the result
+float3 LV_RemapClamped(float3 value, float3 minOld, float3 maxOld, float3 minNew, float3 maxNew) {
+    return clamp(LV_Remap(value, minOld, maxOld, minNew, maxNew), minNew, maxNew);
+}
+
 // Calculate single SH L1 channel
 float LV_EvaluateSHL1(float L0, float3 L1, float3 n) {
 	float R0 = L0;
@@ -34,57 +44,8 @@ float3 LV_EvaluateLightVolume(float4 tex0, float4 tex1, float4 tex2, float3 worl
     return float3(LV_EvaluateSHL1(L0R, L1R, worldNormal), LV_EvaluateSHL1(L0G, L1G, worldNormal), LV_EvaluateSHL1(L0B, L1B, worldNormal));
 }
 
-// AABB intersection check
-bool LV_PointAABB(float3 pos, float3 min, float3 max) {
-	return all(pos >= min && pos <= max);
-}
-
-// LV_Remaps value
-float3 LV_Remap(float3 value, float3 minOld, float3 maxOld, float3 minNew, float3 maxNew) {
-	return minNew + (value - minOld) * (maxNew - minNew) / (maxOld - minOld);
-}
-
-// LV_Remaps value and clamps the result
-float3 LV_RemapClamped(float3 value, float3 minOld, float3 maxOld, float3 minNew, float3 maxNew) {
-    return clamp(LV_Remap(value, minOld, maxOld, minNew, maxNew), minNew, maxNew);
-}
-
-// Default light probes
-float3 LV_EvaluateLightProbe(float3 worldNormal) {
-    return ShadeSH9(float4(worldNormal, 1.0));
-}
-// Default light probes but only ambient color
-float3 LV_EvaluateLightProbeAmbient() {
-    return ShadeSH9(float4(0, 0, 0, 1.0));
-}
-// Default light probes and also return ambient color
-float3 LV_EvaluateLightProbe(float3 worldNormal, out float3 ambientColor) {
-    ambientColor = LV_EvaluateLightProbeAmbient();
-    return LV_EvaluateLightProbe(worldNormal);
-}
-
-// Non-linear light probes and also return ambient color
-float3 LV_EvaluateLightProbeNonLinear(float3 worldNormal, out float3 ambientColor) {
-    float3 color;
-    float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-    color.r = LV_EvaluateSHL1(L0.r, unity_SHAr.xyz, worldNormal);
-    color.g = LV_EvaluateSHL1(L0.g, unity_SHAg.xyz, worldNormal);
-    color.b = LV_EvaluateSHL1(L0.b, unity_SHAb.xyz, worldNormal);
-    ambientColor = L0;
-    return color;
-}
-// Non-linear light probes
-float3 LV_EvaluateLightProbeNonLinear(float3 worldNormal) {
-    float3 dummy;
-    return LV_EvaluateLightProbeNonLinear(worldNormal, dummy);
-}
-// Non-linear light probes but only ambient color
-float3 LV_EvaluateLightProbeNonLinearAmbient() {
-    return float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-}
-
-// Sample light Volume by ID and return L0 ambient color
-float3 LV_SampleLightVolumeID(int volumeID, float3 worldPos, float3 worldNormal, out float3 ambientColor) {
+// Samples 3 SH textures required for evaluating light volumes
+void LV_SampleLightVolumeTexID(int volumeID, float3 worldPos, out float4 tex0, out float4 tex1, out float4 tex2) {
     
     // World bounds
     float3 worldMin = _UdonLightVolumeWorldMin[volumeID].xyz;
@@ -102,39 +63,48 @@ float3 LV_SampleLightVolumeID(int volumeID, float3 worldPos, float3 worldNormal,
     float3 volumeUVW0 = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin0, uvwMax0);
     float3 volumeUVW1 = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin1, uvwMax1);
     float3 volumeUVW2 = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin2, uvwMax2);
-
-    float4 tex0 = tex3D(_UdonLightVolume, volumeUVW0);
-    float4 tex1 = tex3D(_UdonLightVolume, volumeUVW1);
-    float4 tex2 = tex3D(_UdonLightVolume, volumeUVW2);
     
-    // Also returning ambient color
-    ambientColor = tex0.rgb;
+    tex0 = tex3D(_UdonLightVolume, volumeUVW0);
+    tex1 = tex3D(_UdonLightVolume, volumeUVW1);
+    tex2 = tex3D(_UdonLightVolume, volumeUVW2);
     
-    return LV_EvaluateLightVolume(tex0, tex1, tex2, worldNormal);
-}
-// Sample light Volume by ID
-float3 LV_SampleLightVolumeID(int volumeID, float3 worldPos, float3 worldNormal) {
-    float3 dummy;
-    return LV_SampleLightVolumeID(volumeID, worldPos, worldNormal, dummy);
 }
 
-// Sample only light Volume L0 ambient color by ID
-float3 LV_SampleLightVolumeAmbientID(int volumeID, float3 worldPos) {
+// Only samples tex0 for getting L0 ambient color
+void LV_SampleLightVolumeTexID(int volumeID, float3 worldPos, out float4 tex0) {
     
     // World bounds
     float3 worldMin = _UdonLightVolumeWorldMin[volumeID].xyz;
     float3 worldMax = _UdonLightVolumeWorldMax[volumeID].xyz;
 	
     // UVW bounds
-    int uvwID = volumeID * 3;
-    float3 uvwMin = _UdonLightVolumeUvwMin[uvwID].xyz;
-    float3 uvwMax = _UdonLightVolumeUvwMax[uvwID].xyz;
-	
-    // Sample ambient color texture
-    float3 volumeUVW = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin, uvwMax);
-    float4 tex0 = tex3D(_UdonLightVolume, volumeUVW);
-    return tex0.rgb;
+    int3 uvwID = int3(volumeID * 3, volumeID * 3 + 1, volumeID * 3 + 2);
+    float3 uvwMin0 = _UdonLightVolumeUvwMin[uvwID.x].xyz;
+    float3 uvwMax0 = _UdonLightVolumeUvwMax[uvwID.x].xyz;
     
+    float3 volumeUVW0 = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin0, uvwMax0);
+
+    tex0 = tex3D(_UdonLightVolume, volumeUVW0);
+    
+}
+
+// Default light probes
+float3 LV_EvaluateLightProbe(float3 worldNormal) {
+    return ShadeSH9(float4(worldNormal, 1.0));
+}
+// Default light probes but only ambient color
+float3 LV_EvaluateLightProbe() {
+    return ShadeSH9(float4(0, 0, 0, 1.0));
+}
+// Default light probes and also return ambient color
+float3 LV_EvaluateLightProbe(float3 worldNormal, out float3 ambientColor) {
+    ambientColor = LV_EvaluateLightProbe();
+    return LV_EvaluateLightProbe(worldNormal);
+}
+
+// AABB intersection check
+bool LV_PointAABB(float3 pos, float3 min, float3 max) {
+	return all(pos >= min && pos <= max);
 }
 
 // Bounds mask
@@ -164,18 +134,46 @@ float3 LightVolume(float3 worldNormal, float3 worldPos) {
     
     // If no volumes found, using fallback to light probes
     if (volumeID_A == -1) return LV_EvaluateLightProbe(worldNormal); 
-    
     // If at least, main, dominant volume found
-    float3 color_A = LV_SampleLightVolumeID(volumeID_A, worldPos, worldNormal); // Sampling main volume
+    
     float mask = LV_BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
         
     if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
-        float3 color_B; // Color to blend with
-        if (volumeID_B != -1) color_B = LV_SampleLightVolumeID(volumeID_B, worldPos, worldNormal); // Sampling secondary volume
-        else color_B = LV_EvaluateLightProbe(worldNormal); // Fallback to light probes
-        return lerp(color_B, color_A, mask); // Blending
-    } else {
-        return color_A; // Just return main light volume color if no need for blending
+        if (volumeID_B != -1) { // Blending volume A and Volume B
+            
+            float4 texA[3]; // Main textures bundle
+            float4 texB[3]; // Secondary textures bundle
+            
+            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
+            LV_SampleLightVolumeTexID(volumeID_B, worldPos, texB[0], texB[1], texB[2]); // Sampling secondary volume
+            
+            float4 tex[3]; // Blended textures color
+            
+            // Blending textures
+            tex[0] = lerp(texB[0], texA[0], mask);
+            tex[1] = lerp(texB[1], texA[1], mask);
+            tex[2] = lerp(texB[2], texA[2], mask);
+            
+            // Evaluating result
+            return LV_EvaluateLightVolume(tex[0], tex[1], tex[2], worldNormal); 
+            
+        } else { // Blending volume A and light probes
+            
+            float4 texA[3]; // Main textures bundle
+            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
+            float3 colorA = LV_EvaluateLightVolume(texA[0], texA[1], texA[2], worldNormal); // Evaluating main volume
+            float3 colorB = LV_EvaluateLightProbe(worldNormal); // Evaluating light probes
+            
+            // Blending result
+            return lerp(colorB, colorA, mask);
+            
+        }
+    } else { // If no need to blend
+        
+        float4 texA[3]; // Main textures bundle
+        LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
+        return LV_EvaluateLightVolume(texA[0], texA[1], texA[2], worldNormal); // Evaluating main volume
+        
     }
 
 }
@@ -183,8 +181,8 @@ float3 LightVolume(float3 worldNormal, float3 worldPos) {
 // Calculates final Light Volumes color based on world position and world normal, also returns ambient color
 float3 LightVolume(float3 worldNormal, float3 worldPos, out float3 ambientColor) {
 
-    // Return white and skip all the calculations if light volumes are not enabled
-    if (!_UdonLightVolumeEnabled) return LV_EvaluateLightProbe(worldNormal, ambientColor);
+    // Fallback to default light probes if Light Volume are not enabled
+    if (!_UdonLightVolumeEnabled) return LV_EvaluateLightProbe(worldNormal);
     
     int volumeID_A = -1; // Main, dominant volume ID
     int volumeID_B = -1; // Secondary volume ID to blend main with
@@ -198,23 +196,52 @@ float3 LightVolume(float3 worldNormal, float3 worldPos, out float3 ambientColor)
     }
     
     // If no volumes found, using fallback to light probes
-    if (volumeID_A == -1) return LV_EvaluateLightProbe(worldNormal, ambientColor); 
-    
+    if (volumeID_A == -1) return LV_EvaluateLightProbe(worldNormal); 
     // If at least, main, dominant volume found
-    float3 ambient_A;
-    float3 color_A = LV_SampleLightVolumeID(volumeID_A, worldPos, worldNormal, ambient_A); // Sampling main volume
+    
     float mask = LV_BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
         
     if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
-        float3 ambient_B;
-        float3 color_B; // Color to blend with
-        if (volumeID_B != -1) color_B = LV_SampleLightVolumeID(volumeID_B, worldPos, worldNormal, ambient_B); // Sampling secondary volume
-        else color_B = LV_EvaluateLightProbe(worldNormal, ambient_B); // Fallback to light probes
-        ambientColor = lerp(ambient_B, ambient_A, mask);
-        return lerp(color_B, color_A, mask); // Blending
-    } else {
-        ambientColor = ambient_A;
-        return color_A; // Just return main light volume color if no need for blending
+        if (volumeID_B != -1) { // Blending volume A and Volume B
+            
+            float4 texA[3]; // Main textures bundle
+            float4 texB[3]; // Secondary textures bundle
+            
+            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
+            LV_SampleLightVolumeTexID(volumeID_B, worldPos, texB[0], texB[1], texB[2]); // Sampling secondary volume
+            
+            float4 tex[3]; // Blended textures color
+            
+            // Blending textures
+            tex[0] = lerp(texB[0], texA[0], mask);
+            tex[1] = lerp(texB[1], texA[1], mask);
+            tex[2] = lerp(texB[2], texA[2], mask);
+            
+            ambientColor = tex[0].rgb;
+            
+            // Evaluating result
+            return LV_EvaluateLightVolume(tex[0], tex[1], tex[2], worldNormal); 
+            
+        } else { // Blending volume A and light probes
+            
+            float3 lightProbesAmbient;
+            float4 texA[3]; // Main textures bundle
+            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
+            float3 colorA = LV_EvaluateLightVolume(texA[0], texA[1], texA[2], worldNormal); // Evaluating main volume
+            float3 colorB = LV_EvaluateLightProbe(worldNormal, lightProbesAmbient); // Evaluating light probes
+            
+            // Blending result
+            ambientColor = lerp(lightProbesAmbient, texA[0].rgb, mask);
+            return lerp(colorB, colorA, mask);
+            
+        }
+    } else { // If no need to blend
+        
+        float4 texA[3]; // Main textures bundle
+        LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
+        ambientColor = texA[0].rgb;
+        return LV_EvaluateLightVolume(texA[0], texA[1], texA[2], worldNormal); // Evaluating main volume
+        
     }
 
 }
@@ -223,7 +250,7 @@ float3 LightVolume(float3 worldNormal, float3 worldPos, out float3 ambientColor)
 float3 LightVolumeAmbient(float3 worldPos) {
 
     // Fallback to default light probes if Light Volume are not enabled
-    if (!_UdonLightVolumeEnabled) return LV_EvaluateLightProbeAmbient();
+    if (!_UdonLightVolumeEnabled) return LV_EvaluateLightProbe();
     
     int volumeID_A = -1; // Main, dominant volume ID
     int volumeID_B = -1; // Secondary volume ID to blend main with
@@ -237,19 +264,62 @@ float3 LightVolumeAmbient(float3 worldPos) {
     }
     
     // If no volumes found, using fallback to light probes
-    if (volumeID_A == -1) return LV_EvaluateLightProbeAmbient(); 
-    
+    if (volumeID_A == -1) return LV_EvaluateLightProbe(); 
     // If at least, main, dominant volume found
-    float3 color_A = LV_SampleLightVolumeAmbientID(volumeID_A, worldPos); // Sampling main volume
+    
     float mask = LV_BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
         
     if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
-        float3 color_B; // Color to blend with
-        if (volumeID_B != -1) color_B = LV_SampleLightVolumeAmbientID(volumeID_B, worldPos); // Sampling secondary volume
-        else color_B = LV_EvaluateLightProbeAmbient(); // Fallback to light probes
-        return lerp(color_B, color_A, mask); // Blending
-    } else {
-        return color_A; // Just return main light volume color if no need for blending
+        if (volumeID_B != -1) { // Blending volume A and Volume B
+            
+            float4 texA; // Main texture
+            float4 texB; // Secondary texture
+            
+            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA); // Sampling main volume
+            LV_SampleLightVolumeTexID(volumeID_B, worldPos, texB); // Sampling secondary volume
+            
+            // Blending result
+            return lerp(texB, texA, mask);
+            
+        } else { // Blending volume A and light probes
+            
+            float4 texA; // Main texture
+            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA); // Sampling main volume
+            float3 colorA = texA.rgb;
+            float3 colorB = LV_EvaluateLightProbe(); // Evaluating light probes
+            
+            // Blending result
+            return lerp(colorB, colorA, mask);
+            
+        }
+    } else { // If no need to blend
+        
+        float4 texA; // Main texture
+        LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA); // Sampling main volume
+        return texA.rgb;
+        
     }
 
 }
+
+// Bakery's non-linear light probes
+
+//// Non-linear light probes and also return ambient color
+//float3 LV_EvaluateLightProbeNonLinear(float3 worldNormal, out float3 ambientColor) {
+//    float3 color;
+//    float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+//    color.r = LV_EvaluateSHL1(L0.r, unity_SHAr.xyz, worldNormal);
+//    color.g = LV_EvaluateSHL1(L0.g, unity_SHAg.xyz, worldNormal);
+//    color.b = LV_EvaluateSHL1(L0.b, unity_SHAb.xyz, worldNormal);
+//    ambientColor = L0;
+//    return color;
+//}
+//// Non-linear light probes
+//float3 LV_EvaluateLightProbeNonLinear(float3 worldNormal) {
+//    float3 dummy;
+//    return LV_EvaluateLightProbeNonLinear(worldNormal, dummy);
+//}
+//// Non-linear light probes but only ambient color
+//float3 LV_EvaluateLightProbeNonLinearAmbient() {
+//    return float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+//}
