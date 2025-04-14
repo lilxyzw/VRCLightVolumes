@@ -30,14 +30,10 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
         if (_isInitialized) return;
 
-        _lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
-        _lightVolumeBlendID = VRCShader.PropertyToID("_UdonLightVolumeBlend");
         _lightVolumeWorldMinID = VRCShader.PropertyToID("_UdonLightVolumeWorldMin");
         _lightVolumeWorldMaxID = VRCShader.PropertyToID("_UdonLightVolumeWorldMax");
         _lightVolumeUvwMinID = VRCShader.PropertyToID("_UdonLightVolumeUvwMin");
         _lightVolumeUvwMaxID = VRCShader.PropertyToID("_UdonLightVolumeUvwMax");
-        _lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
-        _lightVolumeEnabledID = VRCShader.PropertyToID("_UdonLightVolumeEnabled");
 
         VRCShader.SetGlobalVectorArray(_lightVolumeWorldMinID, new Vector4[256]);
         VRCShader.SetGlobalVectorArray(_lightVolumeWorldMaxID, new Vector4[256]);
@@ -62,6 +58,15 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
     [ContextMenu("Set Shader Variables")]
     public void SetShaderVariables() {
+
+        _lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
+        _lightVolumeBlendID = VRCShader.PropertyToID("_UdonLightVolumeBlend");
+        _lightVolumeWorldMinID = VRCShader.PropertyToID("_UdonLightVolumeWorldMin");
+        _lightVolumeWorldMaxID = VRCShader.PropertyToID("_UdonLightVolumeWorldMax");
+        _lightVolumeUvwMinID = VRCShader.PropertyToID("_UdonLightVolumeUvwMin");
+        _lightVolumeUvwMaxID = VRCShader.PropertyToID("_UdonLightVolumeUvwMax");
+        _lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
+        _lightVolumeEnabledID = VRCShader.PropertyToID("_UdonLightVolumeEnabled");
 
         InitializeShaderVariables();
 
