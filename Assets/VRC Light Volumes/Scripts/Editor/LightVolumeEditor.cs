@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;
-using UnityEditor.IMGUI.Controls;
+using System.Collections.Generic;
 
 [CustomEditor(typeof(LightVolume))]
 public class LightVolumeEditor : Editor {
@@ -16,6 +15,10 @@ public class LightVolumeEditor : Editor {
 
     public override void OnInspectorGUI() {
 
+        LightVolume volume = (LightVolume)target;
+
+        serializedObject.Update();
+
         GUIContent content = EditorGUIUtility.IconContent("EditCollider");
         content.text = " Edit Bounds";
 
@@ -24,23 +27,42 @@ public class LightVolumeEditor : Editor {
         GUIStyle toggleStyle = new GUIStyle(GUI.skin.button);
         toggleStyle.imagePosition = ImagePosition.ImageLeft;
 
+        GUILayout.BeginHorizontal();
+
+        bool newIsEditMode = GUILayout.Toggle(_isEditMode, content, toggleStyle);
+        GUILayout.Space(10);
+        if (GUILayout.Button("Add Probes")) {
+            volume.SetAdditionalProbes();
+        }
+        GUILayout.Space(10);
+        if (GUILayout.Button("Get Probes")) {
+            volume.GetAdditionalLightProbes();
+        }
+
+        GUILayout.EndHorizontal();
+
+        if (volume.RotationType == LightVolume.VolumeRotation.Free && volume.BakingMode == LightVolume.Baking.Bakery) {
+            GUILayout.Space(10);
+            EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is allowed in the editor. Free rotation will still work at runtime.", MessageType.Warning);
+        }
+
         if (_isEditMode && _previousTool != Tools.current) {
-            _previousTool = _savedTool;
-            Tools.current = _savedTool;
+            // Went from edit mode clicking on a new tool
+            _previousTool = Tools.current;
             _isEditMode = false;
             Tools.hidden = false;
             SceneView.RepaintAll();
         }
 
-        bool newIsEditMode = GUILayout.Toggle(_isEditMode, content, toggleStyle);
-
         if (newIsEditMode != _isEditMode) {
 
-            if (newIsEditMode) {
+            if (newIsEditMode) { 
+                // Went to edit mode
                 _savedTool = Tools.current;
-                Tools.current = Tool.None;
                 _previousTool = Tool.None;
-            } else {
+                Tools.current = Tool.None;
+            } else { 
+                // Went from edit mode
                 Tools.current = _savedTool;
                 _previousTool = _savedTool;
             }
@@ -50,19 +72,40 @@ public class LightVolumeEditor : Editor {
             SceneView.RepaintAll();
         }
 
-        GUILayout.Space(10);
+        List<string> hiddenFields = new List<string> { "m_Script" };
 
-        string[] hiddenFields = new string[] { "m_Script" };
-        DrawPropertiesExcluding(serializedObject, hiddenFields);
+        if(volume.BakingMode == LightVolume.Baking.DontBake) {
+            hiddenFields.Add("AdaptiveResolution");
+            hiddenFields.Add("Resolution");
+            hiddenFields.Add("VoxelsPerUnit");
+            hiddenFields.Add("PreviewProbes");
+        } if (volume.AdaptiveResolution) {
+            
+        } else {
+            hiddenFields.Add("VoxelsPerUnit");
+        }
+
+        DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());
+
+        serializedObject.ApplyModifiedProperties();
 
     }
 
     private void OnSceneGUI() {
 
-        if (!_isEditMode) return;
-
         LightVolume volume = (LightVolume)target;
         Transform transform = volume.transform;
+
+        Handles.matrix = Matrix4x4.TRS(volume.Position, volume.Rotation, volume.Scale);
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
+        Handles.color = Color.white;
+        Handles.DrawWireCube(Vector3.zero, Vector3.one);
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+        Handles.color = new Color(1, 1, 1, 0.2f);
+        Handles.DrawWireCube(Vector3.zero, Vector3.one);
+        Handles.matrix = Matrix4x4.identity;
+
+        if (!_isEditMode) return;
 
         // Hide tools
         Tools.hidden = true;
@@ -82,24 +125,24 @@ public class LightVolumeEditor : Editor {
 
             switch (axisIndex) {
                 case 0: // X
-                    worldDirection = transform.rotation * (isPositive ? Vector3.right : Vector3.left);
-                    worldUpDirection = transform.rotation * Vector3.up;
+                    worldDirection = volume.Rotation * (isPositive ? Vector3.right : Vector3.left);
+                    worldUpDirection = volume.Rotation * Vector3.up;
                     Handles.color = colorX;
                     break;
                 case 1: // Y
-                    worldDirection = transform.rotation * (isPositive ? Vector3.up : Vector3.down);
-                    worldUpDirection = transform.rotation * Vector3.right;
+                    worldDirection = volume.Rotation * (isPositive ? Vector3.up : Vector3.down);
+                    worldUpDirection = volume.Rotation * Vector3.right;
                     Handles.color = colorY;
                     break;
                 case 2: // Z
-                    worldDirection = transform.rotation * (isPositive ? Vector3.forward : Vector3.back);
-                    worldUpDirection = transform.rotation * Vector3.up;
+                    worldDirection = volume.Rotation * (isPositive ? Vector3.forward : Vector3.back);
+                    worldUpDirection = volume.Rotation * Vector3.up;
                     Handles.color = colorZ;
                     break;
             }
 
             // Handle parameters
-            Vector3 handlePos = transform.position + worldDirection * transform.lossyScale[axisIndex] * 0.5f;
+            Vector3 handlePos = volume.Position + worldDirection * volume.Scale[axisIndex] * 0.5f;
             float handleSize = HandleUtility.GetHandleSize(handlePos) * 0.2f;
             Vector3 handleOffset = handleSize * worldDirection * 0.1f / 0.2f;
 
@@ -119,10 +162,11 @@ public class LightVolumeEditor : Editor {
             if (EditorGUI.EndChangeCheck()) {
                 Undo.RecordObject(transform, "Scale Bounds Size");
                 float delta = Vector3.Dot(newHandleLocalPos - handlePos, worldDirection);
-                Vector3 modifiedScale = transform.lossyScale;
+                Vector3 modifiedScale = volume.Scale;
                 modifiedScale[axisIndex] += delta;
                 transform.position += worldDirection * delta / 2;
                 SetLossyScale(transform, modifiedScale);
+                volume.Recalculate();
             }
         }
 
@@ -131,6 +175,11 @@ public class LightVolumeEditor : Editor {
     // Bring back tools
     void OnDisable() {
         Tools.hidden = false;
+        if (_isEditMode) {
+            // Went from edit mode
+            Tools.current = _savedTool;
+            _previousTool = _savedTool;
+        }
     }
 
     // Setting lossy scale to a specified transform

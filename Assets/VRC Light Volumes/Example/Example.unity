@@ -435,7 +435,7 @@ Transform:
   m_GameObject: {fileID: 38894218}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0000011473893, y: -4.83169e-13, z: 0.00000047683704, w: 1}
-  m_LocalPosition: {x: 0.0011116094, y: 4.002646, z: -0.012902319}
+  m_LocalPosition: {x: 0.0011116094, y: 4.002646, z: -0.012902081}
   m_LocalScale: {x: 8.00588, y: 7.0470905, z: 7.986187}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -453,10 +453,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Type: 2
+  RotationType: 2
+  Static: 1
   Texture1: {fileID: 0}
   Texture2: {fileID: 0}
   Texture3: {fileID: 0}
+  BakingMode: 2
+  AdaptiveResolution: 1
+  VoxelsPerUnit: 2
+  Resolution: {x: 16, y: 14, z: 16}
+  PreviewProbes: 0
 --- !u!1 &139105230
 GameObject:
   m_ObjectHideFlags: 0

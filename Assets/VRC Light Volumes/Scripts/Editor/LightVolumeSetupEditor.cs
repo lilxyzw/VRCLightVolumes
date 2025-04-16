@@ -166,7 +166,6 @@ public class LightVolumeSetupEditor : Editor {
         }
 
         reorderableList.DoLayoutList();
-        serializedObject.ApplyModifiedProperties();
 
         string[] hiddenFields = new string[] { "m_Script", "BakeryVolumes", "BakeryVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
         DrawPropertiesExcluding(serializedObject, hiddenFields);
@@ -174,6 +173,9 @@ public class LightVolumeSetupEditor : Editor {
         if (GUILayout.Button("Pack Light Volumes")){
             _lightVolumeSetup.GenerateAtlas();
         }
+
+        serializedObject.ApplyModifiedProperties();
+
     }
 
     // Check if it's previewed as a prefab, or it's a part of a scene
