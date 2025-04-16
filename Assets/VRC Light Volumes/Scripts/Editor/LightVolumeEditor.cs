@@ -41,10 +41,17 @@ public class LightVolumeEditor : Editor {
 
         GUILayout.EndHorizontal();
 
+#if BAKERY_INCLUDED
         if (volume.RotationType == LightVolume.VolumeRotation.Free && volume.BakingMode == LightVolume.Baking.Bakery) {
             GUILayout.Space(10);
             EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is allowed in the editor. Free rotation will still work at runtime.", MessageType.Warning);
         }
+#else
+        if (volume.BakingMode == LightVolume.Baking.Bakery) {
+            GUILayout.Space(10);
+            EditorGUILayout.HelpBox("To use Bakery mode, please include Bakery into your project!", MessageType.Error);
+        }
+#endif
 
         if (_isEditMode && _previousTool != Tools.current) {
             // Went from edit mode clicking on a new tool
@@ -73,6 +80,14 @@ public class LightVolumeEditor : Editor {
         }
 
         List<string> hiddenFields = new List<string> { "m_Script" };
+
+#if BAKERY_INCLUDED
+        hiddenFields.Add("BakeryVolume");
+#endif
+
+        if(volume.BakingMode != LightVolume.Baking.Bakery) {
+            hiddenFields.Add("Denoise");
+        }
 
         if(volume.BakingMode == LightVolume.Baking.DontBake) {
             hiddenFields.Add("AdaptiveResolution");

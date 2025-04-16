@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.Experimental;
 using Unity.Collections;
 using UnityEngine.Rendering;
+using UnityEditor;
 
+[ExecuteAlways]
 public class LightVolume : MonoBehaviour {
 
     // Inspector
@@ -19,10 +20,14 @@ public class LightVolume : MonoBehaviour {
 
     [Header("Baking")]
     public Baking BakingMode = Baking.DontBake;
+    public bool Denoise;
     public bool AdaptiveResolution;
     public float VoxelsPerUnit = 2;
     public Vector3Int Resolution = new Vector3Int(16, 16, 16);
     public bool PreviewProbes;
+#if BAKERY_INCLUDED
+    public BakeryVolume BakeryVolume;
+#endif
 
     // Public properties
     public Vector3 Position => transform.position;
@@ -45,7 +50,7 @@ public class LightVolume : MonoBehaviour {
     // Sets Additional Probes to bake with Unity Lightmapper
     public void SetAdditionalProbes() {
         RecalculateProbesLocalPositions();
-        Lightmapping.SetAdditionalBakedProbes(0, _probesLocalPositions);
+        UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(0, _probesLocalPositions);
     }
 
     // Gets Additional Probes taht baked with Unity Lightmapper (Debug)
@@ -53,7 +58,7 @@ public class LightVolume : MonoBehaviour {
         NativeArray<SphericalHarmonicsL2> outBakedProbeSH = new NativeArray<SphericalHarmonicsL2>(Resolution.x * Resolution.y * Resolution.z, Allocator.Temp);
         NativeArray<float> outBakedProbeValidity = new NativeArray<float>(Resolution.x * Resolution.y * Resolution.z, Allocator.Temp);
         NativeArray<float> outBakedProbeOctahedralDepth = new NativeArray<float>(8000, Allocator.Temp);
-        if (Lightmapping.GetAdditionalBakedProbes(0, outBakedProbeSH, outBakedProbeValidity, outBakedProbeOctahedralDepth)) {
+        if (UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(0, outBakedProbeSH, outBakedProbeValidity, outBakedProbeOctahedralDepth)) {
             foreach (var o in outBakedProbeSH) {
                 Debug.Log(o[0, 0]);
             }
@@ -98,6 +103,47 @@ public class LightVolume : MonoBehaviour {
             RecalculateAdaptiveResolution();
         if (PreviewProbes && BakingMode != Baking.DontBake)
             RecalculateProbesLocalPositions();
+    }
+
+    private void Update() {
+
+        if (Selection.activeGameObject != gameObject) return;
+
+#if BAKERY_INCLUDED
+
+        // Create or destroy Bakery Volume
+
+        if (BakingMode == Baking.Bakery && BakeryVolume == null) {
+            GameObject obj = new GameObject($"Bakery Volume - {gameObject.name}");
+            obj.transform.parent = transform;
+            BakeryVolume = obj.AddComponent<BakeryVolume>();
+        } else if (BakingMode != Baking.Bakery && BakeryVolume != null) {
+            if (Application.isPlaying) {
+                Destroy(BakeryVolume.gameObject);
+            } else {
+                Undo.DestroyObjectImmediate(BakeryVolume.gameObject);
+            }
+            BakeryVolume = null;
+        }
+
+        if(BakeryVolume != null) {
+            // Sync bakery volume with light volume
+            if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
+            BakeryVolume.rotateAroundY = RotationType == VolumeRotation.Fixed ? false : true;
+            BakeryVolume.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            BakeryVolume.transform.localScale = Vector3.one;
+            BakeryVolume.bounds = new Bounds(Position, Scale);
+            BakeryVolume.enableBaking = true;
+            BakeryVolume.denoise = Denoise;
+            BakeryVolume.adaptiveRes = false;
+            BakeryVolume.resolutionX = Resolution.x;
+            BakeryVolume.resolutionY = Resolution.y;
+            BakeryVolume.resolutionZ = Resolution.z;
+            BakeryVolume.encoding = BakeryVolume.Encoding.Half4;
+        }
+
+#endif
+
     }
 
     private void OnValidate() {
