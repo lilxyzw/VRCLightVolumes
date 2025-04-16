@@ -121,7 +121,7 @@ public class LightVolume : MonoBehaviour {
             if (Application.isPlaying) {
                 Destroy(BakeryVolume.gameObject);
             } else {
-                Undo.DestroyObjectImmediate(BakeryVolume.gameObject);
+                DestroyImmediate(BakeryVolume.gameObject);
             }
             BakeryVolume = null;
         }
