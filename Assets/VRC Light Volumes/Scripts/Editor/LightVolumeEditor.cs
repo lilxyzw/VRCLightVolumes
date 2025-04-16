@@ -53,14 +53,7 @@ public class LightVolumeEditor : Editor {
         }
 #endif
 
-        if (_isEditMode && _previousTool != Tools.current) {
-            // Went from edit mode clicking on a new tool
-            _previousTool = Tools.current;
-            _isEditMode = false;
-            Tools.hidden = false;
-            SceneView.RepaintAll();
-        }
-
+        // Clicking on Edit Bounds button
         if (newIsEditMode != _isEditMode) {
 
             if (newIsEditMode) { 
@@ -75,6 +68,15 @@ public class LightVolumeEditor : Editor {
             }
 
             _isEditMode = newIsEditMode;
+            Tools.hidden = false;
+            SceneView.RepaintAll();
+        }
+
+        // Clicking on a new tool
+        if (_isEditMode && _previousTool != Tools.current) {
+            // Went from edit mode 
+            _previousTool = Tools.current;
+            _isEditMode = false;
             Tools.hidden = false;
             SceneView.RepaintAll();
         }
