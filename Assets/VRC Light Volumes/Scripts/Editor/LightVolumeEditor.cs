@@ -19,26 +19,31 @@ public class LightVolumeEditor : Editor {
 
         serializedObject.Update();
 
-        GUIContent content = EditorGUIUtility.IconContent("EditCollider");
-        content.text = " Edit Bounds";
+        GUIContent editBoundsContent = EditorGUIUtility.IconContent("EditCollider");
+        editBoundsContent.text = " Edit Bounds";
 
-        GUILayout.Space(10);
+        GUIContent previewProbesContent = EditorGUIUtility.IconContent("LightProbeGroup Gizmo");
+        previewProbesContent.text = " Preview Probes";
 
         GUIStyle toggleStyle = new GUIStyle(GUI.skin.button);
         toggleStyle.imagePosition = ImagePosition.ImageLeft;
+        toggleStyle.fixedHeight = 20;
+        toggleStyle.fixedWidth = 150;
+
+        GUILayout.Space(10);
 
         GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
 
-        bool newIsEditMode = GUILayout.Toggle(_isEditMode, content, toggleStyle);
+        bool newIsEditMode = GUILayout.Toggle(_isEditMode, editBoundsContent, toggleStyle);
         GUILayout.Space(10);
-        if (GUILayout.Button("Add Probes")) {
-            volume.SetAdditionalProbes();
-        }
-        GUILayout.Space(10);
-        if (GUILayout.Button("Get Probes")) {
-            volume.GetAdditionalLightProbes();
+        bool newPreviewProbes = GUILayout.Toggle(volume.PreviewProbes, previewProbesContent, toggleStyle);
+        if (newPreviewProbes != volume.PreviewProbes) {
+            SceneView.RepaintAll();
+            volume.PreviewProbes = newPreviewProbes;
         }
 
+        GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
 #if BAKERY_INCLUDED
@@ -81,7 +86,7 @@ public class LightVolumeEditor : Editor {
             SceneView.RepaintAll();
         }
 
-        List<string> hiddenFields = new List<string> { "m_Script" };
+        List<string> hiddenFields = new List<string> { "m_Script", "PreviewProbes" };
 
 #if BAKERY_INCLUDED
         hiddenFields.Add("BakeryVolume");
