@@ -22,8 +22,8 @@ public class LightVolumeSetupEditor : Editor {
 
         _lightVolumeSetup = (LightVolumeSetup)target;
 
-        volumesProp = serializedObject.FindProperty("BakeryVolumes");
-        weightsProp = serializedObject.FindProperty("BakeryVolumesWeights");
+        volumesProp = serializedObject.FindProperty("LightVolumes");
+        weightsProp = serializedObject.FindProperty("LightVolumesWeights");
 
         reorderableList = new ReorderableList(
             serializedObject,
@@ -47,7 +47,7 @@ public class LightVolumeSetupEditor : Editor {
             Rect volumeHeaderRect = new Rect(xOffset, rect.y, volumeWidth, EditorGUIUtility.singleLineHeight);
             Rect weightHeaderRect = new Rect(xOffset + volumeWidth + space, rect.y, weightWidth, EditorGUIUtility.singleLineHeight);
 
-            EditorGUI.LabelField(volumeHeaderRect, "Bakery Volume");
+            EditorGUI.LabelField(volumeHeaderRect, "Light Volume");
             EditorGUI.LabelField(weightHeaderRect, "Weight");
 
         };
@@ -121,7 +121,7 @@ public class LightVolumeSetupEditor : Editor {
                     DragAndDrop.AcceptDrag();
                     foreach (Object draggedObject in DragAndDrop.objectReferences) {
                         GameObject go = (GameObject)draggedObject;
-                        if (go.TryGetComponent(out BakeryVolume volume)) {
+                        if (go.TryGetComponent(out LightVolume volume)) {
                             int newIndex = volumesProp.arraySize;
                             volumesProp.arraySize++;
                             weightsProp.arraySize = volumesProp.arraySize;
@@ -167,7 +167,7 @@ public class LightVolumeSetupEditor : Editor {
 
         reorderableList.DoLayoutList();
 
-        string[] hiddenFields = new string[] { "m_Script", "BakeryVolumes", "BakeryVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
+        string[] hiddenFields = new string[] { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
         DrawPropertiesExcluding(serializedObject, hiddenFields);
 
         if (GUILayout.Button("Pack Light Volumes")){

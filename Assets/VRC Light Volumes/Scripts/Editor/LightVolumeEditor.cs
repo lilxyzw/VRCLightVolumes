@@ -39,15 +39,16 @@ public class LightVolumeEditor : Editor {
         GUILayout.Space(10);
         bool newPreviewProbes = GUILayout.Toggle(volume.PreviewProbes, previewProbesContent, toggleStyle);
         if (newPreviewProbes != volume.PreviewProbes) {
-            SceneView.RepaintAll();
+            volume.RecalculateProbesPositions();
             volume.PreviewProbes = newPreviewProbes;
+            SceneView.RepaintAll();
         }
 
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
 #if BAKERY_INCLUDED
-        if (volume.RotationType == LightVolume.VolumeRotation.Free && volume.BakingMode == LightVolume.Baking.Bakery) {
+        if (volume.RotationType == LightVolume.VolumeRotation.Free && LightVolumeSetup.Instance.IsBakeryMode) {
             GUILayout.Space(10);
             EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is allowed in the editor. Free rotation will still work at runtime.", MessageType.Warning);
         }
@@ -92,15 +93,16 @@ public class LightVolumeEditor : Editor {
         hiddenFields.Add("BakeryVolume");
 #endif
 
-        if(volume.BakingMode != LightVolume.Baking.Bakery) {
+        if(!LightVolumeSetup.Instance.IsBakeryMode) {
             hiddenFields.Add("Denoise");
         }
 
-        if(volume.BakingMode == LightVolume.Baking.DontBake) {
+        if(!volume.Bake) {
             hiddenFields.Add("AdaptiveResolution");
             hiddenFields.Add("Resolution");
             hiddenFields.Add("VoxelsPerUnit");
             hiddenFields.Add("PreviewProbes");
+            hiddenFields.Add("Denoise");
         } if (volume.AdaptiveResolution) {
             
         } else {
@@ -118,7 +120,7 @@ public class LightVolumeEditor : Editor {
         LightVolume volume = (LightVolume)target;
         Transform transform = volume.transform;
 
-        Handles.matrix = Matrix4x4.TRS(volume.Position, volume.Rotation, volume.Scale);
+        Handles.matrix = volume.GetMatrixTRS();
         Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
         Handles.color = Color.white;
         Handles.DrawWireCube(Vector3.zero, Vector3.one);
@@ -131,6 +133,11 @@ public class LightVolumeEditor : Editor {
 
         // Hide tools
         Tools.hidden = true;
+
+        // Volume transform
+        var position = volume.GetPosition();
+        var rotation = volume.GetRotation();
+        var scale = volume.GetScale();
 
         // Axis colors
         Color colorX = Handles.xAxisColor;
@@ -147,24 +154,24 @@ public class LightVolumeEditor : Editor {
 
             switch (axisIndex) {
                 case 0: // X
-                    worldDirection = volume.Rotation * (isPositive ? Vector3.right : Vector3.left);
-                    worldUpDirection = volume.Rotation * Vector3.up;
+                    worldDirection = rotation * (isPositive ? Vector3.right : Vector3.left);
+                    worldUpDirection = rotation * Vector3.up;
                     Handles.color = colorX;
                     break;
                 case 1: // Y
-                    worldDirection = volume.Rotation * (isPositive ? Vector3.up : Vector3.down);
-                    worldUpDirection = volume.Rotation * Vector3.right;
+                    worldDirection = rotation * (isPositive ? Vector3.up : Vector3.down);
+                    worldUpDirection = rotation * Vector3.right;
                     Handles.color = colorY;
                     break;
                 case 2: // Z
-                    worldDirection = volume.Rotation * (isPositive ? Vector3.forward : Vector3.back);
-                    worldUpDirection = volume.Rotation * Vector3.up;
+                    worldDirection = rotation * (isPositive ? Vector3.forward : Vector3.back);
+                    worldUpDirection = rotation * Vector3.up;
                     Handles.color = colorZ;
                     break;
             }
 
             // Handle parameters
-            Vector3 handlePos = volume.Position + worldDirection * volume.Scale[axisIndex] * 0.5f;
+            Vector3 handlePos = position + worldDirection * scale[axisIndex] * 0.5f;
             float handleSize = HandleUtility.GetHandleSize(handlePos) * 0.2f;
             Vector3 handleOffset = handleSize * worldDirection * 0.1f / 0.2f;
 
@@ -176,18 +183,18 @@ public class LightVolumeEditor : Editor {
 
             // Drawing X-Ray square
             Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
-            Handles.DrawSolidRectangleWithOutline(GetPlaneVertices(handlePos, Quaternion.LookRotation(worldDirection, worldUpDirection), handleSize), new Color(1, 1, 1, 0.15f), Color.white);
+            Handles.DrawSolidRectangleWithOutline(LVUtils.GetPlaneVertices(handlePos, Quaternion.LookRotation(worldDirection, worldUpDirection), handleSize), new Color(1, 1, 1, 0.15f), Color.white);
             Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
-            Handles.DrawSolidRectangleWithOutline(GetPlaneVertices(handlePos, Quaternion.LookRotation(worldDirection, worldUpDirection), handleSize), Color.clear, new Color(1, 1, 1, 0.25f));
+            Handles.DrawSolidRectangleWithOutline(LVUtils.GetPlaneVertices(handlePos, Quaternion.LookRotation(worldDirection, worldUpDirection), handleSize), Color.clear, new Color(1, 1, 1, 0.25f));
 
             // Applying position and rotation
             if (EditorGUI.EndChangeCheck()) {
                 Undo.RecordObject(transform, "Scale Bounds Size");
                 float delta = Vector3.Dot(newHandleLocalPos - handlePos, worldDirection);
-                Vector3 modifiedScale = volume.Scale;
+                Vector3 modifiedScale = scale;
                 modifiedScale[axisIndex] += delta;
                 transform.position += worldDirection * delta / 2;
-                SetLossyScale(transform, modifiedScale);
+                LVUtils.SetLossyScale(transform, modifiedScale);
                 volume.Recalculate();
             }
         }
@@ -196,34 +203,14 @@ public class LightVolumeEditor : Editor {
 
     // Bring back tools
     void OnDisable() {
+        LightVolume volume = (LightVolume)target;
+        volume.PreviewProbes = false;
         Tools.hidden = false;
         if (_isEditMode) {
             // Went from edit mode
             Tools.current = _savedTool;
             _previousTool = _savedTool;
         }
-    }
-
-    // Setting lossy scale to a specified transform
-    private void SetLossyScale(Transform transform, Vector3 targetLossyScale, int maxIterations = 20) {
-        Vector3 guess = transform.localScale;
-        for (int i = 0; i < maxIterations; i++) {
-            transform.localScale = guess;
-            Vector3 currentLossy = transform.lossyScale;
-            Vector3 ratio = new Vector3(
-                currentLossy.x != 0 ? targetLossyScale.x / currentLossy.x : 1f,
-                currentLossy.y != 0 ? targetLossyScale.y / currentLossy.y : 1f,
-                currentLossy.z != 0 ? targetLossyScale.z / currentLossy.z : 1f
-            );
-            guess = new Vector3(guess.x * ratio.x, guess.y * ratio.y, guess.z * ratio.z);
-        }
-    }
-
-    // Plane vertices for drawing a square
-    Vector3[] GetPlaneVertices(Vector3 center, Quaternion rotation, float size) {
-        Vector3 right = rotation * Vector3.right * size;
-        Vector3 up = rotation * Vector3.up * size;
-        return new Vector3[] { center - right - up, center - right + up, center + right + up, center + right - up };
     }
 
 }

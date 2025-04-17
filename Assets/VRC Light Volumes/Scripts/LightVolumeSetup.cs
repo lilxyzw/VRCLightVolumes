@@ -1,21 +1,22 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-#if UNITY_EDITOR
-using System.IO;
-using UnityEditor.SceneManagement;
-#endif
 
-public class LightVolumeSetup : MonoBehaviour {
+[RequireComponent(typeof(LightVolumeManager))]
+public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
-    public BakeryVolume[] BakeryVolumes;
-    public float[] BakeryVolumesWeights;
+    public LightVolume[] LightVolumes;
+    public float[] LightVolumesWeights;
+    public Baking BakingMode;
 
     public int StochasticIterations = 5000;
     public Texture3D LightVolumeAtlas;
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
+    public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
+
     private LightVolumeManager _udonLightVolumeManager;
+    private Baking _bakingModePrev;
 
     public void SetShaderVariables() {
         if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
@@ -25,25 +26,36 @@ public class LightVolumeSetup : MonoBehaviour {
 
 #if UNITY_EDITOR
 
+    private void Update() {
+        // Resetup required game objects and components for light volumes in new baking mode
+        if(_bakingModePrev != BakingMode) {
+            _bakingModePrev = BakingMode;
+            var volumes = FindObjectsOfType<LightVolume>();
+            for (int i = 0; i < volumes.Length; i++) {
+                volumes[i].SetupDependencies();
+            }
+        }
+    }
+
     // Generates atlas and setups udon script
     public void GenerateAtlas() {
 
-        if (BakeryVolumes.Length == 0) return;
+        if (LightVolumes.Length == 0) return;
 
-        Texture3D[] textures = new Texture3D[BakeryVolumes.Length * 3];
+        Texture3D[] textures = new Texture3D[LightVolumes.Length * 3];
 
-        for (int i = 0; i < BakeryVolumes.Length; i++) {
-            if (BakeryVolumes[i] == null) {
-                Debug.LogError("[LightVolumeAtlaser] One of the bakery volumes is not setuped!");
+        for (int i = 0; i < LightVolumes.Length; i++) {
+            if (LightVolumes[i] == null) {
+                Debug.LogError("[LightVolumeAtlaser] One of the light volumes is not setuped!");
                 return;
             }
-            if (BakeryVolumes[i].bakedTexture0 == null || BakeryVolumes[i].bakedTexture1 == null || BakeryVolumes[i].bakedTexture2 == null) {
-                Debug.LogError("[LightVolumeAtlaser] One of the bakery volumes is not baked!");
+            if (LightVolumes[i].Texture0 == null || LightVolumes[i].Texture1 == null || LightVolumes[i].Texture2 == null) {
+                Debug.LogError("[LightVolumeAtlaser] One of the light volumes is not baked!");
                 return;
             }
-            textures[i * 3] = BakeryVolumes[i].bakedTexture0;
-            textures[i * 3 + 1] = BakeryVolumes[i].bakedTexture1;
-            textures[i * 3 + 2] = BakeryVolumes[i].bakedTexture2;
+            textures[i * 3] = LightVolumes[i].Texture0;
+            textures[i * 3 + 1] = LightVolumes[i].Texture1;
+            textures[i * 3 + 2] = LightVolumes[i].Texture2;
         }
 
         var atlas = Texture3DAtlasGenerator.CreateAtlasStochastic(textures, StochasticIterations);
@@ -52,12 +64,25 @@ public class LightVolumeSetup : MonoBehaviour {
 
         LightVolumeDataList.Clear();
 
-        for (int i = 0; i < BakeryVolumes.Length; i++) {
+        var v05 = new Vector3(0.5f, 0.5f, 0.5f); 
+
+        for (int i = 0; i < LightVolumes.Length; i++) {
+            
             int i3 = i * 3;
+
+            // Volume data
+            var pos = LightVolumes[i].GetPosition();
+            var rot = LightVolumes[i].GetRotation();
+            var scl = LightVolumes[i].GetScale();
+
+            // Min Max bounds
+            var min = LVUtils.TransformPoint(-v05, pos, rot, scl);
+            var max = LVUtils.TransformPoint(v05, pos, rot, scl);
+
             LightVolumeDataList.Add(new LightVolumeData(
-                i < BakeryVolumesWeights.Length ? BakeryVolumesWeights[i] : 0,
-                BakeryVolumes[i].bounds.min,
-                BakeryVolumes[i].bounds.max,
+                i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
+                min,
+                max,
                 atlas.BoundsUvwMin[i3],
                 atlas.BoundsUvwMin[i3 + 1],
                 atlas.BoundsUvwMin[i3 + 2],
@@ -65,9 +90,10 @@ public class LightVolumeSetup : MonoBehaviour {
                 atlas.BoundsUvwMax[i3 + 1],
                 atlas.BoundsUvwMax[i3 + 2]
             ));
+
         }
 
-        SaveTexture3DAsAsset(atlas.Texture, "Assets/BakeryLightmaps/Atlas3D.asset");
+        LVUtils.SaveTexture3DAsAsset(atlas.Texture, "Assets/BakeryLightmaps/Atlas3D.asset");
 
         SetupUdonBehaviour();
 
@@ -77,18 +103,18 @@ public class LightVolumeSetup : MonoBehaviour {
     [ContextMenu("Setup Udon Behaviour")]
     public void SetupUdonBehaviour() {
 
-        if (IsInPrefabAsset(this)) return;
+        if (LVUtils.IsInPrefabAsset(this)) return;
         if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
         if (_udonLightVolumeManager == null) return;
 
-        if(BakeryVolumesWeights == null || BakeryVolumesWeights.Length != BakeryVolumes.Length) {
-            BakeryVolumesWeights = new float[BakeryVolumes.Length];
+        if(LightVolumesWeights == null || LightVolumesWeights.Length != LightVolumes.Length) {
+            LightVolumesWeights = new float[LightVolumes.Length];
         }
 
         // Update Weights because can be desynced
         for (int i = 0; i < LightVolumeDataList.Count; i++) {
             LightVolumeDataList[i] = new LightVolumeData(
-                i < BakeryVolumesWeights.Length ? BakeryVolumesWeights[i] : 0,
+                i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
                 LightVolumeDataList[i].WorldMin,
                 LightVolumeDataList[i].WorldMax,
                 LightVolumeDataList[i].UvwMin[0],
@@ -118,52 +144,11 @@ public class LightVolumeSetup : MonoBehaviour {
 
     }
 
-
-    public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
-
-        if (textureToSave == null) {
-            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: texture is null");
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(assetPath)) {
-            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: Saving path is null");
-            return false;
-        }
-
-        try {
-            string directoryPath = Path.GetDirectoryName(assetPath);
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
-                Directory.CreateDirectory(directoryPath);
-                AssetDatabase.Refresh();
-            }
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeAtlaser] Error while creating folders '{assetPath}': {e.Message}");
-            return false;
-        }
-
-        try {
-            AssetDatabase.CreateAsset(textureToSave, assetPath);
-            EditorUtility.SetDirty(textureToSave);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log($"[LightVolumeAtlaser] 3D Atlas saved at path: '{assetPath}'");
-            return true;
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeAtlaser] Error saving 3D Atlas at path: '{assetPath}': {e.Message}");
-            return false;
-        }
-
-    }
-
-
-    // Check if it's previewed as a prefab, or it's a part of a scene
-    bool IsInPrefabAsset(Object obj) {
-        var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
-        var prefabType = PrefabUtility.GetPrefabAssetType(obj);
-        var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
-        return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
-    }
 #endif
+
+    public enum Baking {
+        UnityLightmapper,
+        Bakery
+    }
 
 }

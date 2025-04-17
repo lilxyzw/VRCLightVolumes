@@ -1,12 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Collections;
 using UnityEngine.Rendering;
 using UnityEditor;
-#if UNITY_EDITOR
-using System.IO;
-#endif
 
 [ExecuteAlways]
 public class LightVolume : MonoBehaviour {
@@ -17,12 +12,12 @@ public class LightVolume : MonoBehaviour {
     public bool Static = true;
 
     [Header("Spherical Harmonics Data")]
+    public Texture3D Texture0;
     public Texture3D Texture1;
     public Texture3D Texture2;
-    public Texture3D Texture3;
 
     [Header("Baking")]
-    public Baking BakingMode = Baking.DontBake;
+    public bool Bake = true;
     public bool Denoise;
     public bool AdaptiveResolution;
     public float VoxelsPerUnit = 2;
@@ -32,74 +27,55 @@ public class LightVolume : MonoBehaviour {
     public BakeryVolume BakeryVolume;
 #endif
 
-    public LightProbeGroup ProbeGroup;
+    // Light probes world positions
+    private Vector3[] _probesPositions;
 
-    // Public properties
-    public Vector3 Position => transform.position;
-    public Vector3 Scale => transform.lossyScale;
-    public Quaternion Rotation { 
-        get {
-            if (RotationType == VolumeRotation.Fixed) {
-                return Quaternion.identity;
-            } else if (RotationType == VolumeRotation.AroundY || (RotationType == VolumeRotation.Free && BakingMode == Baking.Bakery && !Application.isPlaying) ) {
-                return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
-            } else {
-                return transform.rotation;
-            }
-        }
+    // Position, Rotation and Scale of the final light volume, depending on the current setup
+    public Vector3 GetPosition() {
+        return transform.position;
     }
-
-    // Private variables
-    private Vector3[] _probesLocalPositions;
-
-
-    [ContextMenu("Set Light Probes")]
-    // Sets Additional Probes to bake with Unity Lightmapper
-    public void SetAdditionalProbes() {
-        if(ProbeGroup == null) {
-            Debug.LogError("Setup Light Probe Group!");
-        }
-
-        RecalculateProbesLocalPositions();
-
-        int vCount = Resolution.x * Resolution.y * Resolution.z;
-
-        Vector3[] probesPoses = new Vector3[vCount];
-
-        for (int i = 0; i < vCount; i++) {
-            probesPoses[i] = UniformTransformPoint(_probesLocalPositions[i]);
-        }
-
-        ProbeGroup.probePositions = probesPoses;
-
-        //UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(0, _probesLocalPositions);
+    public Vector3 GetScale() {
+        return transform.lossyScale;
     }
-
-    // Gets Additional Probes taht baked with Unity Lightmapper (Debug)
-    [ContextMenu("Get Light Probes")]
-    public void GetAdditionalLightProbes() {
-        NativeArray<SphericalHarmonicsL2> outBakedProbeSH = new NativeArray<SphericalHarmonicsL2>(Resolution.x * Resolution.y * Resolution.z, Allocator.Temp);
-        NativeArray<float> outBakedProbeValidity = new NativeArray<float>(Resolution.x * Resolution.y * Resolution.z, Allocator.Temp);
-        //NativeArray<float> outBakedProbeOctahedralDepth = new NativeArray<float>(8000, Allocator.Temp);
-        if (UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(0, outBakedProbeSH, outBakedProbeValidity)) {
-            foreach (var o in outBakedProbeSH) {
-                Debug.Log($"Color: {o[0, 0]} {o[1, 0]} {o[2, 0]}");
-            }
+    public Quaternion GetRotation() {
+        if (RotationType == VolumeRotation.Fixed) {
+            return Quaternion.identity;
+        } else if (RotationType == VolumeRotation.AroundY || (RotationType == VolumeRotation.Free && LightVolumeSetup.Instance.IsBakeryMode && !Application.isPlaying)) {
+            return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
         } else {
-            Debug.Log("No Probes found!");
+            return transform.rotation;
         }
     }
+    public Matrix4x4 GetMatrixTRS() {
+        return Matrix4x4.TRS(GetPosition(), GetRotation(), GetScale());
+    }
 
-    // Recalculates probes local positions in 1x1x1 size
-    public void RecalculateProbesLocalPositions() {
-        _probesLocalPositions = new Vector3[Resolution.x * Resolution.y * Resolution.z];
-        Matrix4x4 matrix = Matrix4x4.TRS(Position, Rotation, Scale);
+    // Returns volume voxel count
+    public int GetVoxelCount() {
+        return Resolution.x * Resolution.y * Resolution.z;
+    }
+
+    // Sets Additional Probes to bake with Unity Lightmapper
+    [ContextMenu("Set Light Probes")]
+    public void SetAdditionalProbes() {
+        RecalculateProbesPositions();
+        UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(0, _probesPositions);
+    }
+
+    // Recalculates probes world positions
+    public void RecalculateProbesPositions() {
+        _probesPositions = new Vector3[GetVoxelCount()];
         Vector3 offset = new Vector3(0.5f, 0.5f, 0.5f);
+        var pos = GetPosition();
+        var rot = GetRotation();
+        var scl = GetScale();
         int id = 0;
+        Vector3 localPos;
         for (int z = 0; z < Resolution.z; z++) {
             for (int y = 0; y < Resolution.y; y++) {
                 for (int x = 0; x < Resolution.x; x++) {
-                    _probesLocalPositions[id] = new Vector3((float)(x + 0.5f) / Resolution.x, (float)(y + 0.5f) / Resolution.y, (float)(z + 0.5f) / Resolution.z) - offset;
+                    localPos = new Vector3((float)(x + 0.5f) / Resolution.x, (float)(y + 0.5f) / Resolution.y, (float)(z + 0.5f) / Resolution.z) - offset;
+                    _probesPositions[id] = LVUtils.TransformPoint(localPos, pos, rot, scl);
                     id++;
                 }
             }
@@ -108,24 +84,19 @@ public class LightVolume : MonoBehaviour {
 
     // Recalculates resolution based on Adaptive Resolution
     public void RecalculateAdaptiveResolution() {
-        Vector3 count = Vector3.Scale(Vector3.one, Scale) * VoxelsPerUnit;
+        Vector3 count = Vector3.Scale(Vector3.one, GetScale()) * VoxelsPerUnit;
         int x = Mathf.Max((int)Mathf.Round(count.x), 1);
         int y = Mathf.Max((int)Mathf.Round(count.y), 1);
         int z = Mathf.Max((int)Mathf.Round(count.z), 1);
         Resolution = new Vector3Int(x, y, z);
     }
 
-    // Transforms points from local to world space without skewing
-    public Vector3 UniformTransformPoint(Vector3 point) {
-        return Rotation * Vector3.Scale(point, Scale) + Position;
-    }
-
     // Recalculates adaptive resolution and local positions if required
     public void Recalculate() {
         if (AdaptiveResolution)
             RecalculateAdaptiveResolution();
-        if (PreviewProbes && BakingMode != Baking.DontBake)
-            RecalculateProbesLocalPositions();
+        if (PreviewProbes && Bake)
+            RecalculateProbesPositions();
     }
 
     [ContextMenu("Save Texture From Light Probes")]
@@ -135,127 +106,70 @@ public class LightVolume : MonoBehaviour {
         int w = Resolution.x;
         int h = Resolution.y;
         int d = Resolution.z;
-
-        // Voxels count
-        int vCount = w * h * d;
+        int vCount = GetVoxelCount();
 
         // SH data output
-        NativeArray<SphericalHarmonicsL2> probes = new NativeArray<SphericalHarmonicsL2>(vCount, Allocator.Temp);
-        NativeArray<float> probesValidity = new NativeArray<float>(vCount, Allocator.Temp);
-        //NativeArray<float> probesOctahedralDepth = new NativeArray<float>(8000, Allocator.Temp);
+        using (NativeArray<SphericalHarmonicsL2> probes = new NativeArray<SphericalHarmonicsL2>(vCount, Allocator.Temp))
+        using (NativeArray<float> probesValidity = new NativeArray<float>(vCount, Allocator.Temp)) {
 
-        // Checking data available
-        if (!UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(0, probes, probesValidity)) {
-            Debug.Log("No Probes found!");
-            return;
-        }
-
-        // Creating Texture3D with specified format and dimensions
-        TextureFormat format = TextureFormat.RGBAHalf;
-        Texture3D tex0 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-        Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-        Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-        
-        // Color arrays to store voxel data
-        Color[] c0 = new Color[vCount];
-        Color[] c1 = new Color[vCount];
-        Color[] c2 = new Color[vCount];
-
-        // Quick shortcuts to SH L1 components
-        const int r = 0;
-        const int g = 1;
-        const int b = 2;
-        const int a = 0;
-        const int x = 3;
-        const int y = 1;
-        const int z = 2;
-
-        SphericalHarmonicsL2 probe;
-
-        // Setting voxel data
-        for (int i = 0; i < vCount; i++) {
-            LightProbes.GetInterpolatedProbe(UniformTransformPoint(_probesLocalPositions[i]), null, out probe);
-            c0[i] = new Color(probe[r, a], probe[g, a], probe[b, a], probe[r, z]);
-            c1[i] = new Color(probe[r, x], probe[g, x], probe[b, x], probe[g, z]);
-            c2[i] = new Color(probe[r, y], probe[g, y], probe[b, y], probe[b, z]);
-            //c0[i] = new Color(probes[i][r, a], probes[i][g, a], probes[i][b, a], probes[i][r, z]);
-            //c1[i] = new Color(probes[i][r, x], probes[i][g, x], probes[i][b, x], probes[i][g, z]);
-            //c2[i] = new Color(probes[i][r, y], probes[i][g, y], probes[i][b, y], probes[i][b, z]);
-        }
-
-
-        // Apply Pixel Data to Texture
-        Apply3DTextureData(tex0, c0);
-        Apply3DTextureData(tex1, c1);
-        Apply3DTextureData(tex2, c2);
-
-        SaveTexture3DAsAsset(tex0, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_1.asset");
-        SaveTexture3DAsAsset(tex1, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_2.asset");
-        SaveTexture3DAsAsset(tex2, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_3.asset");
-
-    }
-
-    // Apply voxels to a 3D Texture
-    private void Apply3DTextureData(Texture3D texture, Color[] colors) {
-        try {
-            texture.SetPixels(colors);
-            texture.Apply(updateMipmaps: false);
-        } catch (UnityException ex) {
-            Debug.LogError($"[LightVolume] Failed to SetPixels in the final Texture3D atlas. Error: {ex.Message}");
-        }
-    }
-
-    // Saves 3D Texture to Assets
-    public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
-
-        if (textureToSave == null) {
-            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: texture is null");
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(assetPath)) {
-            Debug.LogError("[LightVolumeAtlaser] Error saving Texture3D: Saving path is null");
-            return false;
-        }
-
-        try {
-            string directoryPath = Path.GetDirectoryName(assetPath);
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
-                Directory.CreateDirectory(directoryPath);
-                AssetDatabase.Refresh();
+            // Checking data available
+#pragma warning disable CS0618
+            if (!UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(0, probes, probesValidity)) {
+                Debug.LogError("[LightVolume] Can't grab light volume data. No additional baked probes found!");
+                return;
             }
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeAtlaser] Error while creating folders '{assetPath}': {e.Message}");
-            return false;
-        }
+#pragma warning restore CS0618
 
-        try {
-            AssetDatabase.CreateAsset(textureToSave, assetPath);
-            EditorUtility.SetDirty(textureToSave);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log($"[LightVolumeAtlaser] 3D Atlas saved at path: '{assetPath}'");
-            return true;
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeAtlaser] Error saving 3D Atlas at path: '{assetPath}': {e.Message}");
-            return false;
+            // Creating Texture3D with specified format and dimensions
+            TextureFormat format = TextureFormat.RGBAHalf;
+            Texture3D tex0 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+
+            // Color arrays to store voxel data
+            Color[] c0 = new Color[vCount];
+            Color[] c1 = new Color[vCount];
+            Color[] c2 = new Color[vCount];
+
+            // Quick shortcuts to SH L1 components
+            const int r = 0;
+            const int g = 1;
+            const int b = 2;
+            const int a = 0;
+            const int x = 3;
+            const int y = 1;
+            const int z = 2;
+
+            // Setting voxel data
+            for (int i = 0; i < vCount; i++) {
+                c0[i] = new Color(probes[i][r, a], probes[i][g, a], probes[i][b, a], probes[i][r, z]);
+                c1[i] = new Color(probes[i][r, x], probes[i][g, x], probes[i][b, x], probes[i][g, z]);
+                c2[i] = new Color(probes[i][r, y], probes[i][g, y], probes[i][b, y], probes[i][b, z]);
+            }
+
+            // Apply Pixel Data to Texture
+            LVUtils.Apply3DTextureData(tex0, c0);
+            LVUtils.Apply3DTextureData(tex1, c1);
+            LVUtils.Apply3DTextureData(tex2, c2);
+
+            // Saving 3D Texture assets
+            LVUtils.SaveTexture3DAsAsset(tex0, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_1.asset");
+            LVUtils.SaveTexture3DAsAsset(tex1, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_2.asset");
+            LVUtils.SaveTexture3DAsAsset(tex2, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_3.asset");
+
         }
 
     }
 
-    private void Update() {
-
-        if (Selection.activeGameObject != gameObject) return;
-
+    // Setups required game objects and components
+    public void SetupDependencies() {
 #if BAKERY_INCLUDED
-
         // Create or destroy Bakery Volume
-
-        if (BakingMode == Baking.Bakery && BakeryVolume == null) {
+        if (LightVolumeSetup.Instance.IsBakeryMode && Bake && BakeryVolume == null) {
             GameObject obj = new GameObject($"Bakery Volume - {gameObject.name}");
             obj.transform.parent = transform;
             BakeryVolume = obj.AddComponent<BakeryVolume>();
-        } else if (BakingMode != Baking.Bakery && BakeryVolume != null) {
+        } else if ((!LightVolumeSetup.Instance.IsBakeryMode || !Bake) && BakeryVolume != null) {
             if (Application.isPlaying) {
                 Destroy(BakeryVolume.gameObject);
             } else {
@@ -264,13 +178,14 @@ public class LightVolume : MonoBehaviour {
             BakeryVolume = null;
         }
 
-        if(BakeryVolume != null) {
+        if (LightVolumeSetup.Instance.IsBakeryMode && BakeryVolume != null) {
             // Sync bakery volume with light volume
+            BakeryVolume.gameObject.name = $"Bakery Volume - {gameObject.name}";
             if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
             BakeryVolume.rotateAroundY = RotationType == VolumeRotation.Fixed ? false : true;
             BakeryVolume.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             BakeryVolume.transform.localScale = Vector3.one;
-            BakeryVolume.bounds = new Bounds(Position, Scale);
+            BakeryVolume.bounds = new Bounds(GetPosition(), GetScale());
             BakeryVolume.enableBaking = true;
             BakeryVolume.denoise = Denoise;
             BakeryVolume.adaptiveRes = false;
@@ -279,9 +194,19 @@ public class LightVolume : MonoBehaviour {
             BakeryVolume.resolutionZ = Resolution.z;
             BakeryVolume.encoding = BakeryVolume.Encoding.Half4;
         }
-
 #endif
+    }
 
+    private void Update() {
+#if BAKERY_INCLUDED
+        if (Bake && (Texture0 == null || Texture1 == null || Texture2 == null) && LightVolumeSetup.Instance.IsBakeryMode && BakeryVolume != null  && BakeryVolume.bakedTexture0 != null) {
+            Texture0 = BakeryVolume.bakedTexture0;
+            Texture1 = BakeryVolume.bakedTexture1;
+            Texture2 = BakeryVolume.bakedTexture2;
+        }
+#endif
+        if (Selection.activeGameObject != gameObject) return;
+        SetupDependencies();
     }
 
     private void OnValidate() {
@@ -289,9 +214,9 @@ public class LightVolume : MonoBehaviour {
     }
 
     private void OnDrawGizmosSelected() {
-        if (PreviewProbes && BakingMode != Baking.DontBake && _probesLocalPositions != null) {
-            for (int i = 0; i < _probesLocalPositions.Length; i++) {
-                Gizmos.DrawSphere(UniformTransformPoint(_probesLocalPositions[i]), 0.1f);
+        if (PreviewProbes && Bake && _probesPositions != null) {
+            for (int i = 0; i < _probesPositions.Length; i++) {
+                Gizmos.DrawSphere(_probesPositions[i], 0.05f);
             }
         }
     }
@@ -300,12 +225,6 @@ public class LightVolume : MonoBehaviour {
         Fixed,
         AroundY,
         Free
-    }
-
-    public enum Baking {
-        DontBake = 0,
-        UnityLightmapper = 1,
-        Bakery = 2
     }
 
 }

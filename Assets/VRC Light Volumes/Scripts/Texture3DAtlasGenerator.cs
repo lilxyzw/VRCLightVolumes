@@ -359,13 +359,7 @@ public static class Texture3DAtlasGenerator {
 
         }
 
-        // Apply Pixel Data to Texture
-        try {
-            atlasTexture.SetPixels(atlasPixelData);
-            atlasTexture.Apply(updateMipmaps: false); // Apply all the copied pixels
-        } catch (UnityException ex) {
-            Debug.LogError($"[LightVolumeAtlaser] Failed to SetPixels in the final Texture3D atlas. Error: {ex.Message}");
-        }
+        LVUtils.Apply3DTextureData(atlasTexture, atlasPixelData);
 
         return new Atlas3D(atlasTexture, boundsUvwMin, boundsUvwMax);
     }

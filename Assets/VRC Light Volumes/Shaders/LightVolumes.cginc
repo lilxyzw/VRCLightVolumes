@@ -46,7 +46,7 @@ float EvaluateSHL1(float L0, float3 L1, float3 n) {
     L1 = L1 / 2;
     float L1length = length(L1);
     if (L1length > 0.0 && L0 > 0.0) {
-        float k = min(L0 / L1length, 1.4);
+        float k = min(L0 / L1length, 1.13);
         L1 *= k;
     }
     
@@ -181,7 +181,7 @@ float3 LightVolume(float3 worldNormal, float3 worldPos) {
     if (volumeID_A == -1) return LV_EvaluateLightProbe(worldNormal); 
     // If at least, main, dominant volume found
     
-    float mask = LV_BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, 0); // Mask to blend volume
+    float mask = LV_BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
         
     if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
         if (volumeID_B != -1) { // Blending volume A and Volume B
