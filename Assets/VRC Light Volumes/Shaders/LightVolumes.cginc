@@ -3,6 +3,8 @@ uniform float _UdonLightVolumeCount;
 uniform float _UdonLightVolumeBlend;
 uniform sampler3D _UdonLightVolume;
 
+uniform float4 _UdonLightVolumeColorCorrection[256];
+
 uniform float4 _UdonLightVolumeWorldMin[256];
 uniform float4 _UdonLightVolumeWorldMax[256];
 uniform float4 _UdonLightVolumeUvwMin[768];
@@ -33,6 +35,13 @@ float LV_EvaluateSHL1(float L0, float3 L1, float3 n) {
 	return R0 * (a + (1 - a) * (p + 1) * pow(q, p));
 }
 
+float EvaluateSHL1(float L0, float3 L1, float3 n) {
+    float result = L0;
+    result += dot(L1, n);
+    return result;
+}
+
+
 // Calculate Light Volume Color based on 3 textures provided
 float3 LV_EvaluateLightVolume(float4 tex0, float4 tex1, float4 tex2, float3 worldNormal){
     float L0R = tex0.r;
@@ -41,7 +50,7 @@ float3 LV_EvaluateLightVolume(float4 tex0, float4 tex1, float4 tex2, float3 worl
     float3 L1R = float3(tex1.r, tex2.r, tex0.a);
     float3 L1G = float3(tex1.g, tex2.g, tex1.a);
     float3 L1B = float3(tex1.b, tex2.b, tex2.a);
-    return float3(LV_EvaluateSHL1(L0R, L1R, worldNormal), LV_EvaluateSHL1(L0G, L1G, worldNormal), LV_EvaluateSHL1(L0B, L1B, worldNormal));
+    return float3(EvaluateSHL1(L0R, L1R, worldNormal), EvaluateSHL1(L0G, L1G, worldNormal), EvaluateSHL1(L0B, L1B, worldNormal));
 }
 
 // Samples 3 SH textures required for evaluating light volumes
@@ -100,6 +109,22 @@ float3 LV_EvaluateLightProbe() {
 float3 LV_EvaluateLightProbe(float3 worldNormal, out float3 ambientColor) {
     ambientColor = LV_EvaluateLightProbe();
     return LV_EvaluateLightProbe(worldNormal);
+}
+
+// Faster than smoothstep
+float LV_FastSmooth(float x) {
+	return x * x * (3.0 - 2.0 * x);
+}
+
+// Corrects exposure, shadows, mids and highlights
+float3 LV_SimpleColorCorrection(float3 color, float exposure, float shadowGain, float midGain, float highlightGain) {
+	color *= exposure;
+	float luma = dot(color, float3(0.2126, 0.7152, 0.0722));
+    float shadowMask = LV_FastSmooth(saturate((0.4 - luma) * 2.5)); // 0.4 and 0.6 are for smoother tones overlap
+    float highlightMask = LV_FastSmooth(saturate((luma - 0.6) * 2.5)); // 2.5f is actually 1/0.4
+	float midMask = 1.0 - shadowMask - highlightMask;
+	float gain = shadowMask * shadowGain + midMask * midGain + highlightMask * highlightGain;
+	return color * gain;
 }
 
 // AABB intersection check
