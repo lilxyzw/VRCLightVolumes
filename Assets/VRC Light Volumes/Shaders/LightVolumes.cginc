@@ -24,21 +24,34 @@ float3 LV_RemapClamped(float3 value, float3 minOld, float3 maxOld, float3 minNew
     return clamp(LV_Remap(value, minOld, maxOld, minNew, maxNew), minNew, maxNew);
 }
 
+float3 ClampMagnitude(float3 v, float maxMagnitude)
+{
+    float mag = length(v); // находим длину вектора
+    return mag > maxMagnitude ? v * (maxMagnitude / mag) : v; // если длина больше максимальной, то нормализуем и умножаем на максимальную длину
+}
+
 // Calculate single SH L1 channel
-float LV_EvaluateSHL1(float L0, float3 L1, float3 n) {
-	float R0 = L0;
+float LV_EvaluateSHL1(float L0, float3 L1, float3 n)
+{
 	float3 R1 = L1 * 0.5;
 	float lenR1 = length(R1);
 	float q = dot(normalize(R1), n) * 0.5 + 0.5;
-	float p = 1 + 2 * lenR1 / R0;
-	float a = (1 - lenR1 / R0) / (1 + lenR1 / R0);
-	return R0 * (a + (1 - a) * (p + 1) * pow(q, p));
+    float p = 1 + 2 * lenR1 / L0;
+    float a = (1 - lenR1 / L0) / (1 + lenR1 / L0);
+    return L0 * (a + (1 - a) * (p + 1) * pow(q, p));
 }
 
 float EvaluateSHL1(float L0, float3 L1, float3 n) {
-    float result = L0;
-    result += dot(L1, n);
-    return result;
+    
+    L1 = L1 / 2;
+    float L1length = length(L1);
+    if (L1length > 0.0 && L0 > 0.0) {
+        float k = min(L0 / L1length, 1.4);
+        L1 *= k;
+    }
+    
+    return L0 + dot(L1, n);
+    
 }
 
 
@@ -99,7 +112,14 @@ void LV_SampleLightVolumeTexID(int volumeID, float3 worldPos, out float4 tex0) {
 
 // Default light probes
 float3 LV_EvaluateLightProbe(float3 worldNormal) {
-    return ShadeSH9(float4(worldNormal, 1.0));
+    float3 color;
+    float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+    color.r = EvaluateSHL1(L0.r, unity_SHAr.xyz, worldNormal);
+    color.g = EvaluateSHL1(L0.g, unity_SHAg.xyz, worldNormal);
+    color.b = EvaluateSHL1(L0.b, unity_SHAb.xyz, worldNormal);
+    //return ShadeSH9(float4(worldNormal, 1.0));
+    return color;
+    
 }
 // Default light probes but only ambient color
 float3 LV_EvaluateLightProbe() {
@@ -161,7 +181,7 @@ float3 LightVolume(float3 worldNormal, float3 worldPos) {
     if (volumeID_A == -1) return LV_EvaluateLightProbe(worldNormal); 
     // If at least, main, dominant volume found
     
-    float mask = LV_BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
+    float mask = LV_BoundsMask(worldPos, _UdonLightVolumeWorldMin[volumeID_A].xyz, _UdonLightVolumeWorldMax[volumeID_A].xyz, 0); // Mask to blend volume
         
     if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
         if (volumeID_B != -1) { // Blending volume A and Volume B

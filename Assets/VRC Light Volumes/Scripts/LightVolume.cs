@@ -166,9 +166,9 @@ public class LightVolume : MonoBehaviour {
         const int g = 1;
         const int b = 2;
         const int a = 0;
-        const int x = 1;
-        const int y = 2;
-        const int z = 3;
+        const int x = 3;
+        const int y = 1;
+        const int z = 2;
 
         SphericalHarmonicsL2 probe;
 
