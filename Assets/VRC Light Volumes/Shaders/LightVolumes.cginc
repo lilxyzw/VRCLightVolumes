@@ -15,12 +15,12 @@ uniform sampler3D _UdonLightVolume;
 uniform float _UdonLightVolumeRotationType[256];
 
 // Fixed rotation:   A - WorldMin             B - WorldMax
-// Free rotation:    A - 1 / BoundsSize       B - 0
-// Y Axis rotation:  A - WorldCenter | SinY   B - BoundsSize | CosY
+// Y Axis rotation:  A - WorldCenter | SinY   B - InvBoundsSize | CosY
+// Free rotation:    A - 0                    B - 0
 uniform float4 _UdonLightVolumeDataA[256];
 uniform float4 _UdonLightVolumeDataB[256];
 
-// Used with free rotation, World to Island Matrix
+// Used with free rotation, World to Symmetric (-0.5, 0.5) UVW Matrix
 uniform float4x4 _UdonLightVolumeInvWorldMatrix[256];
 
 // AABB Bounds of islands on the 3D Texture atlas
@@ -28,91 +28,90 @@ uniform float4 _UdonLightVolumeUvwMin[768];
 uniform float4 _UdonLightVolumeUvwMax[768];
 
 
-
-
-
-
-// LV_Remaps value
-float3 LV_Remap(float3 value, float3 minOld, float3 maxOld, float3 minNew, float3 maxNew) {
-	return minNew + (value - minOld) * (maxNew - minNew) / (maxOld - minOld);
-}
-
-// LV_Remaps value and clamps the result
-float3 LV_RemapClamped(float3 value, float3 minOld, float3 maxOld, float3 minNew, float3 maxNew) {
-    return clamp(LV_Remap(value, minOld, maxOld, minNew, maxNew), minNew, maxNew);
-}
-
-// Calculate single SH L1 channel
-float LV_EvaluateSHL1(float L0, float3 L1, float3 n) {
-	float3 R1 = L1 * 0.5;
-	float lenR1 = length(R1);
-	float q = dot(normalize(R1), n) * 0.5 + 0.5;
-    float p = 1 + 2 * lenR1 / L0;
-    float a = (1 - lenR1 / L0) / (1 + lenR1 / L0);
-    return L0 * (a + (1 - a) * (p + 1) * pow(q, p));
-}
-
-// Approximated version of Non-Linear single SH L1 channel calculation
-float EvaluateSHL1(float L0, float3 L1, float3 n) {
-    
-    L1 = L1 / 2;
-    float L1length = length(L1);
-    if (L1length > 0.0 && L0 > 0.0) {
-        float k = min(L0 / L1length, 1.13);
-        L1 *= k;
-    }
-    
+// Linear single SH L1 channel evaluation
+float LV_EvaluateSH(float L0, float3 L1, float3 n) {
     return L0 + dot(L1, n);
-    
 }
 
-// Calculate Light Volume Color based on 3 textures provided
-float3 LV_EvaluateLightVolume(float4 tex0, float4 tex1, float4 tex2, float3 worldNormal){
-    float L0R = tex0.r;
-    float L0G = tex0.g;
-    float L0B = tex0.b;
-    float3 L1R = float3(tex1.r, tex2.r, tex0.a);
-    float3 L1G = float3(tex1.g, tex2.g, tex1.a);
-    float3 L1B = float3(tex1.b, tex2.b, tex2.a);
-    return float3(EvaluateSHL1(L0R, L1R, worldNormal), EvaluateSHL1(L0G, L1G, worldNormal), EvaluateSHL1(L0B, L1B, worldNormal));
-}
-
-// Samples 3 SH textures required for evaluating light volumes
-void LV_SampleLightVolumeTexID(int volumeID, float3 worldPos, out float4 tex0, out float4 tex1, out float4 tex2) {
-    
-    // World bounds
-    float3 worldMin = _UdonLightVolumeDataA[volumeID].xyz;
-    float3 worldMax = _UdonLightVolumeDataB[volumeID].xyz;
-	
-    // UVW bounds
-    int3 uvwID = int3(volumeID * 3, volumeID * 3 + 1, volumeID * 3 + 2);
-    float3 uvwMin0 = _UdonLightVolumeUvwMin[uvwID.x].xyz;
-    float3 uvwMax0 = _UdonLightVolumeUvwMax[uvwID.x].xyz;
-    float3 uvwMin1 = _UdonLightVolumeUvwMin[uvwID.y].xyz;
-    float3 uvwMax1 = _UdonLightVolumeUvwMax[uvwID.y].xyz;
-    float3 uvwMin2 = _UdonLightVolumeUvwMin[uvwID.z].xyz;
-    float3 uvwMax2 = _UdonLightVolumeUvwMax[uvwID.z].xyz;
-				
-    float3 volumeUVW0 = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin0, uvwMax0);
-    float3 volumeUVW1 = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin1, uvwMax1);
-    float3 volumeUVW2 = LV_RemapClamped(worldPos, worldMin, worldMax, uvwMin2, uvwMax2);
-    
-    tex0 = tex3D(_UdonLightVolume, volumeUVW0);
-    tex1 = tex3D(_UdonLightVolume, volumeUVW1);
-    tex2 = tex3D(_UdonLightVolume, volumeUVW2);
-    
+// Calculate Light Volume Color based on all SH components provided
+float3 LV_EvaluateLightVolume(float3 L0, float3 L1r, float3 L1g, float3 L1b, float3 worldNormal){
+    return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
 }
 
 // Default light probes
 float3 LV_EvaluateLightProbe(float3 worldNormal) {
     float3 color;
     float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-    color.r = EvaluateSHL1(L0.r, unity_SHAr.xyz, worldNormal);
-    color.g = EvaluateSHL1(L0.g, unity_SHAg.xyz, worldNormal);
-    color.b = EvaluateSHL1(L0.b, unity_SHAb.xyz, worldNormal);
-    //return ShadeSH9(float4(worldNormal, 1.0));
+    color.r = LV_EvaluateSH(L0.r, unity_SHAr.xyz, worldNormal);
+    color.g = LV_EvaluateSH(L0.g, unity_SHAg.xyz, worldNormal);
+    color.b = LV_EvaluateSH(L0.b, unity_SHAb.xyz, worldNormal);
     return color;
-    
+}
+
+// AABB intersection check
+bool LV_PointAABB(float3 pos, float3 min, float3 max) {
+	return all(pos >= min && pos <= max);
+}
+
+// Checks if local UVW point is in bounds from -0.5 to +0.5
+bool LV_PointLocalAABB(float3 localUVW){
+    return all(abs(localUVW) <= 1);
+}
+
+// Calculates Island UVW for Fixed Rotation Mode
+float3 LV_IslandFromFixedVolume(int volumeID, int texID, float3 worldPos){
+    // World bounds
+    float3 worldMin = _UdonLightVolumeDataA[volumeID].xyz;
+    float3 worldMax = _UdonLightVolumeDataB[volumeID].xyz;
+    // UVW bounds
+    int uvwID = volumeID * 3 + texID;
+    float3 uvwMin = _UdonLightVolumeUvwMin[uvwID].xyz;
+    float3 uvwMax = _UdonLightVolumeUvwMax[uvwID].xyz;
+    // Ramapping world bounds to UVW bounds
+    return clamp(uvwMin + (worldPos - worldMin) * (uvwMax - uvwMin) / (worldMax - worldMin), uvwMin, uvwMax);
+}
+
+// Calculates local UVW for Y Axis rotation mode
+float3 LV_LocalFromYAxisVolume(int volumeID, float3 worldPos){
+    // Bounds and rotation data
+    float3 invBoundsSize = _UdonLightVolumeDataB[volumeID].xyz;
+    float3 boundsCenter = _UdonLightVolumeDataA[volumeID].xyz;
+    float sinY = _UdonLightVolumeDataA[volumeID].w;
+    float cosY = _UdonLightVolumeDataB[volumeID].w;
+    // Ramapping world bounds to UVW bounds
+    float3 p = worldPos - boundsCenter;
+    float localX = p.x * cosY - p.z * sinY;
+    float localZ = p.x * sinY + p.z * cosY;
+    float localY = p.y;
+    return float3(localX, localY, localZ) * invBoundsSize;
+}
+
+// Calculates local UVW for Free rotation mode
+float3 LV_LocalFromFreeVolume(int volumeID, float3 worldPos) {
+    return mul(_UdonLightVolumeInvWorldMatrix[volumeID], float4(worldPos, 1.0)).xyz;
+}
+
+// Calculates Island UVW from local UVW
+float3 LV_LocalToIsland(int volumeID, int texID, float3 localUVW){
+    // UVW bounds
+    int uvwID = volumeID * 3 + texID;
+    float3 uvwMin = _UdonLightVolumeUvwMin[uvwID].xyz;
+    float3 uvwMax = _UdonLightVolumeUvwMax[uvwID].xyz;
+    // Ramapping world bounds to UVW bounds
+    return clamp(lerp(uvwMin, uvwMax, localUVW + 0.5), uvwMin, uvwMax);
+}
+
+// Samples 3 SH textures and packing them into L1 channels
+void LV_SampleLightVolumeTex(float3 uvw0, float3 uvw1, float3 uvw2, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+    // Sampling 3D Atlas
+    float4 tex0 = tex3D(_UdonLightVolume, uvw0);
+    float4 tex1 = tex3D(_UdonLightVolume, uvw1);
+    float4 tex2 = tex3D(_UdonLightVolume, uvw2);
+    // Packing final data
+    L0 = tex0.rgb;
+    L1r = float3(tex1.r, tex2.r, tex0.a);
+    L1g = float3(tex1.g, tex2.g, tex1.a);
+    L1b = float3(tex1.b, tex2.b, tex2.a);
 }
 
 // Faster than smoothstep
@@ -129,26 +128,6 @@ float3 LV_SimpleColorCorrection(float3 color, float exposure, float shadowGain, 
 	float midMask = 1.0 - shadowMask - highlightMask;
 	float gain = shadowMask * shadowGain + midMask * midGain + highlightMask * highlightGain;
 	return color * gain;
-}
-
-// Transforms World position to UVW that lies from -0.5 to +0.5 (Add 0.5 to convert it to normalized UVW)
-float3 LV_WorldToSymmetricUVW(float3 worldPos, float4x4 invWorldMatrix){
-    return mul(invWorldMatrix, float4(worldPos, 1.0)).xyz;
-}
-
-// Remaps symmetric UVW to Island UVW (Not clamped)
-float3 LV_IslandFromSymmetricUVW(float3 symmetricUVW, float3 uvwMin, float3 uvwMax) {
-    return uvwMin + (symmetricUVW + 0.5) * (uvwMax - uvwMin);
-}
-
-// Checks if symmetric UVW point is in bounds from -0.5 to +0.5
-bool LV_PointSymmetricOBB(float3 symmetricUVW){
-    return all(abs(symmetricUVW) <= 1);
-}
-
-// AABB intersection check
-bool LV_PointAABB(float3 pos, float3 min, float3 max) {
-	return all(pos >= min && pos <= max);
 }
 
 // Bounds mask
