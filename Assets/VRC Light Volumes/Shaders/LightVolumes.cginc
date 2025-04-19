@@ -11,6 +11,9 @@ uniform float _UdonLightVolumeBlend;
 // Should volumes be blended with lightprobes?
 uniform float _UdonLightVolumeProbesBlend;
 
+// Should volumes be blended with lightprobes?
+uniform float _UdonLightVolumeSharpBounds;
+
 // Main 3D Texture atlas
 uniform sampler3D _UdonLightVolume;
 
@@ -23,7 +26,7 @@ uniform float _UdonLightVolumeRotationType[256];
 uniform float4 _UdonLightVolumeDataA[256];
 uniform float4 _UdonLightVolumeDataB[256];
 
-// Used with free rotation, World to Symmetric (-0.5, 0.5) UVW Matrix
+// Used with free rotation, World to Local (-0.5, 0.5) UVW Matrix
 uniform float4x4 _UdonLightVolumeInvWorldMatrix[256];
 
 // AABB Bounds of islands on the 3D Texture atlas
@@ -51,7 +54,7 @@ bool LV_PointAABB(float3 pos, float3 min, float3 max) {
 
 // Checks if local UVW point is in bounds from -0.5 to +0.5
 bool LV_PointLocalAABB(float3 localUVW){
-    return all(abs(localUVW) <= 1);
+    return all(abs(localUVW) <= 0.5);
 }
 
 // Calculates Island UVW for Fixed Rotation Mode
@@ -142,7 +145,7 @@ float LV_BoundsMask(float3 pos, float3 minBounds, float3 maxBounds, float edgeSm
     return fade.x * fade.y * fade.z;
 }
 
-// Bounds mask, but for rotated in world space, using symmetric UVW
+// Bounds mask, but for rotated in world space, using local UVW
 float LV_BoundsMaskOBB(float3 localUVW, float3 edgeSmooth, float3 invBoundsScale) {
     float3 edgeSmoothLocal = edgeSmooth * invBoundsScale;
     float3 distToMin = (localUVW + 0.5) / edgeSmoothLocal;
@@ -171,9 +174,10 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     int rotType_A = 0; // Main Rot Type
     int rotType_B = 0; // Secondary Rot Type
     
+    float3 localUVW; // Last local UVW to use in disabled Light Probes mode
     float3 localUVW_A; // Main local UVW for Y Axis and Free roattions
     float3 localUVW_B; // Secondary local UVW
-    float3 localUVW_Last; // Last local UVW to use in disabled Light Probes mode
+    
     
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     for (int id = 0; id < _UdonLightVolumeCount; id++) {
@@ -193,18 +197,18 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         } else if (_UdonLightVolumeRotationType[id] == 1) { // Y Axis Rotation
             
             // Transform to Local UVW
-            localUVW_Last = LV_LocalFromYAxisVolume(id, worldPos);
+            localUVW = LV_LocalFromYAxisVolume(id, worldPos);
             
             //Intersection test
-            if (LV_PointLocalAABB(localUVW_Last)) {
+            if (LV_PointLocalAABB(localUVW)) {
                 if (volumeID_A != -1) { 
                     volumeID_B = id; 
-                    localUVW_B = localUVW_Last;
+                    localUVW_B = localUVW;
                     rotType_B = 1;
                     break; 
                 } else {
                     volumeID_A = id;
-                    localUVW_A = localUVW_Last;
+                    localUVW_A = localUVW;
                     rotType_A = 1;
                 }
             }
@@ -212,18 +216,18 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         } else { // Free Rotation
             
             // Transform to Local UVW
-            localUVW_Last = LV_LocalFromFreeVolume(id, worldPos);
+            localUVW = LV_LocalFromFreeVolume(id, worldPos);
             
             //Intersection test
-            if (LV_PointLocalAABB(localUVW_Last)) {
+            if (LV_PointLocalAABB(localUVW)) {
                 if (volumeID_A != -1) { 
                     volumeID_B = id; 
-                    localUVW_B = localUVW_Last;
+                    localUVW_B = localUVW;
                     rotType_B = 2;
                     break; 
                 } else {
                     volumeID_A = id;
-                    localUVW_A = localUVW_Last;
+                    localUVW_A = localUVW;
                     rotType_A = 2;
                 }
             }
@@ -234,6 +238,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         
     // If no volumes found, using Fallback
     if (volumeID_A == -1) {
+        
         if (_UdonLightVolumeProbesBlend){ // Sample Light Probes Enabled
             
             LV_SampleLightProbe(L0, L1r, L1g, L1b); // Sample Lioght Probes as Fallback
@@ -251,12 +256,13 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
                 uvw1 = LV_IslandFromFixedVolume(id, 1, worldPos);
                 uvw2 = LV_IslandFromFixedVolume(id, 2, worldPos);
             } else {
-                uvw0 = LV_LocalToIsland(id, 0, localUVW_Last);
-                uvw1 = LV_LocalToIsland(id, 1, localUVW_Last);
-                uvw2 = LV_LocalToIsland(id, 2, localUVW_Last);
+                uvw0 = LV_LocalToIsland(id, 0, localUVW);
+                uvw1 = LV_LocalToIsland(id, 1, localUVW);
+                uvw2 = LV_LocalToIsland(id, 2, localUVW);
             }
             
             LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b); // Sample Last Volume as fallback
+            return;
             
         }
     }
@@ -271,6 +277,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     
     if (mask == 1) { // Only sample Volume A
         
+
         // Volume A UVWs
         float3 uvw0, uvw1, uvw2;
         
@@ -286,6 +293,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         }
         
         LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b); // Sample Volume A
+        return;
         
     } else { // Only blend mask for pixels in the smoothed edges region
             
@@ -307,7 +315,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
                 
             LV_SampleLightVolumeTex(uvw0_A, uvw1_A, uvw2_A, L0_A, L1r_A, L1g_A, L1b_A); // Sample Volume A
             
-            if (!_UdonLightVolumeProbesBlend){ // If no need to blend with light probes
+            if (_UdonLightVolumeSharpBounds){ // If no need to blend with light probes
                 L0 = L0_A;
                 L1r = L1r_A;
                 L1g = L1g_A;
@@ -315,7 +323,30 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
                 return;
             }
             
-            LV_SampleLightProbe(L0_B, L1r_B, L1g_B, L1b_B); // Sample Light Probes B
+            if (_UdonLightVolumeProbesBlend){ // Sample Light Probes Enabled
+            
+                LV_SampleLightProbe(L0_B, L1r_B, L1g_B, L1b_B); // Sample Light Probes B
+            
+            } else { // Sample Light Probes Disabled, sample LAST volume instead
+            
+                // Volume A UVWs
+                float3 uvw0_B, uvw1_B, uvw2_B;
+                int id = _UdonLightVolumeCount - 1;
+            
+                // Volume A UVWs depending on Rotation Type
+                if (_UdonLightVolumeRotationType[id] == 0) {
+                    uvw0_B = LV_IslandFromFixedVolume(id, 0, worldPos);
+                    uvw1_B = LV_IslandFromFixedVolume(id, 1, worldPos);
+                    uvw2_B = LV_IslandFromFixedVolume(id, 2, worldPos);
+                } else {
+                    uvw0_B = LV_LocalToIsland(id, 0, localUVW);
+                    uvw1_B = LV_LocalToIsland(id, 1, localUVW);
+                    uvw2_B = LV_LocalToIsland(id, 2, localUVW);
+                }
+            
+                LV_SampleLightVolumeTex(uvw0_B, uvw1_B, uvw2_B, L0_B, L1r_B, L1g_B, L1b_B); // Sample Last Volume as fallback
+            
+            }
                 
         } else { // Blending Volume A and Volume B
             
@@ -354,6 +385,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         L1r = lerp(L1r_B, L1r_A, mask);
         L1g = lerp(L1g_B, L1g_A, mask);
         L1b = lerp(L1b_B, L1b_A, mask);
+        return;
 
     }
 

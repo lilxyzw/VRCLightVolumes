@@ -64,49 +64,24 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         LightVolumeDataList.Clear();
 
-        var v05 = new Vector3(0.5f, 0.5f, 0.5f); 
+        
 
         for (int i = 0; i < LightVolumes.Length; i++) {
-            
+
             int i3 = i * 3;
-
-            // Volume data
-            var pos = LightVolumes[i].GetPosition();
-            var rot = LightVolumes[i].GetRotation();
-            var scl = LightVolumes[i].GetScale();
-
-            float rotationMode = (int)LightVolumes[i].RotationType;
-
-            Matrix4x4 invWorldMatrix = Matrix4x4.identity;
-            Vector4 dataA = Vector4.zero;
-            Vector4 dataB = Vector4.zero;
-            
-            if (rotationMode == 0) {
-                // Fixed rotation: A - WorldMin B - WorldMax
-                dataA = LVUtils.TransformPoint(-v05, pos, rot, scl);
-                dataB = LVUtils.TransformPoint( v05, pos, rot, scl);
-            } else if (rotationMode == 1) {
-                // Y Axis Rotation: A - BoundsCenter | SinY   B - InvBoundsSize | CosY
-                float eulerY = rot.eulerAngles.y;
-                dataA = new Vector4(pos.x, pos.y, pos.z, Mathf.Sin(eulerY * Mathf.Deg2Rad));
-                dataB = new Vector4(1 / scl.x, 1 / scl.y, 1 / scl.z, Mathf.Cos(eulerY * Mathf.Deg2Rad));
-            } else {
-                // Inversed World Matrix for Free rotation
-                invWorldMatrix = LightVolumes[i].GetMatrixTRS().inverse;
-            }
 
             LightVolumeDataList.Add(new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                rotationMode,
-                dataA,
-                dataB,
+                0,
+                Vector4.zero,
+                Vector4.zero,
                 atlas.BoundsUvwMin[i3],
                 atlas.BoundsUvwMin[i3 + 1],
                 atlas.BoundsUvwMin[i3 + 2],
                 atlas.BoundsUvwMax[i3],
                 atlas.BoundsUvwMax[i3 + 1],
                 atlas.BoundsUvwMax[i3 + 2],
-                invWorldMatrix
+                Matrix4x4.identity
             ));
 
         }
@@ -129,21 +104,51 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             LightVolumesWeights = new float[LightVolumes.Length];
         }
 
+        var v05 = new Vector3(0.5f, 0.5f, 0.5f);
+
         // Update Weights because can be desynced
         for (int i = 0; i < LightVolumeDataList.Count; i++) {
+
+            // Volume data
+            var pos = LightVolumes[i].GetPosition();
+            var rot = LightVolumes[i].GetRotation();
+            var scl = LightVolumes[i].GetScale();
+
+            float rotType = (int)LightVolumes[i].RotationType;
+
+            Matrix4x4 invMatrix = Matrix4x4.identity;
+            Vector4 datA = Vector4.zero;
+            Vector4 datB = Vector4.zero;
+
+            if (rotType == 0) {
+                // Fixed rotation: A - WorldMin B - WorldMax
+                datA = LVUtils.TransformPoint(-v05, pos, rot, scl);
+                datB = LVUtils.TransformPoint(v05, pos, rot, scl);
+            } else if (rotType == 1) {
+                // Y Axis Rotation: A - BoundsCenter | SinY   B - InvBoundsSize | CosY
+                float eulerY = rot.eulerAngles.y;
+                datA = new Vector4(pos.x, pos.y, pos.z, Mathf.Sin(eulerY * Mathf.Deg2Rad));
+                datB = new Vector4(1 / scl.x, 1 / scl.y, 1 / scl.z, Mathf.Cos(eulerY * Mathf.Deg2Rad));
+            } else {
+                // Inversed World Matrix for Free rotation
+                invMatrix = Matrix4x4.TRS(pos, rot, scl).inverse;
+                datB = new Vector4(1 / scl.x, 1 / scl.y, 1 / scl.z, 0);
+            }
+
             LightVolumeDataList[i] = new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                LightVolumeDataList[i].RotationMode,
-                LightVolumeDataList[i].DataA,
-                LightVolumeDataList[i].DataB,
+                rotType,
+                datA,
+                datB,
                 LightVolumeDataList[i].UvwMin[0],
                 LightVolumeDataList[i].UvwMin[1],
                 LightVolumeDataList[i].UvwMin[2],
                 LightVolumeDataList[i].UvwMax[0],
                 LightVolumeDataList[i].UvwMax[1],
                 LightVolumeDataList[i].UvwMax[2],
-                LightVolumeDataList[i].InvWorldMatrix
+                invMatrix
             );
+
         }
 
         float[] rotationMode;

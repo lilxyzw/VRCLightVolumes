@@ -30,6 +30,11 @@ public class LightVolume : MonoBehaviour {
     // Light probes world positions
     private Vector3[] _probesPositions;
 
+    // To check if object was edited this frame
+    private Vector3 _prevPos = Vector3.zero;
+    private Quaternion _prevRot = Quaternion.identity;
+    private Vector3 _prevScl = Vector3.one;
+
     // Position, Rotation and Scale of the final light volume, depending on the current setup
     public Vector3 GetPosition() {
         return transform.position;
@@ -207,10 +212,19 @@ public class LightVolume : MonoBehaviour {
 #endif
         if (Selection.activeGameObject != gameObject) return;
         SetupDependencies();
+
+        // Update udon Behaviour if Volume changed transform
+        if (_prevPos != transform.position || _prevRot != transform.rotation || _prevScl != transform.localScale) {
+            LightVolumeSetup.Instance.SetupUdonBehaviour();
+            _prevPos = transform.position;
+            _prevRot = transform.rotation;
+            _prevScl = transform.localScale;
+        }
     }
 
     private void OnValidate() {
         Recalculate();
+        LightVolumeSetup.Instance.SetupUdonBehaviour();
     }
 
     private void OnDrawGizmosSelected() {

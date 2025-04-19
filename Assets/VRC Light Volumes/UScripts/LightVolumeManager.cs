@@ -7,6 +7,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
     public Texture3D LightVolumeAtlas;
     [Range(0, 1f)] public float VolumesBlend = 0.5f;
     public bool LightProbesBlending = false;
+    public bool SharpBounds = false;
     [Space]
     public int[] DynamicVolumesIDs;
     public LightVolumeUdon[] DynamicVolumes;
@@ -66,6 +67,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
         // Defines if Light Probes Blending enabled in scene
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeProbesBlend"), LightProbesBlending ? 1 : 0);
+        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeSharpBounds"), SharpBounds ? 1 : 0);
 
         // All light volumes Extra Data
         VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeRotationType"), RotationTypes);
