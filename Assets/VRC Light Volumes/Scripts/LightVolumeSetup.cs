@@ -75,20 +75,38 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             var rot = LightVolumes[i].GetRotation();
             var scl = LightVolumes[i].GetScale();
 
-            // Min Max bounds
-            var min = LVUtils.TransformPoint(-v05, pos, rot, scl);
-            var max = LVUtils.TransformPoint(v05, pos, rot, scl);
+            float rotationMode = (int)LightVolumes[i].RotationType;
+
+            Matrix4x4 invWorldMatrix = Matrix4x4.identity;
+            Vector4 dataA = Vector4.zero;
+            Vector4 dataB = Vector4.zero;
+            
+            if (rotationMode == 0) {
+                // Fixed rotation: A - WorldMin B - WorldMax
+                dataA = LVUtils.TransformPoint(-v05, pos, rot, scl);
+                dataB = LVUtils.TransformPoint( v05, pos, rot, scl);
+            } else if (rotationMode == 1) {
+                // Y Axis Rotation: A - BoundsCenter | SinY   B - InvBoundsSize | CosY
+                float eulerY = rot.eulerAngles.y;
+                dataA = new Vector4(pos.x, pos.y, pos.z, Mathf.Sin(eulerY * Mathf.Deg2Rad));
+                dataB = new Vector4(1 / scl.x, 1 / scl.y, 1 / scl.z, Mathf.Cos(eulerY * Mathf.Deg2Rad));
+            } else {
+                // Inversed World Matrix for Free rotation
+                invWorldMatrix = LightVolumes[i].GetMatrixTRS().inverse;
+            }
 
             LightVolumeDataList.Add(new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                min,
-                max,
+                rotationMode,
+                dataA,
+                dataB,
                 atlas.BoundsUvwMin[i3],
                 atlas.BoundsUvwMin[i3 + 1],
                 atlas.BoundsUvwMin[i3 + 2],
                 atlas.BoundsUvwMax[i3],
                 atlas.BoundsUvwMax[i3 + 1],
-                atlas.BoundsUvwMax[i3 + 2]
+                atlas.BoundsUvwMax[i3 + 2],
+                invWorldMatrix
             ));
 
         }
@@ -115,29 +133,35 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         for (int i = 0; i < LightVolumeDataList.Count; i++) {
             LightVolumeDataList[i] = new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                LightVolumeDataList[i].WorldMin,
-                LightVolumeDataList[i].WorldMax,
+                LightVolumeDataList[i].RotationMode,
+                LightVolumeDataList[i].DataA,
+                LightVolumeDataList[i].DataB,
                 LightVolumeDataList[i].UvwMin[0],
                 LightVolumeDataList[i].UvwMin[1],
                 LightVolumeDataList[i].UvwMin[2],
                 LightVolumeDataList[i].UvwMax[0],
                 LightVolumeDataList[i].UvwMax[1],
-                LightVolumeDataList[i].UvwMax[2]
+                LightVolumeDataList[i].UvwMax[2],
+                LightVolumeDataList[i].InvWorldMatrix
             );
         }
 
-        Vector4[] boundsWorldMin;
-        Vector4[] boundsWorldMax;
+        float[] rotationMode;
+        Vector4[] dataA;
+        Vector4[] dataB;
         Vector4[] boundsUvwMin;
         Vector4[] boundsUvwMax;
+        Matrix4x4[] invWorldMatrix;
 
         var sortedData = LightVolumeDataSorter.SortData(LightVolumeDataList);
-        LightVolumeDataSorter.GetData(sortedData, out boundsWorldMin, out boundsWorldMax, out boundsUvwMin, out boundsUvwMax);
+        LightVolumeDataSorter.GetData(sortedData, out rotationMode, out dataA, out dataB, out boundsUvwMin, out boundsUvwMax, out invWorldMatrix);
 
+        _udonLightVolumeManager.RotationTypes = rotationMode;
+        _udonLightVolumeManager.DataA = dataA;
+        _udonLightVolumeManager.DataB = dataB;
         _udonLightVolumeManager.BoundsUvwMin = boundsUvwMin;
         _udonLightVolumeManager.BoundsUvwMax = boundsUvwMax;
-        _udonLightVolumeManager.BoundsWorldMin = boundsWorldMin;
-        _udonLightVolumeManager.BoundsWorldMax = boundsWorldMax;
+        _udonLightVolumeManager.InvWorldMatrix = invWorldMatrix;
         _udonLightVolumeManager.LightVolumeAtlas = LightVolumeAtlas;
 
         SetShaderVariables();

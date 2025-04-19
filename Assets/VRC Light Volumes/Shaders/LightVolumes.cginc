@@ -8,6 +8,9 @@ uniform float _UdonLightVolumeCount;
 // How volumes edge blending
 uniform float _UdonLightVolumeBlend;
 
+// Should volumes be blended with lightprobes?
+uniform float _UdonLightVolumeProbesBlend;
+
 // Main 3D Texture atlas
 uniform sampler3D _UdonLightVolume;
 
@@ -15,8 +18,8 @@ uniform sampler3D _UdonLightVolume;
 uniform float _UdonLightVolumeRotationType[256];
 
 // Fixed rotation:   A - WorldMin             B - WorldMax
-// Y Axis rotation:  A - WorldCenter | SinY   B - InvBoundsSize | CosY
-// Free rotation:    A - 0                    B - 0
+// Y Axis rotation:  A - BoundsCenter | SinY  B - InvBoundsSize | CosY
+// Free rotation:    A - 0                    B - InvBoundsSize
 uniform float4 _UdonLightVolumeDataA[256];
 uniform float4 _UdonLightVolumeDataB[256];
 
@@ -30,22 +33,15 @@ uniform float4 _UdonLightVolumeUvwMax[768];
 
 // Linear single SH L1 channel evaluation
 float LV_EvaluateSH(float L0, float3 L1, float3 n) {
+    L1 = L1 / 2;
+    float L1length = length(L1);
+    if (L1length > 0.0 && L0 > 0.0)
+    {
+        float k = min(L0 / L1length, 1.13);
+        L1 *= k;
+    }
+
     return L0 + dot(L1, n);
-}
-
-// Calculate Light Volume Color based on all SH components provided
-float3 LV_EvaluateLightVolume(float3 L0, float3 L1r, float3 L1g, float3 L1b, float3 worldNormal){
-    return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
-}
-
-// Default light probes
-float3 LV_EvaluateLightProbe(float3 worldNormal) {
-    float3 color;
-    float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-    color.r = LV_EvaluateSH(L0.r, unity_SHAr.xyz, worldNormal);
-    color.g = LV_EvaluateSH(L0.g, unity_SHAg.xyz, worldNormal);
-    color.b = LV_EvaluateSH(L0.b, unity_SHAb.xyz, worldNormal);
-    return color;
 }
 
 // AABB intersection check
@@ -101,6 +97,14 @@ float3 LV_LocalToIsland(int volumeID, int texID, float3 localUVW){
     return clamp(lerp(uvwMin, uvwMax, localUVW + 0.5), uvwMin, uvwMax);
 }
 
+// Default light probes SH components
+void LV_SampleLightProbe(out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+    L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+    L1r = unity_SHAr.xyz;
+    L1g = unity_SHAg.xyz;
+    L1b = unity_SHAb.xyz;
+}
+
 // Samples 3 SH textures and packing them into L1 channels
 void LV_SampleLightVolumeTex(float3 uvw0, float3 uvw1, float3 uvw2, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     // Sampling 3D Atlas
@@ -139,73 +143,218 @@ float LV_BoundsMask(float3 pos, float3 minBounds, float3 maxBounds, float edgeSm
 }
 
 // Bounds mask, but for rotated in world space, using symmetric UVW
-float LV_BoundsMaskOBB(float3 symmetricUVW, float3 edgeSmooth, float3 invBoundsScale) {
+float LV_BoundsMaskOBB(float3 localUVW, float3 edgeSmooth, float3 invBoundsScale) {
     float3 edgeSmoothLocal = edgeSmooth * invBoundsScale;
-    float3 distToMin = (symmetricUVW + 0.5) / edgeSmoothLocal;
-    float3 distToMax = (0.5 - symmetricUVW) / edgeSmoothLocal;
+    float3 distToMin = (localUVW + 0.5) / edgeSmoothLocal;
+    float3 distToMax = (0.5 - localUVW) / edgeSmoothLocal;
     float3 fade = saturate(min(distToMin, distToMax));
     return fade.x * fade.y * fade.z;
 }
 
-// Calculates final Light Volumes color based on world position and world normal
-float3 LightVolume(float3 worldNormal, float3 worldPos) {
+// Calculate Light Volume Color based on all SH components provided
+float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+    return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
+}
+
+// Calculates SH components based on world position and world normal
+void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
 
     // Fallback to default light probes if Light Volume are not enabled
-    if (!_UdonLightVolumeEnabled) return LV_EvaluateLightProbe(worldNormal);
+    if (!_UdonLightVolumeEnabled || _UdonLightVolumeCount == 0) {
+        LV_SampleLightProbe(L0, L1r, L1g, L1b);
+        return;
+    }
     
     int volumeID_A = -1; // Main, dominant volume ID
     int volumeID_B = -1; // Secondary volume ID to blend main with
     
+    int rotType_A = 0; // Main Rot Type
+    int rotType_B = 0; // Secondary Rot Type
+    
+    float3 localUVW_A; // Main local UVW for Y Axis and Free roattions
+    float3 localUVW_B; // Secondary local UVW
+    float3 localUVW_Last; // Last local UVW to use in disabled Light Probes mode
+    
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     for (int id = 0; id < _UdonLightVolumeCount; id++) {
-        if (LV_PointAABB(worldPos, _UdonLightVolumeDataA[id].xyz, _UdonLightVolumeDataB[id].xyz)) {
-            if (volumeID_A != -1) { volumeID_B = id; break; }
-            else volumeID_A = id;
+        
+        if (_UdonLightVolumeRotationType[id] == 0) { // Fixed Rotation
+            
+            // Intersection test
+            if (LV_PointAABB(worldPos, _UdonLightVolumeDataA[id].xyz, _UdonLightVolumeDataB[id].xyz)) {
+                if (volumeID_A != -1) { 
+                    volumeID_B = id; 
+                    break; 
+                } else {
+                    volumeID_A = id;
+                }
+            }
+            
+        } else if (_UdonLightVolumeRotationType[id] == 1) { // Y Axis Rotation
+            
+            // Transform to Local UVW
+            localUVW_Last = LV_LocalFromYAxisVolume(id, worldPos);
+            
+            //Intersection test
+            if (LV_PointLocalAABB(localUVW_Last)) {
+                if (volumeID_A != -1) { 
+                    volumeID_B = id; 
+                    localUVW_B = localUVW_Last;
+                    rotType_B = 1;
+                    break; 
+                } else {
+                    volumeID_A = id;
+                    localUVW_A = localUVW_Last;
+                    rotType_A = 1;
+                }
+            }
+            
+        } else { // Free Rotation
+            
+            // Transform to Local UVW
+            localUVW_Last = LV_LocalFromFreeVolume(id, worldPos);
+            
+            //Intersection test
+            if (LV_PointLocalAABB(localUVW_Last)) {
+                if (volumeID_A != -1) { 
+                    volumeID_B = id; 
+                    localUVW_B = localUVW_Last;
+                    rotType_B = 2;
+                    break; 
+                } else {
+                    volumeID_A = id;
+                    localUVW_A = localUVW_Last;
+                    rotType_A = 2;
+                }
+            }
+            
+        }
+        
+    }
+        
+    // If no volumes found, using Fallback
+    if (volumeID_A == -1) {
+        if (_UdonLightVolumeProbesBlend){ // Sample Light Probes Enabled
+            
+            LV_SampleLightProbe(L0, L1r, L1g, L1b); // Sample Lioght Probes as Fallback
+            return;
+            
+        } else { // Sample Light Probes Disabled, sample LAST volume instead
+            
+            // Volume A UVWs
+            float3 uvw0, uvw1, uvw2;
+            int id = _UdonLightVolumeCount - 1;
+            
+            // Volume A UVWs depending on Rotation Type
+            if (_UdonLightVolumeRotationType[id] == 0) {
+                uvw0 = LV_IslandFromFixedVolume(id, 0, worldPos);
+                uvw1 = LV_IslandFromFixedVolume(id, 1, worldPos);
+                uvw2 = LV_IslandFromFixedVolume(id, 2, worldPos);
+            } else {
+                uvw0 = LV_LocalToIsland(id, 0, localUVW_Last);
+                uvw1 = LV_LocalToIsland(id, 1, localUVW_Last);
+                uvw2 = LV_LocalToIsland(id, 2, localUVW_Last);
+            }
+            
+            LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b); // Sample Last Volume as fallback
+            
         }
     }
-    
-    // If no volumes found, using fallback to light probes
-    if (volumeID_A == -1) return LV_EvaluateLightProbe(worldNormal); 
-    // If at least, main, dominant volume found
-    
-    float mask = LV_BoundsMask(worldPos, _UdonLightVolumeDataA[volumeID_A].xyz, _UdonLightVolumeDataB[volumeID_A].xyz, _UdonLightVolumeBlend); // Mask to blend volume
         
-    if (mask < 1) { // Only blend mask for pixels in the smoothed edges region
-        if (volumeID_B != -1) { // Blending volume A and Volume B
+    // Mask to blend volume
+    float mask;
+    if (rotType_A == 0) {
+        mask = LV_BoundsMask(worldPos, _UdonLightVolumeDataA[volumeID_A].xyz, _UdonLightVolumeDataB[volumeID_A].xyz, _UdonLightVolumeBlend);
+    } else {
+        mask = LV_BoundsMaskOBB(localUVW_A, _UdonLightVolumeBlend, _UdonLightVolumeDataB[volumeID_A].xyz);
+    }
+    
+    if (mask == 1) { // Only sample Volume A
+        
+        // Volume A UVWs
+        float3 uvw0, uvw1, uvw2;
+        
+        // Volume A UVWs depending on Rotation Type
+        if (rotType_A == 0) {
+            uvw0 = LV_IslandFromFixedVolume(volumeID_A, 0, worldPos);
+            uvw1 = LV_IslandFromFixedVolume(volumeID_A, 1, worldPos);
+            uvw2 = LV_IslandFromFixedVolume(volumeID_A, 2, worldPos);
+        } else {
+            uvw0 = LV_LocalToIsland(volumeID_A, 0, localUVW_A);
+            uvw1 = LV_LocalToIsland(volumeID_A, 1, localUVW_A);
+            uvw2 = LV_LocalToIsland(volumeID_A, 2, localUVW_A);
+        }
+        
+        LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b); // Sample Volume A
+        
+    } else { // Only blend mask for pixels in the smoothed edges region
             
-            float4 texA[3]; // Main textures bundle
-            float4 texB[3]; // Secondary textures bundle
+        // SH Components
+        float3 L0_A, L1r_A, L1g_A, L1b_A, L0_B, L1r_B, L1g_B, L1b_B, uvw0_A, uvw1_A, uvw2_A;
+        
+        if (volumeID_B == -1) { // Blending Volume A and Light Probes
+                
+            // Volume A UVWs depending on Rotation Type
+            if (rotType_A == 0) {
+                uvw0_A = LV_IslandFromFixedVolume(volumeID_A, 0, worldPos);
+                uvw1_A = LV_IslandFromFixedVolume(volumeID_A, 1, worldPos);
+                uvw2_A = LV_IslandFromFixedVolume(volumeID_A, 2, worldPos);
+            } else {
+                uvw0_A = LV_LocalToIsland(volumeID_A, 0, localUVW_A);
+                uvw1_A = LV_LocalToIsland(volumeID_A, 1, localUVW_A);
+                uvw2_A = LV_LocalToIsland(volumeID_A, 2, localUVW_A);
+            }
+                
+            LV_SampleLightVolumeTex(uvw0_A, uvw1_A, uvw2_A, L0_A, L1r_A, L1g_A, L1b_A); // Sample Volume A
             
-            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
-            LV_SampleLightVolumeTexID(volumeID_B, worldPos, texB[0], texB[1], texB[2]); // Sampling secondary volume
+            if (!_UdonLightVolumeProbesBlend){ // If no need to blend with light probes
+                L0 = L0_A;
+                L1r = L1r_A;
+                L1g = L1g_A;
+                L1b = L1b_A;
+                return;
+            }
             
-            float4 tex[3]; // Blended textures color
+            LV_SampleLightProbe(L0_B, L1r_B, L1g_B, L1b_B); // Sample Light Probes B
+                
+        } else { // Blending Volume A and Volume B
             
-            // Blending textures
-            tex[0] = lerp(texB[0], texA[0], mask);
-            tex[1] = lerp(texB[1], texA[1], mask);
-            tex[2] = lerp(texB[2], texA[2], mask);
+            // UVW B
+            float3 uvw0_B, uvw1_B, uvw2_B;
             
-            // Evaluating result
-            return LV_EvaluateLightVolume(tex[0], tex[1], tex[2], worldNormal); 
+            // Volume A UVWs
+            if (rotType_A == 0) {
+                uvw0_A = LV_IslandFromFixedVolume(volumeID_A, 0, worldPos);
+                uvw1_A = LV_IslandFromFixedVolume(volumeID_A, 1, worldPos);
+                uvw2_A = LV_IslandFromFixedVolume(volumeID_A, 2, worldPos);
+            } else {
+                uvw0_A = LV_LocalToIsland(volumeID_A, 0, localUVW_A);
+                uvw1_A = LV_LocalToIsland(volumeID_A, 1, localUVW_A);
+                uvw2_A = LV_LocalToIsland(volumeID_A, 2, localUVW_A);
+            }
             
-        } else { // Blending volume A and light probes
+            // Volume B UVWs
+            if (rotType_B == 0) {
+                uvw0_B = LV_IslandFromFixedVolume(volumeID_B, 0, worldPos);
+                uvw1_B = LV_IslandFromFixedVolume(volumeID_B, 1, worldPos);
+                uvw2_B = LV_IslandFromFixedVolume(volumeID_B, 2, worldPos);
+            } else {
+                uvw0_B = LV_LocalToIsland(volumeID_B, 0, localUVW_B);
+                uvw1_B = LV_LocalToIsland(volumeID_B, 1, localUVW_B);
+                uvw2_B = LV_LocalToIsland(volumeID_B, 2, localUVW_B);
+            }
             
-            float4 texA[3]; // Main textures bundle
-            LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
-            float3 colorA = LV_EvaluateLightVolume(texA[0], texA[1], texA[2], worldNormal); // Evaluating main volume
-            float3 colorB = LV_EvaluateLightProbe(worldNormal); // Evaluating light probes
-            
-            // Blending result
-            return lerp(colorB, colorA, mask);
+            LV_SampleLightVolumeTex(uvw0_A, uvw1_A, uvw2_A, L0_A, L1r_A, L1g_A, L1b_A); // Sample Volume A
+            LV_SampleLightVolumeTex(uvw0_B, uvw1_B, uvw2_B, L0_B, L1r_B, L1g_B, L1b_B); // Sample Volume B
             
         }
-    } else { // If no need to blend
         
-        float4 texA[3]; // Main textures bundle
-        LV_SampleLightVolumeTexID(volumeID_A, worldPos, texA[0], texA[1], texA[2]); // Sampling main volume
-        return LV_EvaluateLightVolume(texA[0], texA[1], texA[2], worldNormal); // Evaluating main volume
-        
+        // Lerping SH components
+        L0 =  lerp(L0_B,  L0_A,  mask);
+        L1r = lerp(L1r_B, L1r_A, mask);
+        L1g = lerp(L1g_B, L1g_A, mask);
+        L1b = lerp(L1b_B, L1b_A, mask);
+
     }
 
 }

@@ -61,11 +61,21 @@ Shader "Light Volume ASE"
 			float3 temp_output_3_5 = tex2DNode3.rgb;
 			o.Albedo = temp_output_3_5;
 			float3 normalizeResult73 = normalize( (WorldNormalVector( i , tex2DNode5 )) );
-			float3 worldNormal13 = normalizeResult73;
+			float3 worldNormal74 = normalizeResult73;
+			float localLightVolumeSH13 = ( 0.0 );
 			float3 ase_positionWS = i.worldPos;
 			float3 worldPos13 = ase_positionWS;
-			float3 localLightVolume13 = LightVolume( worldNormal13 , worldPos13 );
-			o.Emission = ( tex2DNode3.rgb * localLightVolume13 );
+			float3 L013 = float3( 0,0,0 );
+			float3 L1r13 = float3( 0,0,0 );
+			float3 L1g13 = float3( 0,0,0 );
+			float3 L1b13 = float3( 0,0,0 );
+			LightVolumeSH( worldPos13 , L013 , L1r13 , L1g13 , L1b13 );
+			float3 L074 = L013;
+			float3 L1r74 = L1r13;
+			float3 L1g74 = L1g13;
+			float3 L1b74 = L1b13;
+			float3 localLightVolumeEvaluate74 = LightVolumeEvaluate( worldNormal74 , L074 , L1r74 , L1g74 , L1b74 );
+			o.Emission = ( tex2DNode3.rgb * localLightVolumeEvaluate74 );
 			float2 uv_Glossiness50 = i.uv_texcoord;
 			float4 tex2DNode50 = tex2D( _Glossiness, uv_Glossiness50 );
 			o.Metallic = ( tex2DNode50.r * _Metalness );
@@ -166,14 +176,15 @@ Version=19801
 Node;AmplifyShaderEditor.RangedFloatNode;6;-1232,-32;Inherit;False;Property;_NormalPower;Normal Power;2;0;Create;False;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SamplerNode;5;-1040,-80;Inherit;True;Property;_BumpMap;Normal;1;1;[NoScaleOffset];Create;False;0;0;0;False;0;False;3;None;None;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;6;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.WorldNormalVector;14;-752,112;Inherit;False;False;1;0;FLOAT3;0,0,1;False;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
+Node;AmplifyShaderEditor.WorldPosInputsNode;15;-864,368;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
 Node;AmplifyShaderEditor.NormalizeNode;73;-560,160;Inherit;False;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
-Node;AmplifyShaderEditor.WorldPosInputsNode;15;-560,368;Inherit;False;0;4;FLOAT3;0;FLOAT;1;FLOAT;2;FLOAT;3
+Node;AmplifyShaderEditor.CustomExpressionNode;13;-640,352;Inherit;False; ;7;File;5;True;worldPos;FLOAT3;0,0,0;In;;Inherit;False;True;L0;FLOAT3;0,0,0;Out;;Inherit;False;True;L1r;FLOAT3;0,0,0;Out;;Inherit;False;True;L1g;FLOAT3;0,0,0;Out;;Inherit;False;True;L1b;FLOAT3;0,0,0;Out;;Inherit;False;LightVolumeSH;False;True;0;4ae0b01e695ad7545a078e1e04d2e609;False;6;0;FLOAT;0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT3;0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT3;0,0,0;False;5;FLOAT;0;FLOAT3;3;FLOAT3;4;FLOAT3;5;FLOAT3;6
 Node;AmplifyShaderEditor.RangedFloatNode;53;48,704;Inherit;False;Property;_Metalness;Metallic;5;0;Create;False;0;0;0;False;0;False;0;0;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;52;48,592;Inherit;False;Property;_Smoothness;Smoothness;4;0;Create;True;0;0;0;False;0;False;1;0;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;56;64,800;Inherit;False;Property;_AmbientOcclusion;AO;6;0;Create;False;0;0;0;False;0;False;1;1;0;1;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SamplerNode;50;16,320;Inherit;True;Property;_Glossiness;MOHS;3;1;[NoScaleOffset];Create;False;0;0;0;False;0;False;3;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
 Node;AmplifyShaderEditor.SamplerNode;3;-512,-256;Inherit;True;Property;_MainTex;Albedo;0;0;Create;False;0;0;0;False;0;False;-1;None;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;6;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT3;5
-Node;AmplifyShaderEditor.CustomExpressionNode;13;-352,160;Inherit;False; ;3;File;2;True;worldNormal;FLOAT3;0,0,0;In;;Inherit;False;True;worldPos;FLOAT3;0,0,0;In;;Inherit;False;LightVolume;False;True;0;4ae0b01e695ad7545a078e1e04d2e609;False;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;1;FLOAT3;0
+Node;AmplifyShaderEditor.CustomExpressionNode;74;-384,352;Inherit;False; ;3;File;5;True;worldNormal;FLOAT3;0,0,0;In;;Inherit;False;True;L0;FLOAT3;0,0,0;In;;Inherit;False;True;L1r;FLOAT3;0,0,0;In;;Inherit;False;True;L1g;FLOAT3;0,0,0;In;;Inherit;False;True;L1b;FLOAT3;0,0,0;In;;Inherit;False;LightVolumeEvaluate;False;True;0;4ae0b01e695ad7545a078e1e04d2e609;False;5;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT3;0,0,0;False;4;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.LerpOp;57;448,640;Inherit;False;3;0;FLOAT;1;False;1;FLOAT;0;False;2;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;51;464,400;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;54;464,288;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
@@ -182,8 +193,12 @@ Node;AmplifyShaderEditor.StandardSurfaceOutputNode;72;896,-96;Float;False;True;-
 WireConnection;5;5;6;0
 WireConnection;14;0;5;0
 WireConnection;73;0;14;0
-WireConnection;13;0;73;0
 WireConnection;13;1;15;0
+WireConnection;74;0;73;0
+WireConnection;74;1;13;3
+WireConnection;74;2;13;4
+WireConnection;74;3;13;5
+WireConnection;74;4;13;6
 WireConnection;57;1;50;2
 WireConnection;57;2;56;0
 WireConnection;51;0;50;4
@@ -191,7 +206,7 @@ WireConnection;51;1;52;0
 WireConnection;54;0;50;1
 WireConnection;54;1;53;0
 WireConnection;16;0;3;5
-WireConnection;16;1;13;0
+WireConnection;16;1;74;0
 WireConnection;72;0;3;5
 WireConnection;72;1;5;0
 WireConnection;72;2;16;0
@@ -199,4 +214,4 @@ WireConnection;72;3;54;0
 WireConnection;72;4;51;0
 WireConnection;72;5;57;0
 ASEEND*/
-//CHKSM=45EF59396450F9809844D07D7B207F295B5FA991
+//CHKSM=7DF2686C0AC7E2AA6716CFE6623325AD4BC36BDB
