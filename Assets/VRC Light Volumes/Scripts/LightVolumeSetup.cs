@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using UnityEditor;
 using System.Collections.Generic;
 
@@ -27,6 +28,64 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     }
 
 #if UNITY_EDITOR
+
+
+#if BAKERY_INCLUDED
+    private bool _subscribedToBakery = false;
+#endif
+    private bool _subscribedToUnityLightmapper = false;
+
+    // Subscribing to OnBaked events
+    private void OnEnable() {
+#if BAKERY_INCLUDED
+        if (!Application.isPlaying && !_subscribedToBakery) {
+            ftRenderLightmap.OnFinishedFullRender += OnBakeryFinishedRender;
+            _subscribedToBakery = true;
+        }
+#endif
+        if (!Application.isPlaying && !_subscribedToUnityLightmapper) {
+            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += OnUnityLightmapperFinishedRender;
+            _subscribedToUnityLightmapper = true;
+        }
+    }
+    
+    // Unsubscribing fron OnBaked events
+    private void OnDisable() {
+#if BAKERY_INCLUDED
+        if (!Application.isPlaying && _subscribedToBakery) {
+            ftRenderLightmap.OnFinishedFullRender -= OnBakeryFinishedRender;
+            _subscribedToBakery = false;
+        }
+#endif
+        if (!Application.isPlaying && _subscribedToUnityLightmapper) {
+            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted -= OnUnityLightmapperFinishedRender;
+            _subscribedToUnityLightmapper = false;
+        }
+    }
+
+    // On Bakery baked
+#if BAKERY_INCLUDED
+    private void OnBakeryFinishedRender(object sender, EventArgs e) {
+        if (BakingMode != Baking.Bakery) return;
+        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < volumes.Length; i++) {
+            if (volumes[i].Bake) {
+                volumes[i].BakedRotation = volumes[i].GetRotation();
+            }
+        }
+    }
+#endif
+
+    // On Unity Lightmapper baked
+    private void OnUnityLightmapperFinishedRender() {
+        if (BakingMode != Baking.UnityLightmapper) return;
+        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < volumes.Length; i++) {
+            if (volumes[i].Bake) {
+                volumes[i].BakedRotation = volumes[i].GetRotation();
+            }
+        }
+    }
 
     private void Update() {
         // Resetup required game objects and components for light volumes in new baking mode
@@ -81,7 +140,9 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 atlas.BoundsUvwMin[i3 + 2],
                 atlas.BoundsUvwMax[i3],
                 atlas.BoundsUvwMax[i3 + 1],
-                atlas.BoundsUvwMax[i3 + 2]
+                atlas.BoundsUvwMax[i3 + 2],
+                Quaternion.identity,
+                null
             ));
 
         }
@@ -117,6 +178,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             // Inversed World Matrix for Free rotation
             Matrix4x4 invMatrix = Matrix4x4.TRS(pos, rot, scl).inverse;
             Vector4 localEdgeSmooth = new Vector4(scl.x, scl.y, scl.z, 0) / EdgeSmoothing;
+            Quaternion invBakedlRotation = Quaternion.Inverse(LightVolumes[i].BakedRotation);
 
             LightVolumeDataList[i] = new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
@@ -127,19 +189,23 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 LightVolumeDataList[i].UvwMin[2],
                 LightVolumeDataList[i].UvwMax[0],
                 LightVolumeDataList[i].UvwMax[1],
-                LightVolumeDataList[i].UvwMax[2]
+                LightVolumeDataList[i].UvwMax[2],
+                invBakedlRotation,
+                LightVolumes[i].transform
             );
 
         }
 
         var sortedData = LightVolumeDataSorter.SortData(LightVolumeDataList);
-        LightVolumeDataSorter.GetData(sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] boundsUvwMin, out Vector4[] boundsUvwMax);
+        LightVolumeDataSorter.GetData(sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] boundsUvwMin, out Vector4[] boundsUvwMax, out Quaternion[] invRotation, out Transform[] volumeTransforms);
 
         _udonLightVolumeManager.InvLocalEdgeSmooth = invLocalEdgeSmooth;
         _udonLightVolumeManager.BoundsUvwMin = boundsUvwMin;
         _udonLightVolumeManager.BoundsUvwMax = boundsUvwMax;
         _udonLightVolumeManager.InvWorldMatrix = invWorldMatrix;
         _udonLightVolumeManager.LightVolumeAtlas = LightVolumeAtlas;
+        _udonLightVolumeManager.InvBakedRotations = invRotation;
+        _udonLightVolumeManager.VolumesTransforms = volumeTransforms;
 
         SetShaderVariables();
 

@@ -6,16 +6,13 @@ using UnityEditor;
 [ExecuteAlways]
 public class LightVolume : MonoBehaviour {
 
-    // Inspector
-    [Header("Configuration")]
-    public bool Static = true;
-
-    [Header("Spherical Harmonics Data")]
+    [Header("Baked Data")]
     public Texture3D Texture0;
     public Texture3D Texture1;
     public Texture3D Texture2;
+    public Quaternion BakedRotation = Quaternion.identity;
 
-    [Header("Baking")]
+    [Header("Baking Setup")]
     public bool Bake = true;
     public bool Denoise;
     public bool AdaptiveResolution;

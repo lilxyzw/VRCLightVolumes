@@ -8,19 +8,23 @@ public static class LightVolumeDataSorter {
         return lightVolumeDataList.OrderByDescending(item => item.Weight).ToList();
     }
 
-    public static void GetData(List<LightVolumeData> sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] uvwMin, out Vector4[] uvwMax) {
+    public static void GetData(List<LightVolumeData> sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] uvwMin, out Vector4[] uvwMax, out Quaternion[] bakedRotation, out Transform[] volumeTransforms) {
         
         int count = sortedData.Count;
         invLocalEdgeSmooth = new Vector4[count];
         uvwMin = new Vector4[count * 3];
         uvwMax = new Vector4[count * 3];
         invWorldMatrix = new Matrix4x4[count];
+        bakedRotation = new Quaternion[count];
+        volumeTransforms = new Transform[count];
 
         for (int i = 0; i < count; ++i) {
 
             LightVolumeData item = sortedData[i];
             invLocalEdgeSmooth[i] = item.InvLocalEdgeSmooth;
             invWorldMatrix[i] = item.InvWorldMatrix;
+            bakedRotation[i] = item.BakedRotation;
+            volumeTransforms[i] = item.VolumeTransform;
 
             int i3 = i * 3;
 

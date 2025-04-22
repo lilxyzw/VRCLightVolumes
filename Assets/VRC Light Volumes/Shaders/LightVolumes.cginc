@@ -17,12 +17,24 @@ uniform sampler3D _UdonLightVolume;
 // World to Local (-0.5, 0.5) UVW Matrix
 uniform float4x4 _UdonLightVolumeInvWorldMatrix[256];
 
+// L1 SH components rotation (relative to baked rotataion)
+uniform float4 _UdonLightVolumeRotation[256];
+
+// If we actually need to rotate L1 components at all
+uniform float _UdonLightVolumeNeedsRotation[256];
+
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[256];
 
 // AABB Bounds of islands on the 3D Texture atlas
 uniform float4 _UdonLightVolumeUvwMin[768];
 uniform float4 _UdonLightVolumeUvwMax[768];
+
+// Rotates vector by quaternion
+float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
+    float3 t = 2.0 * cross(q.xyz, v);
+    return v + q.w * t + cross(q.xyz, t);
+}
 
 // Checks if local UVW point is in bounds from -0.5 to +0.5
 bool LV_PointLocalAABB(float3 localUVW){
@@ -149,6 +161,14 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         // Sample Volume A
         LV_SampleLightVolumeTex(uvw0_A, uvw1_A, uvw2_A, L0_A, L1r_A, L1g_A, L1b_A);
         
+        // Rotating SH directions
+        if (_UdonLightVolumeNeedsRotation[volumeID_A] != 0){
+            L1r_A = LV_MultiplyVectorByQuaternion(L1r_A, _UdonLightVolumeRotation[volumeID_A]);
+            L1g_A = LV_MultiplyVectorByQuaternion(L1g_A, _UdonLightVolumeRotation[volumeID_A]);
+            L1b_A = LV_MultiplyVectorByQuaternion(L1b_A, _UdonLightVolumeRotation[volumeID_A]);
+        }
+        
+        
     }
     
     // Returning SH A result if it's the center of mask or out of bounds
@@ -185,6 +205,13 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         // Sample Volume B
         LV_SampleLightVolumeTex(uvw0_B, uvw1_B, uvw2_B, L0_B, L1r_B, L1g_B, L1b_B);
             
+        // Rotating SH directions
+        if (_UdonLightVolumeNeedsRotation[volumeID_B] != 0) {
+            L1r_B = LV_MultiplyVectorByQuaternion(L1r_B, _UdonLightVolumeRotation[volumeID_B]);
+            L1g_B = LV_MultiplyVectorByQuaternion(L1g_B, _UdonLightVolumeRotation[volumeID_B]);
+            L1b_B = LV_MultiplyVectorByQuaternion(L1b_B, _UdonLightVolumeRotation[volumeID_B]);
+        }
+        
     }
         
     // Lerping SH components

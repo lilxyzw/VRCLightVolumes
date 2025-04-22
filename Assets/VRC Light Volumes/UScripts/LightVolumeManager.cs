@@ -8,8 +8,8 @@ public class LightVolumeManager : UdonSharpBehaviour {
     public bool LightProbesBlending = false;
     public bool SharpBounds = false;
     [Space]
-    public int[] DynamicVolumesIDs;
-    public LightVolumeUdon[] DynamicVolumes;
+    public Transform[] VolumesTransforms;
+    public Quaternion[] InvBakedRotations;
     [Space]
     public Vector4[] InvLocalEdgeSmooth;
     public Matrix4x4[] InvWorldMatrix;
@@ -24,13 +24,11 @@ public class LightVolumeManager : UdonSharpBehaviour {
         if (_isInitialized) return;
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), new Vector4[256]);
         VRCShader.SetGlobalMatrixArray(VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix"), new Matrix4x4[256]);
+        VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), new Vector4[256]);
+        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeNeedsRotation"), new float[256]);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMin"), new Vector4[756]);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMax"), new Vector4[756]);
         _isInitialized = true;
-    }
-
-    private void Update() {
-        if (DynamicVolumesIDs.Length == 0) return; // Update nothing if no dynamic volumes 
     }
 
     private void Start() {
@@ -74,6 +72,17 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
         // Defines if Light Volumes enabled in scene
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 1);
+
+        // Volume's relative rotation
+        Vector4[] rotations = new Vector4[InvBakedRotations.Length];
+        float[] needsToRotate = new float[InvBakedRotations.Length];
+        for (int i = 0; i < InvBakedRotations.Length; i++) {
+            Quaternion rot = VolumesTransforms[i].rotation * InvBakedRotations[i];
+            needsToRotate[i] = rot == Quaternion.identity ? 0 : 1;
+            rotations[i] = new Vector4(rot.x, rot.y, rot.z, rot.w);
+        }
+        VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), rotations);
+        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeNeedsRotation"), needsToRotate);
 
     }
 }
