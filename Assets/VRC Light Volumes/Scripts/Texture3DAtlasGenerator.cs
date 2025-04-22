@@ -63,7 +63,21 @@ public static class Texture3DAtlasGenerator {
     }
 
     // Creates a 3D texture atlas using stochastic packing over multiple iterations. Runs a 3D point-based packing algorithm with randomized input order N times and selects the result with the smallest bounding box volume. Includes edge padding.
-    public static Atlas3D CreateAtlasStochastic(Texture3D[] Textures, int iterations) {
+    public static Atlas3D CreateAtlasStochastic(Texture3D[] Textures, int iterations, bool linearizeSphericalHarmonics) {
+
+        if (linearizeSphericalHarmonics) {
+            int count = Textures.Length / 3;
+            for (int i = 0; i < count; i++) {
+                Texture3D[] texs = new Texture3D[3];
+                texs[0] = Textures[i * 3];
+                texs[1] = Textures[i * 3 + 1];
+                texs[2] = Textures[i * 3 + 2];
+                texs = LinearizeSphericalHarmonics(texs);
+                Textures[i * 3] = texs[0];
+                Textures[i * 3 + 1] = texs[1];
+                Textures[i * 3 + 2] = texs[2];
+            }
+        }
 
         // Validating and getting texture infos based on provided arrays
         TextureInfo[] textureInfos = GetTextureInfos(Textures);
@@ -362,6 +376,67 @@ public static class Texture3DAtlasGenerator {
         LVUtils.Apply3DTextureData(atlasTexture, atlasPixelData);
 
         return new Atlas3D(atlasTexture, boundsUvwMin, boundsUvwMax);
+    }
+
+    private static Texture3D[] LinearizeSphericalHarmonics(Texture3D[] texs) {
+
+        int x = texs[0].width;
+        int y = texs[0].height;
+        int z = texs[0].depth;
+
+        TextureFormat format = TextureFormat.RGBAHalf;
+        Texture3D[] t = new Texture3D[3];
+        t[0] = new Texture3D(x, y, z, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+        t[1] = new Texture3D(x, y, z, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+        t[2] = new Texture3D(x, y, z, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+
+        Color[] colors0 = texs[0].GetPixels();
+        Color[] colors1 = texs[1].GetPixels();
+        Color[] colors2 = texs[2].GetPixels();
+
+        for (int iz = 0; iz < z; iz++) {
+            for (int iy = 0; iy < y; iy++) {
+                for (int ix = 0; ix < x; ix++) {
+
+                    int index = iz * (x * y) + iy * x + ix;
+
+                    Color tex0 = colors0[index];
+                    Color tex1 = colors1[index];
+                    Color tex2 = colors2[index];
+
+                    Vector3 L0  = new Vector3(tex0.r, tex0.g, tex0.b);
+                    Vector3 L1r = new Vector3(tex1.r, tex2.r, tex0.a);
+                    Vector3 L1g = new Vector3(tex1.g, tex2.g, tex1.a);
+                    Vector3 L1b = new Vector3(tex1.b, tex2.b, tex2.a);
+
+                    L1r = LinearizeSingleSH(L0.x, L1r);
+                    L1g = LinearizeSingleSH(L0.y, L1g);
+                    L1b = LinearizeSingleSH(L0.z, L1b);
+
+                    colors0[index] = new Color(L0.x, L0.y, L0.z, L1r.z);
+                    colors1[index] = new Color(L1r.x, L1g.x, L1b.x, L1g.z);
+                    colors2[index] = new Color(L1r.y, L1g.y, L1b.y, L1b.z);
+
+                }
+            }
+        }
+
+        LVUtils.Apply3DTextureData(t[0], colors0);
+        LVUtils.Apply3DTextureData(t[1], colors1);
+        LVUtils.Apply3DTextureData(t[2], colors2);
+
+        return t;
+
+    }
+
+    // Returns modified L1
+    private static Vector3 LinearizeSingleSH(float L0, Vector3 L1) {
+        L1 = L1 / 2;
+        float L1length = L1.magnitude;
+        if (L1length > 0.0 && L0 > 0.0) {
+            L1 *= Mathf.Min(L0 / L1length, 1.13f);
+        }
+        return L1;
     }
 
     // Adds a 3D position to the list if it's not already present.

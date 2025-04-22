@@ -10,6 +10,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     public Baking BakingMode;
 
     public int StochasticIterations = 5000;
+    public bool LinearizeSphericalHarmonics = true;
     public Texture3D LightVolumeAtlas;
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
@@ -58,7 +59,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             textures[i * 3 + 2] = LightVolumes[i].Texture2;
         }
 
-        var atlas = Texture3DAtlasGenerator.CreateAtlasStochastic(textures, StochasticIterations);
+        var atlas = Texture3DAtlasGenerator.CreateAtlasStochastic(textures, StochasticIterations, LinearizeSphericalHarmonics);
 
         LightVolumeAtlas = atlas.Texture;
 
