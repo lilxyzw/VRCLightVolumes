@@ -9,6 +9,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     public float[] LightVolumesWeights;
     public Baking BakingMode;
 
+    [Range(0, 1)] public float EdgeSmoothing = 0.25f;
     public int StochasticIterations = 5000;
     public bool LinearizeSphericalHarmonics = true;
     public Texture3D LightVolumeAtlas;
@@ -73,16 +74,14 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
             LightVolumeDataList.Add(new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                0,
                 Vector4.zero,
-                Vector4.zero,
+                Matrix4x4.identity,
                 atlas.BoundsUvwMin[i3],
                 atlas.BoundsUvwMin[i3 + 1],
                 atlas.BoundsUvwMin[i3 + 2],
                 atlas.BoundsUvwMax[i3],
                 atlas.BoundsUvwMax[i3 + 1],
-                atlas.BoundsUvwMax[i3 + 2],
-                Matrix4x4.identity
+                atlas.BoundsUvwMax[i3 + 2]
             ));
 
         }
@@ -115,56 +114,28 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             var rot = LightVolumes[i].GetRotation();
             var scl = LightVolumes[i].GetScale();
 
-            float rotType = (int)LightVolumes[i].RotationType;
-
-            Matrix4x4 invMatrix = Matrix4x4.identity;
-            Vector4 datA = Vector4.zero;
-            Vector4 datB = Vector4.zero;
-
-            if (rotType == 0) {
-                // Fixed rotation: A - WorldMin B - WorldMax
-                datA = LVUtils.TransformPoint(-v05, pos, rot, scl);
-                datB = LVUtils.TransformPoint(v05, pos, rot, scl);
-            } else if (rotType == 1) {
-                // Y Axis Rotation: A - BoundsCenter | SinY   B - InvBoundsSize | CosY
-                float eulerY = rot.eulerAngles.y;
-                datA = new Vector4(pos.x, pos.y, pos.z, Mathf.Sin(eulerY * Mathf.Deg2Rad));
-                datB = new Vector4(1 / scl.x, 1 / scl.y, 1 / scl.z, Mathf.Cos(eulerY * Mathf.Deg2Rad));
-            } else {
-                // Inversed World Matrix for Free rotation
-                invMatrix = Matrix4x4.TRS(pos, rot, scl).inverse;
-                datB = new Vector4(1 / scl.x, 1 / scl.y, 1 / scl.z, 0);
-            }
+            // Inversed World Matrix for Free rotation
+            Matrix4x4 invMatrix = Matrix4x4.TRS(pos, rot, scl).inverse;
+            Vector4 localEdgeSmooth = new Vector4(scl.x, scl.y, scl.z, 0) / EdgeSmoothing;
 
             LightVolumeDataList[i] = new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                rotType,
-                datA,
-                datB,
+                localEdgeSmooth,
+                invMatrix,
                 LightVolumeDataList[i].UvwMin[0],
                 LightVolumeDataList[i].UvwMin[1],
                 LightVolumeDataList[i].UvwMin[2],
                 LightVolumeDataList[i].UvwMax[0],
                 LightVolumeDataList[i].UvwMax[1],
-                LightVolumeDataList[i].UvwMax[2],
-                invMatrix
+                LightVolumeDataList[i].UvwMax[2]
             );
 
         }
 
-        float[] rotationMode;
-        Vector4[] dataA;
-        Vector4[] dataB;
-        Vector4[] boundsUvwMin;
-        Vector4[] boundsUvwMax;
-        Matrix4x4[] invWorldMatrix;
-
         var sortedData = LightVolumeDataSorter.SortData(LightVolumeDataList);
-        LightVolumeDataSorter.GetData(sortedData, out rotationMode, out dataA, out dataB, out boundsUvwMin, out boundsUvwMax, out invWorldMatrix);
+        LightVolumeDataSorter.GetData(sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] boundsUvwMin, out Vector4[] boundsUvwMax);
 
-        _udonLightVolumeManager.RotationTypes = rotationMode;
-        _udonLightVolumeManager.DataA = dataA;
-        _udonLightVolumeManager.DataB = dataB;
+        _udonLightVolumeManager.InvLocalEdgeSmooth = invLocalEdgeSmooth;
         _udonLightVolumeManager.BoundsUvwMin = boundsUvwMin;
         _udonLightVolumeManager.BoundsUvwMax = boundsUvwMax;
         _udonLightVolumeManager.InvWorldMatrix = invWorldMatrix;

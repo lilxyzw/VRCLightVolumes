@@ -8,7 +8,6 @@ public class LightVolume : MonoBehaviour {
 
     // Inspector
     [Header("Configuration")]
-    public VolumeRotation RotationType = VolumeRotation.Fixed;
     public bool Static = true;
 
     [Header("Spherical Harmonics Data")]
@@ -43,9 +42,7 @@ public class LightVolume : MonoBehaviour {
         return transform.lossyScale;
     }
     public Quaternion GetRotation() {
-        if (RotationType == VolumeRotation.Fixed) {
-            return Quaternion.identity;
-        } else if (RotationType == VolumeRotation.AroundY || (RotationType == VolumeRotation.Free && LightVolumeSetup.Instance.IsBakeryMode && !Application.isPlaying)) {
+        if (LightVolumeSetup.Instance.IsBakeryMode && !Application.isPlaying) {
             return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
         } else {
             return transform.rotation;
@@ -187,7 +184,7 @@ public class LightVolume : MonoBehaviour {
             // Sync bakery volume with light volume
             BakeryVolume.gameObject.name = $"Bakery Volume - {gameObject.name}";
             if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
-            BakeryVolume.rotateAroundY = RotationType == VolumeRotation.Fixed ? false : true;
+            BakeryVolume.rotateAroundY = true;
             BakeryVolume.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             BakeryVolume.transform.localScale = Vector3.one;
             BakeryVolume.bounds = new Bounds(GetPosition(), GetScale());
@@ -233,12 +230,6 @@ public class LightVolume : MonoBehaviour {
                 Gizmos.DrawSphere(_probesPositions[i], 0.05f);
             }
         }
-    }
-
-    public enum VolumeRotation {
-        Fixed,
-        AroundY,
-        Free
     }
 
 }

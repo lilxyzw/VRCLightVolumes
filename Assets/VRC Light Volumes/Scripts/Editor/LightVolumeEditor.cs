@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Unity.Mathematics;
 
 [CustomEditor(typeof(LightVolume))]
 public class LightVolumeEditor : Editor {
@@ -48,7 +49,8 @@ public class LightVolumeEditor : Editor {
         GUILayout.EndHorizontal();
 
 #if BAKERY_INCLUDED
-        if (volume.RotationType == LightVolume.VolumeRotation.Free && LightVolumeSetup.Instance.IsBakeryMode) {
+        float3 rotEuler = volume.transform.rotation.eulerAngles;
+        if ((rotEuler.x != 0 || rotEuler.z != 0) && LightVolumeSetup.Instance.IsBakeryMode) {
             GUILayout.Space(10);
             EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is allowed in the editor. Free rotation will still work at runtime.", MessageType.Warning);
         }
