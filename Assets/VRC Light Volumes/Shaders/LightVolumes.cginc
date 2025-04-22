@@ -23,6 +23,9 @@ uniform float4 _UdonLightVolumeRotation[256];
 // If we actually need to rotate L1 components at all
 uniform float _UdonLightVolumeNeedsRotation[256];
 
+// Is this light volume in additive mode?
+uniform float _UdonLightVolumeAdditive[256];
+
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[256];
 
@@ -90,6 +93,26 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
     return L0 + dot(L1, n);
 }
 
+// Samples a Volume with ID and Local UVW
+void LV_SampleVolume(int id, float3 localUVW, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+    
+    // Additive UVW
+    float3 uvw0 = LV_LocalToIsland(id, 0, localUVW);
+    float3 uvw1 = LV_LocalToIsland(id, 1, localUVW);
+    float3 uvw2 = LV_LocalToIsland(id, 2, localUVW);
+                
+    // Sample additive
+    LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
+                
+    // Rotate if needed
+    if (_UdonLightVolumeNeedsRotation[id] != 0) {
+        L1r = LV_MultiplyVectorByQuaternion(L1r, _UdonLightVolumeRotation[id]);
+        L1g = LV_MultiplyVectorByQuaternion(L1g, _UdonLightVolumeRotation[id]);
+        L1b = LV_MultiplyVectorByQuaternion(L1b, _UdonLightVolumeRotation[id]);
+    }
+                
+}
+
 // Calculate Light Volume Color based on all SH components provided
 float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
     return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
@@ -115,12 +138,20 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     bool isNoA = true;
     bool isNoB = true;
     
-    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order 
+    // Additive volumes UVW buffer. W component stores volume ID
+    float4 addUVWID[4];
+    int addVolumesCount = 0;
+    
+    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
+    [loop]
     for (int id = 0; id < _UdonLightVolumeCount; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            if (isNoA) { // First, searching for volume A
+            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != 4) { // Buffer Additive Volumes
+                addUVWID[addVolumesCount] = float4(localUVW, id);
+                addVolumesCount++;
+            } else if (isNoA) { // First, searching for volume A
                 volumeID_A = id;
                 localUVW_A = localUVW;
                 isNoA = false;
@@ -133,50 +164,70 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         }
     }
     
+    // Sampling additive light volumes
+    if (addVolumesCount > 0) {
+        float3 L0_, L1r_, L1g_, L1b_;
+        LV_SampleVolume(addUVWID[0].w, addUVWID[0].xyz, L0_, L1r_, L1g_, L1b_);
+        L0  += L0_; 
+        L1r += L1r_; 
+        L1g += L1g_; 
+        L1b += L1b_;
+    }
+    if (addVolumesCount > 1) {
+        float3 L0_, L1r_, L1g_, L1b_;
+        LV_SampleVolume(addUVWID[1].w, addUVWID[1].xyz, L0_, L1r_, L1g_, L1b_);
+        L0  += L0_; 
+        L1r += L1r_; 
+        L1g += L1g_; 
+        L1b += L1b_;
+    }
+    if (addVolumesCount > 2) {
+        float3 L0_, L1r_, L1g_, L1b_;
+        LV_SampleVolume(addUVWID[2].w, addUVWID[2].xyz, L0_, L1r_, L1g_, L1b_);
+        L0  += L0_; 
+        L1r += L1r_; 
+        L1g += L1g_; 
+        L1b += L1b_;
+    }
+    if (addVolumesCount > 3) {
+        float3 L0_, L1r_, L1g_, L1b_;
+        LV_SampleVolume(addUVWID[3].w, addUVWID[3].xyz, L0_, L1r_, L1g_, L1b_);
+        L0  += L0_; 
+        L1r += L1r_; 
+        L1g += L1g_; 
+        L1b += L1b_;
+    }
+    
     // Volume A SH components and mask to blend volume sides
     float3 L0_A  = float3(1, 1, 1);
     float3 L1r_A = float3(0, 0, 0);
     float3 L1g_A = float3(0, 0, 0);
     float3 L1b_A = float3(0, 0, 0);
-    float mask = 1;
-    
-    // If no volumes found, using Fallback
-    if (isNoA && _UdonLightVolumeProbesBlend) {
-        
-        // Sample Light Probes as Fallback
-        LV_SampleLightProbe(L0, L1r, L1g, L1b);
-        return;
-        
-    } else {
-        
-        // Fallback to lowest weight light volume if oudside of every volume
-        localUVW_A = isNoA ? localUVW : localUVW_A;
-        volumeID_A = isNoA ? _UdonLightVolumeCount - 1 : volumeID_A;
 
-        mask = LV_BoundsMask(localUVW_A, _UdonLightVolumeInvLocalEdgeSmooth[volumeID_A]);
-        float3 uvw0_A = LV_LocalToIsland(volumeID_A, 0, localUVW_A);
-        float3 uvw1_A = LV_LocalToIsland(volumeID_A, 1, localUVW_A);
-        float3 uvw2_A = LV_LocalToIsland(volumeID_A, 2, localUVW_A);
-        
-        // Sample Volume A
-        LV_SampleLightVolumeTex(uvw0_A, uvw1_A, uvw2_A, L0_A, L1r_A, L1g_A, L1b_A);
-        
-        // Rotating SH directions
-        if (_UdonLightVolumeNeedsRotation[volumeID_A] != 0){
-            L1r_A = LV_MultiplyVectorByQuaternion(L1r_A, _UdonLightVolumeRotation[volumeID_A]);
-            L1g_A = LV_MultiplyVectorByQuaternion(L1g_A, _UdonLightVolumeRotation[volumeID_A]);
-            L1b_A = LV_MultiplyVectorByQuaternion(L1b_A, _UdonLightVolumeRotation[volumeID_A]);
-        }
-        
-        
+    // If no volumes found, using Light Probes as fallback
+    if (isNoA && _UdonLightVolumeProbesBlend) {
+        float3 L0_, L1r_, L1g_, L1b_;
+        LV_SampleLightProbe(L0_, L1r_, L1g_, L1b_);
+        L0  += L0_;
+        L1r += L1r_;
+        L1g += L1g_;
+        L1b += L1b_;
+        return;
     }
+        
+    // Fallback to lowest weight light volume if oudside of every volume
+    localUVW_A = isNoA ? localUVW : localUVW_A;
+    volumeID_A = isNoA ? _UdonLightVolumeCount - 1 : volumeID_A;
+
+    // Sampling Light Volume A
+    LV_SampleVolume(volumeID_A, localUVW_A, L0_A, L1r_A, L1g_A, L1b_A);
     
-    // Returning SH A result if it's the center of mask or out of bounds
-    if (mask == 1 || isNoA || (_UdonLightVolumeSharpBounds && isNoB)) {
-        L0  = L0_A;
-        L1r = L1r_A;
-        L1g = L1g_A;
-        L1b = L1b_A;
+    float mask = LV_BoundsMask(localUVW_A, _UdonLightVolumeInvLocalEdgeSmooth[volumeID_A]);
+    if (mask == 1 || isNoA || (_UdonLightVolumeSharpBounds && isNoB)) { // Returning SH A result if it's the center of mask or out of bounds
+        L0  += L0_A;
+        L1r += L1r_A;
+        L1g += L1g_A;
+        L1b += L1b_A;
         return;
     }
     
@@ -197,28 +248,16 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         localUVW_B = isNoB ? localUVW : localUVW_B;
         volumeID_B = isNoB ? _UdonLightVolumeCount - 1 : volumeID_B;
             
-        // Volume B UVWs
-        float3 uvw0_B = LV_LocalToIsland(volumeID_B, 0, localUVW_B);
-        float3 uvw1_B = LV_LocalToIsland(volumeID_B, 1, localUVW_B);
-        float3 uvw2_B = LV_LocalToIsland(volumeID_B, 2, localUVW_B);
-        
-        // Sample Volume B
-        LV_SampleLightVolumeTex(uvw0_B, uvw1_B, uvw2_B, L0_B, L1r_B, L1g_B, L1b_B);
-            
-        // Rotating SH directions
-        if (_UdonLightVolumeNeedsRotation[volumeID_B] != 0) {
-            L1r_B = LV_MultiplyVectorByQuaternion(L1r_B, _UdonLightVolumeRotation[volumeID_B]);
-            L1g_B = LV_MultiplyVectorByQuaternion(L1g_B, _UdonLightVolumeRotation[volumeID_B]);
-            L1b_B = LV_MultiplyVectorByQuaternion(L1b_B, _UdonLightVolumeRotation[volumeID_B]);
-        }
+        // Sampling Light Volume B
+        LV_SampleVolume(volumeID_B, localUVW_B, L0_B, L1r_B, L1g_B, L1b_B);
         
     }
         
     // Lerping SH components
-    L0 =  lerp(L0_B,  L0_A,  mask);
-    L1r = lerp(L1r_B, L1r_A, mask);
-    L1g = lerp(L1g_B, L1g_A, mask);
-    L1b = lerp(L1b_B, L1b_A, mask);
+    L0  += lerp(L0_B,  L0_A,  mask);
+    L1r += lerp(L1r_B, L1r_A, mask);
+    L1g += lerp(L1g_B, L1g_A, mask);
+    L1b += lerp(L1b_B, L1b_A, mask);
     return;
 
 }

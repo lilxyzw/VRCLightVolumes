@@ -22,7 +22,7 @@ MonoBehaviour:
   vertexCounter: 0
   sceneLodLevel: -1
   autoResolution: 0
-  sceneName: Example
+  sceneName: Performance Test
   tag: -1
   containsTerrains: 0
   probes: 0

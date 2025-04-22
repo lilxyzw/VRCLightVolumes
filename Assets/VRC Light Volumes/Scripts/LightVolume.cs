@@ -14,8 +14,8 @@ public class LightVolume : MonoBehaviour {
 
     [Header("Baking Setup")]
     public bool Bake = true;
-    public bool Denoise;
-    public bool AdaptiveResolution;
+    public bool Denoise = true;
+    public bool AdaptiveResolution = true;
     public float VoxelsPerUnit = 2;
     public Vector3Int Resolution = new Vector3Int(16, 16, 16);
     public bool PreviewProbes;
