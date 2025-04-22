@@ -142,7 +142,8 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 atlas.BoundsUvwMax[i3 + 1],
                 atlas.BoundsUvwMax[i3 + 2],
                 Quaternion.identity,
-                null
+                null,
+                false
             ));
 
         }
@@ -191,13 +192,14 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 LightVolumeDataList[i].UvwMax[1],
                 LightVolumeDataList[i].UvwMax[2],
                 invBakedlRotation,
-                LightVolumes[i].transform
+                LightVolumes[i].transform,
+                LightVolumes[i].IsAdditive
             );
 
         }
 
         var sortedData = LightVolumeDataSorter.SortData(LightVolumeDataList);
-        LightVolumeDataSorter.GetData(sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] boundsUvwMin, out Vector4[] boundsUvwMax, out Quaternion[] invRotation, out Transform[] volumeTransforms);
+        LightVolumeDataSorter.GetData(sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] boundsUvwMin, out Vector4[] boundsUvwMax, out Quaternion[] invRotation, out Transform[] volumeTransforms, out float[] isAdditive);
 
         _udonLightVolumeManager.InvLocalEdgeSmooth = invLocalEdgeSmooth;
         _udonLightVolumeManager.BoundsUvwMin = boundsUvwMin;
@@ -206,6 +208,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         _udonLightVolumeManager.LightVolumeAtlas = LightVolumeAtlas;
         _udonLightVolumeManager.InvBakedRotations = invRotation;
         _udonLightVolumeManager.VolumesTransforms = volumeTransforms;
+        _udonLightVolumeManager.IsAdditive = isAdditive;
 
         SetShaderVariables();
 

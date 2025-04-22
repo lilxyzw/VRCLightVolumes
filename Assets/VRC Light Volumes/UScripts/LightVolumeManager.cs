@@ -16,6 +16,8 @@ public class LightVolumeManager : UdonSharpBehaviour {
     [Space]
     public Vector4[] BoundsUvwMin;
     public Vector4[] BoundsUvwMax;
+    [Space]
+    public float[] IsAdditive;
 
     private bool _isInitialized = false;
 
@@ -28,6 +30,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
         VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeNeedsRotation"), new float[256]);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMin"), new Vector4[756]);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMax"), new Vector4[756]);
+        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeAdditive"), new float[256]);
         _isInitialized = true;
     }
 
@@ -58,6 +61,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
         // Defines if Light Probes Blending enabled in scene
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeProbesBlend"), LightProbesBlending ? 1 : 0);
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeSharpBounds"), SharpBounds ? 1 : 0);
+        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeAdditive"), IsAdditive);
 
         // All light volumes Extra Data
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), InvLocalEdgeSmooth);

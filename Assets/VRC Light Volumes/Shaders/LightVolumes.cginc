@@ -62,9 +62,9 @@ float3 LV_LocalToIsland(int volumeID, int texID, float3 localUVW){
 // Samples 3 SH textures and packing them into L1 channels
 void LV_SampleLightVolumeTex(float3 uvw0, float3 uvw1, float3 uvw2, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     // Sampling 3D Atlas
-    float4 tex0 = tex3D(_UdonLightVolume, uvw0);
-    float4 tex1 = tex3D(_UdonLightVolume, uvw1);
-    float4 tex2 = tex3D(_UdonLightVolume, uvw2);
+    float4 tex0 = tex3Dlod(_UdonLightVolume, float4(uvw0, 0));
+    float4 tex1 = tex3Dlod(_UdonLightVolume, float4(uvw1, 0));
+    float4 tex2 = tex3Dlod(_UdonLightVolume, float4(uvw2, 0));
     // Packing final data
     L0 = tex0.rgb;
     L1r = float3(tex1.r, tex2.r, tex0.a);
@@ -121,6 +121,12 @@ float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g
 // Calculates SH components based on world position and world normal
 void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
 
+    // Initializing output variables
+    L0  = float3(0, 0, 0);
+    L1r = float3(0, 0, 0);
+    L1g = float3(0, 0, 0);
+    L1b = float3(0, 0, 0);
+    
     // Fallback to default light probes if Light Volume are not enabled
     if (!_UdonLightVolumeEnabled || _UdonLightVolumeCount == 0) {
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
@@ -138,9 +144,9 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     bool isNoA = true;
     bool isNoB = true;
     
-    // Additive volumes UVW buffer. W component stores volume ID
-    float4 addUVWID[4];
+    // Additive volumes variables
     int addVolumesCount = 0;
+    float3 L0_, L1r_, L1g_, L1b_;
     
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     [loop]
@@ -148,8 +154,12 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != 4) { // Buffer Additive Volumes
-                addUVWID[addVolumesCount] = float4(localUVW, id);
+            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != 4) { //Sampling additive light volumes
+                LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
+                L0 += L0_;
+                L1r += L1r_;
+                L1g += L1g_;
+                L1b += L1b_;
                 addVolumesCount++;
             } else if (isNoA) { // First, searching for volume A
                 volumeID_A = id;
@@ -164,40 +174,6 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         }
     }
     
-    // Sampling additive light volumes
-    if (addVolumesCount > 0) {
-        float3 L0_, L1r_, L1g_, L1b_;
-        LV_SampleVolume(addUVWID[0].w, addUVWID[0].xyz, L0_, L1r_, L1g_, L1b_);
-        L0  += L0_; 
-        L1r += L1r_; 
-        L1g += L1g_; 
-        L1b += L1b_;
-    }
-    if (addVolumesCount > 1) {
-        float3 L0_, L1r_, L1g_, L1b_;
-        LV_SampleVolume(addUVWID[1].w, addUVWID[1].xyz, L0_, L1r_, L1g_, L1b_);
-        L0  += L0_; 
-        L1r += L1r_; 
-        L1g += L1g_; 
-        L1b += L1b_;
-    }
-    if (addVolumesCount > 2) {
-        float3 L0_, L1r_, L1g_, L1b_;
-        LV_SampleVolume(addUVWID[2].w, addUVWID[2].xyz, L0_, L1r_, L1g_, L1b_);
-        L0  += L0_; 
-        L1r += L1r_; 
-        L1g += L1g_; 
-        L1b += L1b_;
-    }
-    if (addVolumesCount > 3) {
-        float3 L0_, L1r_, L1g_, L1b_;
-        LV_SampleVolume(addUVWID[3].w, addUVWID[3].xyz, L0_, L1r_, L1g_, L1b_);
-        L0  += L0_; 
-        L1r += L1r_; 
-        L1g += L1g_; 
-        L1b += L1b_;
-    }
-    
     // Volume A SH components and mask to blend volume sides
     float3 L0_A  = float3(1, 1, 1);
     float3 L1r_A = float3(0, 0, 0);
@@ -206,7 +182,6 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
 
     // If no volumes found, using Light Probes as fallback
     if (isNoA && _UdonLightVolumeProbesBlend) {
-        float3 L0_, L1r_, L1g_, L1b_;
         LV_SampleLightProbe(L0_, L1r_, L1g_, L1b_);
         L0  += L0_;
         L1r += L1r_;

@@ -10,8 +10,9 @@ public struct LightVolumeData {
     public Quaternion BakedRotation;
     public Matrix4x4 InvWorldMatrix;
     public Transform VolumeTransform;
+    public bool IsAdditive;
 
-    public LightVolumeData(float weight, Vector4 invLocalEdgeSmooth, Matrix4x4 invWorldMatrix, Vector4 uvwMin1, Vector4 uvwMin2, Vector4 uvwMin3, Vector4 uvwMax1, Vector4 uvwMax2, Vector4 uvwMax3, Quaternion bakedRotation, Transform volumeTransform) {
+    public LightVolumeData(float weight, Vector4 invLocalEdgeSmooth, Matrix4x4 invWorldMatrix, Vector4 uvwMin1, Vector4 uvwMin2, Vector4 uvwMin3, Vector4 uvwMax1, Vector4 uvwMax2, Vector4 uvwMax3, Quaternion bakedRotation, Transform volumeTransform, bool isAdditive) {
         Weight = weight;
         InvLocalEdgeSmooth = invLocalEdgeSmooth;
         UvwMin = new Vector4[] { uvwMin1, uvwMin2, uvwMin3 };
@@ -19,6 +20,7 @@ public struct LightVolumeData {
         BakedRotation = bakedRotation;
         InvWorldMatrix = invWorldMatrix;
         VolumeTransform = volumeTransform;
+        IsAdditive = isAdditive;
     }
 
 }

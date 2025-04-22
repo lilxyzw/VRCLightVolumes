@@ -11,6 +11,7 @@ public class LightVolume : MonoBehaviour {
     public Texture3D Texture1;
     public Texture3D Texture2;
     public Quaternion BakedRotation = Quaternion.identity;
+    public bool IsAdditive;
 
     [Header("Baking Setup")]
     public bool Bake = true;
