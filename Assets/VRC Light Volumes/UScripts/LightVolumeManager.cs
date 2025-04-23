@@ -4,6 +4,7 @@ using VRC.SDKBase;
 
 public class LightVolumeManager : UdonSharpBehaviour {
 
+    public bool DynamicUpdate;
     public Texture3D LightVolumeAtlas;
     public bool LightProbesBlending = false;
     public bool SharpBounds = false;
@@ -19,6 +20,9 @@ public class LightVolumeManager : UdonSharpBehaviour {
     [Space]
     public float[] IsAdditive;
 
+    public Vector4[] _rotations;
+    public float[] _needsToRotate;
+
     private bool _isInitialized = false;
 
     // Initializing gloabal shader arrays if needed 
@@ -32,6 +36,22 @@ public class LightVolumeManager : UdonSharpBehaviour {
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMax"), new Vector4[756]);
         VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeAdditive"), new float[256]);
         _isInitialized = true;
+    }
+
+    private void Update() {
+        if(!DynamicUpdate) return;
+        SetShaderVariables();
+    }
+
+    private void UpdateRotations() {
+        _rotations = new Vector4[VolumesTransforms.Length];
+        _needsToRotate = new float[VolumesTransforms.Length];
+        for (int i = 0; i < VolumesTransforms.Length; i++) {
+            InvWorldMatrix[i] = Matrix4x4.TRS(VolumesTransforms[i].position, VolumesTransforms[i].rotation, VolumesTransforms[i].lossyScale).inverse;
+            Quaternion rot = VolumesTransforms[i].rotation * InvBakedRotations[i];
+            _needsToRotate[i] = rot == Quaternion.identity ? 0 : 1;
+            _rotations[i] = new Vector4(rot.x, rot.y, rot.z, rot.w);
+        }
     }
 
     private void Start() {
@@ -50,7 +70,9 @@ public class LightVolumeManager : UdonSharpBehaviour {
         TryInitialize();
 #endif
 
-        if (LightVolumeAtlas == null || InvLocalEdgeSmooth.Length == 0 || BoundsUvwMin.Length == 0 || BoundsUvwMax.Length == 0) {
+        UpdateRotations();
+
+        if (LightVolumeAtlas == null || InvLocalEdgeSmooth.Length == 0 || BoundsUvwMin.Length == 0 || BoundsUvwMax.Length == 0 || _rotations.Length == 0 || _needsToRotate.Length == 0) {
             VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 0);
             return;
         }
@@ -78,15 +100,9 @@ public class LightVolumeManager : UdonSharpBehaviour {
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 1);
 
         // Volume's relative rotation
-        Vector4[] rotations = new Vector4[InvBakedRotations.Length];
-        float[] needsToRotate = new float[InvBakedRotations.Length];
-        for (int i = 0; i < InvBakedRotations.Length; i++) {
-            Quaternion rot = VolumesTransforms[i].rotation * InvBakedRotations[i];
-            needsToRotate[i] = rot == Quaternion.identity ? 0 : 1;
-            rotations[i] = new Vector4(rot.x, rot.y, rot.z, rot.w);
-        }
-        VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), rotations);
-        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeNeedsRotation"), needsToRotate);
+        
+        VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), _rotations);
+        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeNeedsRotation"), _needsToRotate);
 
     }
 }

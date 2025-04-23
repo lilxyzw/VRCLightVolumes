@@ -236,3 +236,37 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     return;
 
 }
+
+void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+
+    // Initializing output variables
+    L0  = float3(0, 0, 0);
+    L1r = float3(0, 0, 0);
+    L1g = float3(0, 0, 0);
+    L1b = float3(0, 0, 0);
+    
+    if (!_UdonLightVolumeEnabled || _UdonLightVolumeCount == 0) return;
+    
+    // Additive volumes variables
+    float3 localUVW = float3(0, 0, 0);
+    int addVolumesCount = 0;
+    float3 L0_, L1r_, L1g_, L1b_;
+    
+    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
+    [loop]
+    for (int id = 0; id < _UdonLightVolumeCount; id++) {
+        localUVW = LV_LocalFromVolume(id, worldPos);
+        //Intersection test
+        if (LV_PointLocalAABB(localUVW)) {
+            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != 4) { //Sampling additive light volumes
+                LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
+                L0 += L0_;
+                L1r += L1r_;
+                L1g += L1g_;
+                L1b += L1b_;
+                addVolumesCount++;
+            }
+        }
+    }
+
+}
