@@ -2,26 +2,27 @@
 using UnityEngine;
 using VRC.SDKBase;
 
+[UdonBehaviourSyncMode(BehaviourSyncMode.None)]
 public class LightVolumeManager : UdonSharpBehaviour {
 
-    public bool DynamicUpdate;
     public Texture3D LightVolumeAtlas;
-    public bool LightProbesBlending = false;
-    public bool SharpBounds = false;
+    public bool LightProbesBlending = true;
+    public bool SharpBounds = true;
+    public bool DynamicVolumes = false;
     [Space]
-    public Transform[] VolumesTransforms;
-    public Quaternion[] InvBakedRotations;
+    public Transform[] VolumesTransforms = new Transform[0];
+    public Quaternion[] InvBakedRotations = new Quaternion[0];
     [Space]
-    public Vector4[] InvLocalEdgeSmooth;
-    public Matrix4x4[] InvWorldMatrix;
+    public Vector4[] InvLocalEdgeSmooth = new Vector4[0];
+    public Matrix4x4[] InvWorldMatrix = new Matrix4x4[0];
     [Space]
-    public Vector4[] BoundsUvwMin;
-    public Vector4[] BoundsUvwMax;
+    public Vector4[] BoundsUvwMin = new Vector4[0];
+    public Vector4[] BoundsUvwMax = new Vector4[0];
     [Space]
-    public float[] IsAdditive;
+    public float[] IsAdditive = new float[0];
 
-    public Vector4[] _rotations;
-    public float[] _needsToRotate;
+    public Vector4[] _rotations = new Vector4[0];
+    public float[] _needsToRotate = new float[0];
 
     private bool _isInitialized = false;
 
@@ -39,7 +40,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
     }
 
     private void Update() {
-        if(!DynamicUpdate) return;
+        if(!DynamicVolumes) return;
         SetShaderVariables();
     }
 

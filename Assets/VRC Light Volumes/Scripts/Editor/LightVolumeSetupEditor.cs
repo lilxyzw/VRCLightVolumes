@@ -44,11 +44,53 @@ public class LightVolumeSetupEditor : Editor {
             float volumeWidth = availableWidth - weightWidth - space;
             float xOffset = rect.x + 15f;
 
+            var headerCountStyle = new GUIStyle(EditorStyles.numberField) {
+                alignment = TextAnchor.MiddleCenter,
+                contentOffset = Vector2.zero,
+                fixedHeight = EditorGUIUtility.singleLineHeight - 3,
+                margin = new RectOffset(0, 0, 0, 0),
+                padding = new RectOffset(0, 0, 0, 0),
+                fontSize = 11
+            };
+            headerCountStyle.normal.textColor = EditorStyles.label.normal.textColor;
+
             Rect volumeHeaderRect = new Rect(xOffset, rect.y, volumeWidth, EditorGUIUtility.singleLineHeight);
             Rect weightHeaderRect = new Rect(xOffset + volumeWidth + space, rect.y, weightWidth, EditorGUIUtility.singleLineHeight);
+            Rect fieldRect = new Rect(xOffset + 96, rect.y + 2, 32, rect.height);
 
-            EditorGUI.LabelField(volumeHeaderRect, "Light Volume");
+            EditorGUI.LabelField(volumeHeaderRect, "Light Volumes");
+
+            EditorGUI.BeginChangeCheck();
+            int newSize = Mathf.Min(EditorGUI.DelayedIntField(fieldRect, reorderableList.serializedProperty.arraySize, headerCountStyle), 256);
+            if (EditorGUI.EndChangeCheck()) {
+                newSize = Mathf.Max(0, newSize);
+                reorderableList.serializedProperty.arraySize = newSize;
+                reorderableList.index = Mathf.Clamp(reorderableList.index, 0, newSize - 1);
+            }
             EditorGUI.LabelField(weightHeaderRect, "Weight");
+
+            EventType eventType = Event.current.type;
+            if (eventType == EventType.DragUpdated || eventType == EventType.DragPerform) {
+                if (!rect.Contains(Event.current.mousePosition)) return;
+                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                if (eventType == EventType.DragPerform) {
+                    DragAndDrop.AcceptDrag();
+                    for (int i = 0; i < DragAndDrop.objectReferences.Length; i++) {
+                        GameObject go = (GameObject)DragAndDrop.objectReferences[i];
+                        if (go.TryGetComponent(out LightVolume volume)) {
+                            int newIndex = volumesProp.arraySize;
+                            if (newIndex == 256) break;
+                            volumesProp.arraySize++;
+                            weightsProp.arraySize = volumesProp.arraySize;
+                            volumesProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = volume;
+                            weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 0;
+                        }
+                    }
+                    Event.current.Use();
+                }
+            }
+
+            _lightVolumeSetup.SetupUdonBehaviour();
 
         };
 
@@ -74,6 +116,7 @@ public class LightVolumeSetupEditor : Editor {
         // On Adding element
         reorderableList.onAddCallback = (ReorderableList list) => {
             int index = list.serializedProperty.arraySize;
+            if (index == 256) return;
             list.serializedProperty.arraySize++;
             weightsProp.arraySize = list.serializedProperty.arraySize;
             list.serializedProperty.GetArrayElementAtIndex(index).objectReferenceValue = null;
@@ -109,24 +152,37 @@ public class LightVolumeSetupEditor : Editor {
             _lightVolumeSetup.SetupUdonBehaviour();
         };
 
-        // On Drag and Drop
+        // On Drag and Drop in element
         reorderableList.drawElementBackgroundCallback = (Rect rect, int index, bool isActive, bool isFocused) => {
             EventType eventType = Event.current.type;
-            if (eventType == EventType.DragUpdated || eventType == EventType.DragPerform) {
-                if (!rect.Contains(Event.current.mousePosition))
-                    return;
 
+            if (eventType == EventType.Repaint) {
+                ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, true);
+            }
+
+            if (eventType == EventType.DragUpdated || eventType == EventType.DragPerform) {
+                if (!rect.Contains(Event.current.mousePosition)) return;
                 DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
                 if (eventType == EventType.DragPerform) {
                     DragAndDrop.AcceptDrag();
-                    foreach (Object draggedObject in DragAndDrop.objectReferences) {
-                        GameObject go = (GameObject)draggedObject;
-                        if (go.TryGetComponent(out LightVolume volume)) {
-                            int newIndex = volumesProp.arraySize;
-                            volumesProp.arraySize++;
-                            weightsProp.arraySize = volumesProp.arraySize;
-                            volumesProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = volume;
-                            weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 0;
+                    if (DragAndDrop.objectReferences.Length > 0) {
+                        GameObject go = (GameObject)DragAndDrop.objectReferences[0];
+                        if(go.TryGetComponent(out LightVolume volume)) {
+                            if(index == -1) {
+                                for (int i = 0; i < DragAndDrop.objectReferences.Length; i++) {
+                                    GameObject obj = (GameObject)DragAndDrop.objectReferences[i];
+                                    if (obj.TryGetComponent(out LightVolume v)) {
+                                        int newIndex = volumesProp.arraySize;
+                                        if (newIndex == 256) break;
+                                        volumesProp.arraySize++;
+                                        weightsProp.arraySize = volumesProp.arraySize;
+                                        volumesProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = v;
+                                        weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 0;
+                                    }
+                                }
+                            } else {
+                                volumesProp.GetArrayElementAtIndex(index).objectReferenceValue = volume;
+                            }
                         }
                     }
                     Event.current.Use();
@@ -169,6 +225,8 @@ public class LightVolumeSetupEditor : Editor {
 
         string[] hiddenFields = new string[] { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
         DrawPropertiesExcluding(serializedObject, hiddenFields);
+
+        GUILayout.Space(5);
 
         if (GUILayout.Button("Pack Light Volumes")){
             _lightVolumeSetup.GenerateAtlas();

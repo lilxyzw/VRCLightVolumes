@@ -38,13 +38,17 @@ public abstract class SingletonEditor<T> : MonoBehaviour where T : SingletonEdit
         if (_instance == null)
             _instance = (T)this;
         else if (_instance != this) {
+            Debug.LogError($"There is only one instance of {typeof(T).Name} allowed in scene!");
 #if UNITY_EDITOR
             if (!Application.isPlaying) {
-                DestroyImmediate(this);
+                EditorApplication.delayCall += () =>{
+                    if (!this) return;
+                    DestroyImmediate(this);
+                };
                 return;
             }
 #endif
-            Destroy(gameObject);
+            Destroy(this);
         }
     }
 }

@@ -1,15 +1,23 @@
 using UnityEngine;
 using System;
-using UnityEditor;
 using System.Collections.Generic;
 
 public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
-    public LightVolume[] LightVolumes;
-    public float[] LightVolumesWeights;
-    public Baking BakingMode;
+    public LightVolume[] LightVolumes = new LightVolume[0];
+    public float[] LightVolumesWeights = new float[0];
+#if BAKERY_INCLUDED
+    public Baking BakingMode = Baking.Bakery;
+#else
+    public Baking BakingMode = Baking.UnityLightmapper;
+#endif
 
+    [Header("Visuals")]
     [Range(0, 1)] public float EdgeSmoothing = 0.25f;
+    public bool LightProbesBlending = true;
+    public bool SharpBounds = true;
+    public bool DynamicVolumes = false;
+    [Header("Atlas Packing")]
     public int StochasticIterations = 5000;
     public Texture3D LightVolumeAtlas;
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
@@ -32,7 +40,6 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     }
 
 #if UNITY_EDITOR
-
 
 #if BAKERY_INCLUDED
     private bool _subscribedToBakery = false;
@@ -173,15 +180,17 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         // Update Weights because can be desynced
         for (int i = 0; i < LightVolumeDataList.Count; i++) {
 
+            if (LightVolumeDataList[i].VolumeTransform == null || !LightVolumeDataList[i].VolumeTransform.gameObject.TryGetComponent(out LightVolume lightVolume)) continue;
+
             // Volume data
-            var pos = LightVolumes[i].GetPosition();
-            var rot = LightVolumes[i].GetRotation();
-            var scl = LightVolumes[i].GetScale();
+            var pos = lightVolume.GetPosition();
+            var rot = lightVolume.GetRotation();
+            var scl = lightVolume.GetScale();
 
             // Inversed World Matrix for Free rotation
             Matrix4x4 invMatrix = Matrix4x4.TRS(pos, rot, scl).inverse;
             Vector4 localEdgeSmooth = new Vector4(scl.x, scl.y, scl.z, 0) / EdgeSmoothing;
-            Quaternion invBakedlRotation = Quaternion.Inverse(LightVolumes[i].BakedRotation);
+            Quaternion invBakedlRotation = Quaternion.Inverse(lightVolume.BakedRotation);
 
             LightVolumeDataList[i] = new LightVolumeData(
                 i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
@@ -194,8 +203,8 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 LightVolumeDataList[i].UvwMax[1],
                 LightVolumeDataList[i].UvwMax[2],
                 invBakedlRotation,
-                LightVolumes[i].transform,
-                LightVolumes[i].IsAdditive
+                LightVolumeDataList[i].VolumeTransform,
+                LightVolumeDataList[i].IsAdditive
             );
 
         }
@@ -211,6 +220,9 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         _udonLightVolumeManager.InvBakedRotations = invRotation;
         _udonLightVolumeManager.VolumesTransforms = volumeTransforms;
         _udonLightVolumeManager.IsAdditive = isAdditive;
+        _udonLightVolumeManager.DynamicVolumes = DynamicVolumes;
+        _udonLightVolumeManager.SharpBounds = SharpBounds;
+        _udonLightVolumeManager.LightProbesBlending = LightProbesBlending;
 
         SetShaderVariables();
 

@@ -5,6 +5,7 @@ using System.Linq;
 public static class LightVolumeDataSorter {
 
     public static List<LightVolumeData> SortData(List<LightVolumeData> lightVolumeDataList) {
+        lightVolumeDataList.RemoveAll(item => item.VolumeTransform == null);
         return lightVolumeDataList.OrderByDescending(item => item.Weight).ToList();
     }
 
