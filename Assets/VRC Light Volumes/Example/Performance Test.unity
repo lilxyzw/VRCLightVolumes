@@ -828,7 +828,7 @@ Transform:
   m_LocalScale: {x: 10.020525, y: 3.2581067, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1657248872}
+  - {fileID: 674120799}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &38894220
@@ -854,7 +854,7 @@ MonoBehaviour:
   VoxelsPerUnit: 6
   Resolution: {x: 60, y: 20, z: 60}
   PreviewProbes: 0
-  BakeryVolume: {fileID: 1657248873}
+  BakeryVolume: {fileID: 674120800}
 --- !u!1 &53727332
 GameObject:
   m_ObjectHideFlags: 0
@@ -5465,6 +5465,71 @@ LightingSettings:
   m_PVRTiledBaking: 0
   m_NumRaysToShootPerTexel: -1
   m_RespectSceneVisibilityWhenBakingGI: 0
+--- !u!1 &674120798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 674120799}
+  - component: {fileID: 674120800}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Main
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &674120799
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674120798}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 38894219}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &674120800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674120798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: 0.0022796392, y: 2.1295347, z: 0.0044533014}
+    m_Extent: {x: 5.0102625, y: 1.6290534, z: 5}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 60
+  resolutionY: 20
+  resolutionZ: 60
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &687875465
 GameObject:
   m_ObjectHideFlags: 0
@@ -10770,7 +10835,6 @@ MonoBehaviour:
   BakingMode: 1
   EdgeSmoothing: 0.25
   StochasticIterations: 5000
-  LinearizeSphericalHarmonics: 1
   LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
   LightVolumeDataList:
   - Weight: 0
@@ -11081,114 +11145,114 @@ MonoBehaviour:
   - {x: 40.0821, y: 13.032427, z: 40, w: 0}
   - {x: 40.0821, y: 24.022232, z: 40, w: 0}
   InvWorldMatrix:
-  - e00: 2.5151765
+  - e00: 0.3975864
     e01: 0
     e02: 0
-    e03: -1.9965378
+    e03: 0.7937963
     e10: 0
-    e11: 2.2058833
+    e11: 0.45333314
     e12: 0
-    e13: 1.600448
+    e13: -0.7255361
     e20: 0
     e21: 0
-    e22: 0.4743843
-    e23: -21.762014
+    e22: 2.1079955
+    e23: 45.87423
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  - e00: 1.9971418
+  - e00: 0.50071555
     e01: 0
     e02: 0
-    e03: 1.9988012
+    e03: -1.0008309
     e10: 0
-    e11: 1.7643359
+    e11: 0.5667855
     e12: 0
-    e13: 1.5592221
+    e13: -0.8837445
     e20: 0
     e21: 0
-    e22: 0.4743843
-    e23: -21.762014
+    e22: 2.1079955
+    e23: 45.87423
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  - e00: 8.00392
+  - e00: 0.124938786
     e01: 0
     e02: 0
-    e03: 0.466
+    e03: -0.058221474
     e10: 0
-    e11: 4.009019
+    e11: 0.24943759
     e12: 0
-    e13: 2.5049906
+    e13: -0.6248388
     e20: 0
     e21: 0
-    e22: 4.743454
-    e23: -18.272
+    e22: 0.21081685
+    e23: 3.8520453
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  - e00: 8.00392
+  - e00: 0.124938786
     e01: 0
     e02: 0
-    e03: -0.004672289
+    e03: 0.0005837501
     e10: 0
-    e11: 4.009019
+    e11: 0.24943759
     e12: 0
-    e13: 2.5049906
+    e13: -0.6248388
     e20: 0
     e21: 0
-    e22: 8.002996
-    e23: -17.99885
+    e22: 0.124953195
+    e23: 2.249014
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  - e00: 4.0205145
+  - e00: 0.24872439
     e01: 0
     e02: 0
-    e03: -0.0014894605
+    e03: 0.00037046513
     e10: 0
-    e11: 5.0123687
+    e11: 0.19950648
     e12: 0
-    e13: 3.0066655
+    e13: -0.5998492
     e20: 0
     e21: 0
-    e22: 11.01769
-    e23: -9.493307
+    e22: 0.09076313
+    e23: 0.86164224
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  - e00: 10.020525
+  - e00: 0.09979517
     e01: 0
     e02: 0
-    e03: 0.0022796392
+    e03: -0.00022749699
     e10: 0
-    e11: 3.2581067
+    e11: 0.30692673
     e12: 0
-    e13: 2.1295347
+    e13: -0.6536111
     e20: 0
     e21: 0
-    e22: 10
-    e23: 0.0044533014
+    e22: 0.1
+    e23: -0.00044533014
     e30: 0
     e31: 0
     e32: 0
     e33: 1
-  - e00: 10.020525
+  - e00: 0.09979517
     e01: 0
     e02: 0
-    e03: 0.0022796392
+    e03: -0.00022749699
     e10: 0
-    e11: 6.005558
+    e11: 0.16651241
     e12: 0
-    e13: 5.5058107
+    e13: -0.91678584
     e20: 0
     e21: 0
-    e22: 10
-    e23: 0.0044533014
+    e22: 0.1
+    e23: -0.00044533014
     e30: 0
     e31: 0
     e32: 0
@@ -11942,8 +12006,8 @@ MonoBehaviour:
   useAssignedLayers: 0
   DynamicPrefabs: []
   DynamicMaterials:
+  - {fileID: 2100000, guid: e589b68a425774842a53ce06d0e402fc, type: 2}
   - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
-  - {fileID: 2100000, guid: 5628279d67a7cde43b8975e53bdac69f, type: 2}
   - {fileID: 2100000, guid: baede57ab42d19d4899dcbc2e280bd1c, type: 2}
   - {fileID: 2100000, guid: 269af33bf0eb06c49ae1e2bafde895bd, type: 2}
   - {fileID: 2100000, guid: 9ec09f8f5a313cc4c91bd7feaf546635, type: 2}
@@ -14169,71 +14233,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1655358562}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1657248871
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1657248872}
-  - component: {fileID: 1657248873}
-  m_Layer: 0
-  m_Name: Bakery Volume - Light Volume Main
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1657248872
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1657248871}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 38894219}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1657248873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1657248871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enableBaking: 1
-  bounds:
-    m_Center: {x: 0.0022796392, y: 2.1295347, z: 0.0044533014}
-    m_Extent: {x: 5.0102625, y: 1.6290534, z: 5}
-  adaptiveRes: 0
-  voxelsPerUnit: 0.5
-  resolutionX: 60
-  resolutionY: 20
-  resolutionZ: 60
-  encoding: 0
-  shadowmaskEncoding: 0
-  firstLightIsAlwaysAlpha: 0
-  denoise: 1
-  isGlobal: 0
-  bakedTexture0: {fileID: 11700000, guid: 4bc10b354621f4e47a53fae263ab553f, type: 2}
-  bakedTexture1: {fileID: 11700000, guid: d297195096fb96b48ac554e0f404a145, type: 2}
-  bakedTexture2: {fileID: 11700000, guid: 23c9f67bac268854c9cc3c4829777c92, type: 2}
-  bakedTexture3: {fileID: 0}
-  bakedMask: {fileID: 0}
-  supportRotationAfterBake: 0
-  rotateAroundY: 1
 --- !u!1 &1658087505
 GameObject:
   m_ObjectHideFlags: 0

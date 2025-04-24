@@ -50,10 +50,19 @@ public class LightVolumeEditor : Editor {
 
 #if BAKERY_INCLUDED
         float3 rotEuler = volume.transform.rotation.eulerAngles;
-        if ((rotEuler.x != 0 || rotEuler.z != 0) && LightVolumeSetup.Instance.IsBakeryMode) {
-            GUILayout.Space(10);
-            EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is allowed in the editor. Free rotation will still work at runtime.", MessageType.Warning);
+
+        if (typeof(BakeryVolume).GetField("rotateAroundY") != null) {
+            if ((rotEuler.x != 0 || rotEuler.z != 0) && LightVolumeSetup.Instance.IsBakeryMode) {
+                GUILayout.Space(10);
+                EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is supported in the editor. Free rotation will still work at runtime.", MessageType.Warning);
+            }
+        } else {
+            if ((rotEuler.x != 0 || rotEuler.z != 0 || rotEuler.y != 0) && LightVolumeSetup.Instance.IsBakeryMode) {
+                GUILayout.Space(10);
+                EditorGUILayout.HelpBox("In Bakery baking mode with your Bakery version, volume rotation is not supported in the editor. Update Bakery to the latest version to bring the Y-axis rotation support. Free rotation will still work at runtime.", MessageType.Warning);
+            }
         }
+
 #else
         if (volume.BakingMode == LightVolume.Baking.Bakery) {
             GUILayout.Space(10);

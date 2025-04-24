@@ -3,7 +3,6 @@ using System;
 using UnityEditor;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(LightVolumeManager))]
 public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
     public LightVolume[] LightVolumes;
@@ -12,7 +11,6 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
     [Range(0, 1)] public float EdgeSmoothing = 0.25f;
     public int StochasticIterations = 5000;
-    public bool LinearizeSphericalHarmonics = true;
     public Texture3D LightVolumeAtlas;
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
@@ -25,6 +23,12 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
         if (_udonLightVolumeManager == null) return;
             _udonLightVolumeManager.SetShaderVariables();
+    }
+
+    protected override void OnInstanceCreated() {
+        if(!TryGetComponent(out _udonLightVolumeManager)) {
+            _udonLightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
+        }
     }
 
 #if UNITY_EDITOR
@@ -119,13 +123,11 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             textures[i * 3 + 2] = LightVolumes[i].Texture2;
         }
 
-        var atlas = Texture3DAtlasGenerator.CreateAtlasStochastic(textures, StochasticIterations, LinearizeSphericalHarmonics);
+        var atlas = Texture3DAtlasGenerator.CreateAtlasStochastic(textures, StochasticIterations);
 
         LightVolumeAtlas = atlas.Texture;
 
         LightVolumeDataList.Clear();
-
-        
 
         for (int i = 0; i < LightVolumes.Length; i++) {
 

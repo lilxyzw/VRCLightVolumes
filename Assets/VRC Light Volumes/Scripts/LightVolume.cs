@@ -40,8 +40,12 @@ public class LightVolume : MonoBehaviour {
         return transform.lossyScale;
     }
     public Quaternion GetRotation() {
-        if (LightVolumeSetup.Instance.IsBakeryMode && !Application.isPlaying) {
-            return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+        if (LightVolumeSetup.Instance.IsBakeryMode && !Application.isPlaying && Bake) {
+            if(typeof(BakeryVolume).GetField("rotateAroundY") != null) {
+                return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+            } else {
+                return Quaternion.identity;
+            }
         } else {
             return transform.rotation;
         }
@@ -56,11 +60,13 @@ public class LightVolume : MonoBehaviour {
     }
 
     // Sets Additional Probes to bake with Unity Lightmapper
+#if UNITY_EDITOR
     [ContextMenu("Set Light Probes")]
     public void SetAdditionalProbes() {
         RecalculateProbesPositions();
         UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(0, _probesPositions);
     }
+#endif
 
     // Recalculates probes world positions
     public void RecalculateProbesPositions() {
@@ -98,7 +104,7 @@ public class LightVolume : MonoBehaviour {
         if (PreviewProbes && Bake)
             RecalculateProbesPositions();
     }
-
+#if UNITY_EDITOR
     [ContextMenu("Save Texture From Light Probes")]
     public void Save3DTextures() {
 
@@ -139,12 +145,13 @@ public class LightVolume : MonoBehaviour {
             const int x = 3;
             const int y = 1;
             const int z = 2;
+            const float coeff = 1.7699115f; // To transform to bakery non-linear data format
 
             // Setting voxel data
             for (int i = 0; i < vCount; i++) {
-                c0[i] = new Color(probes[i][r, a], probes[i][g, a], probes[i][b, a], probes[i][r, z]);
-                c1[i] = new Color(probes[i][r, x], probes[i][g, x], probes[i][b, x], probes[i][g, z]);
-                c2[i] = new Color(probes[i][r, y], probes[i][g, y], probes[i][b, y], probes[i][b, z]);
+                c0[i] = new Color(probes[i][r, a], probes[i][g, a], probes[i][b, a], probes[i][r, z] * coeff);
+                c1[i] = new Color(probes[i][r, x] * coeff, probes[i][g, x] * coeff, probes[i][b, x] * coeff, probes[i][g, z] * coeff);
+                c2[i] = new Color(probes[i][r, y] * coeff, probes[i][g, y] * coeff, probes[i][b, y] * coeff, probes[i][b, z] * coeff);
             }
 
             // Apply Pixel Data to Texture
@@ -160,7 +167,7 @@ public class LightVolume : MonoBehaviour {
         }
 
     }
-
+#endif
     // Setups required game objects and components
     public void SetupDependencies() {
 #if BAKERY_INCLUDED
@@ -182,7 +189,6 @@ public class LightVolume : MonoBehaviour {
             // Sync bakery volume with light volume
             BakeryVolume.gameObject.name = $"Bakery Volume - {gameObject.name}";
             if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
-            BakeryVolume.rotateAroundY = true;
             BakeryVolume.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             BakeryVolume.transform.localScale = Vector3.one;
             BakeryVolume.bounds = new Bounds(GetPosition(), GetScale());
@@ -193,10 +199,15 @@ public class LightVolume : MonoBehaviour {
             BakeryVolume.resolutionY = Resolution.y;
             BakeryVolume.resolutionZ = Resolution.z;
             BakeryVolume.encoding = BakeryVolume.Encoding.Half4;
+
+            // Even some latest Bakery versions does not support Rotate Around Y
+            var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
+            if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);
+
         }
 #endif
     }
-
+#if UNITY_EDITOR
     private void Update() {
 #if BAKERY_INCLUDED
         if (Bake && (Texture0 == null || Texture1 == null || Texture2 == null) && LightVolumeSetup.Instance.IsBakeryMode && BakeryVolume != null  && BakeryVolume.bakedTexture0 != null) {
@@ -217,10 +228,12 @@ public class LightVolume : MonoBehaviour {
         }
     }
 
+
     private void OnValidate() {
         Recalculate();
         LightVolumeSetup.Instance.SetupUdonBehaviour();
     }
+#endif
 
     private void OnDrawGizmosSelected() {
         if (PreviewProbes && Bake && _probesPositions != null) {

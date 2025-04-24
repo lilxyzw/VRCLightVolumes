@@ -63,20 +63,19 @@ public static class Texture3DAtlasGenerator {
     }
 
     // Creates a 3D texture atlas using stochastic packing over multiple iterations. Runs a 3D point-based packing algorithm with randomized input order N times and selects the result with the smallest bounding box volume. Includes edge padding.
-    public static Atlas3D CreateAtlasStochastic(Texture3D[] Textures, int iterations, bool linearizeSphericalHarmonics) {
+    public static Atlas3D CreateAtlasStochastic(Texture3D[] Textures, int iterations) {
 
-        if (linearizeSphericalHarmonics) {
-            int count = Textures.Length / 3;
-            for (int i = 0; i < count; i++) {
-                Texture3D[] texs = new Texture3D[3];
-                texs[0] = Textures[i * 3];
-                texs[1] = Textures[i * 3 + 1];
-                texs[2] = Textures[i * 3 + 2];
-                texs = LinearizeSphericalHarmonics(texs);
-                Textures[i * 3] = texs[0];
-                Textures[i * 3 + 1] = texs[1];
-                Textures[i * 3 + 2] = texs[2];
-            }
+        // Linearize SH
+        int count = Textures.Length / 3;
+        for (int i = 0; i < count; i++) {
+            Texture3D[] texs = new Texture3D[3];
+            texs[0] = Textures[i * 3];
+            texs[1] = Textures[i * 3 + 1];
+            texs[2] = Textures[i * 3 + 2];
+            texs = LinearizeSphericalHarmonics(texs);
+            Textures[i * 3] = texs[0];
+            Textures[i * 3 + 1] = texs[1];
+            Textures[i * 3 + 2] = texs[2];
         }
 
         // Validating and getting texture infos based on provided arrays

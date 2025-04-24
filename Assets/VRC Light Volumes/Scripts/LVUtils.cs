@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEditor;
+#if UNITY_EDITOR
 using System.IO;
 using UnityEditor.SceneManagement;
+#endif
 
 public class LVUtils {
 
