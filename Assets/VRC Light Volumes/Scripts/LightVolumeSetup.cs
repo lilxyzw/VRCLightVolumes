@@ -13,12 +13,13 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
     public LightVolume[] LightVolumes = new LightVolume[0];
     public float[] LightVolumesWeights = new float[0];
+    [Header("Baking")]
 #if BAKERY_INCLUDED
     public Baking BakingMode = Baking.Bakery;
 #else
     public Baking BakingMode = Baking.UnityLightmapper;
 #endif
-
+    public bool Denoise = true;
     [Header("Visuals")]
     [Range(0, 1)] public float EdgeSmoothing = 0.25f;
     public bool LightProbesBlending = true;

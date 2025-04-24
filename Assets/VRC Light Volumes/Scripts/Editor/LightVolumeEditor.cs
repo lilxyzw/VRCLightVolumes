@@ -104,16 +104,11 @@ public class LightVolumeEditor : Editor {
         hiddenFields.Add("BakeryVolume");
 #endif
 
-        if(!LightVolumeSetup.Instance.IsBakeryMode) {
-            hiddenFields.Add("Denoise");
-        }
-
         if(!volume.Bake) {
             hiddenFields.Add("AdaptiveResolution");
             hiddenFields.Add("Resolution");
             hiddenFields.Add("VoxelsPerUnit");
             hiddenFields.Add("PreviewProbes");
-            hiddenFields.Add("Denoise");
         } if (volume.AdaptiveResolution) {
             
         } else {

@@ -18,7 +18,6 @@ public class LightVolume : MonoBehaviour {
 
     [Header("Baking Setup")]
     public bool Bake = true;
-    public bool Denoise = true;
     public bool AdaptiveResolution = true;
     public float VoxelsPerUnit = 2;
     public Vector3Int Resolution = new Vector3Int(16, 16, 16);
@@ -202,7 +201,7 @@ public class LightVolume : MonoBehaviour {
             BakeryVolume.transform.localScale = Vector3.one;
             BakeryVolume.bounds = new Bounds(GetPosition(), GetScale());
             BakeryVolume.enableBaking = true;
-            BakeryVolume.denoise = Denoise;
+            BakeryVolume.denoise = LightVolumeSetup.Instance.Denoise;
             BakeryVolume.adaptiveRes = false;
             BakeryVolume.resolutionX = Resolution.x;
             BakeryVolume.resolutionY = Resolution.y;
