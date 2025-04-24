@@ -1,6 +1,9 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEngine.SceneManagement;
+#endif
 
 public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
@@ -157,8 +160,9 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         }
 
-        LVUtils.SaveTexture3DAsAsset(atlas.Texture, "Assets/BakeryLightmaps/Atlas3D.asset");
-
+#if UNITY_EDITOR
+        LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_LightVolumeAtlas.asset");
+#endif
         SetupUdonBehaviour();
 
     }
@@ -180,7 +184,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         // Update Weights because can be desynced
         for (int i = 0; i < LightVolumeDataList.Count; i++) {
 
-            if (LightVolumeDataList[i].VolumeTransform == null || !LightVolumeDataList[i].VolumeTransform.gameObject.TryGetComponent(out LightVolume lightVolume)) continue;
+            if (LightVolumes.Length <= i || !LightVolumes[i].gameObject.TryGetComponent(out LightVolume lightVolume)) continue;
 
             // Volume data
             var pos = lightVolume.GetPosition();
@@ -203,13 +207,14 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 LightVolumeDataList[i].UvwMax[1],
                 LightVolumeDataList[i].UvwMax[2],
                 invBakedlRotation,
-                LightVolumeDataList[i].VolumeTransform,
-                LightVolumeDataList[i].IsAdditive
+                lightVolume.transform,
+                lightVolume.IsAdditive
             );
 
         }
-
+        
         var sortedData = LightVolumeDataSorter.SortData(LightVolumeDataList);
+        
         LightVolumeDataSorter.GetData(sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] boundsUvwMin, out Vector4[] boundsUvwMax, out Quaternion[] invRotation, out Transform[] volumeTransforms, out float[] isAdditive);
 
         _udonLightVolumeManager.InvLocalEdgeSmooth = invLocalEdgeSmooth;
