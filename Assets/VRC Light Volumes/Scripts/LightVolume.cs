@@ -2,6 +2,9 @@ using UnityEngine;
 using Unity.Collections;
 using UnityEngine.Rendering;
 using UnityEditor;
+#if UNITY_EDITOR
+using UnityEngine.SceneManagement;
+#endif
 
 [ExecuteAlways]
 public class LightVolume : MonoBehaviour {
@@ -61,10 +64,13 @@ public class LightVolume : MonoBehaviour {
 
     // Sets Additional Probes to bake with Unity Lightmapper
 #if UNITY_EDITOR
-    [ContextMenu("Set Light Probes")]
-    public void SetAdditionalProbes() {
+    public void SetAdditionalProbes(int id) {
         RecalculateProbesPositions();
-        UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(0, _probesPositions);
+        UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, _probesPositions);
+    }
+
+    public void RemoveAdditionalProbes(int id) {
+        UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, new Vector3[0]);
     }
 #endif
 
@@ -105,8 +111,7 @@ public class LightVolume : MonoBehaviour {
             RecalculateProbesPositions();
     }
 #if UNITY_EDITOR
-    [ContextMenu("Save Texture From Light Probes")]
-    public void Save3DTextures() {
+    public void Save3DTextures(int id) {
 
         // Atlas Sizes
         int w = Resolution.x;
@@ -120,7 +125,7 @@ public class LightVolume : MonoBehaviour {
 
             // Checking data available
 #pragma warning disable CS0618
-            if (!UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(0, probes, probesValidity)) {
+            if (!UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, probes, probesValidity)) {
                 Debug.LogError("[LightVolume] Can't grab light volume data. No additional baked probes found!");
                 return;
             }
@@ -145,8 +150,7 @@ public class LightVolume : MonoBehaviour {
             const int x = 3;
             const int y = 1;
             const int z = 2;
-            const float coeff = 1.7699115f; // To transform to bakery non-linear data format
-
+            const float coeff = 1.45f; // To transform to bakery non-linear data format. Should be 1.7699115f actually, but 1.45 just works better
             // Setting voxel data
             for (int i = 0; i < vCount; i++) {
                 c0[i] = new Color(probes[i][r, a], probes[i][g, a], probes[i][b, a], probes[i][r, z] * coeff);
@@ -160,9 +164,14 @@ public class LightVolume : MonoBehaviour {
             LVUtils.Apply3DTextureData(tex2, c2);
 
             // Saving 3D Texture assets
-            LVUtils.SaveTexture3DAsAsset(tex0, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_1.asset");
-            LVUtils.SaveTexture3DAsAsset(tex1, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_2.asset");
-            LVUtils.SaveTexture3DAsAsset(tex2, $"Assets/BakeryLightmaps/LightVolume_{gameObject.name}_3.asset");
+            LVUtils.SaveTexture3DAsAsset(tex0, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_{gameObject.name}_0.asset");
+            LVUtils.SaveTexture3DAsAsset(tex1, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_{gameObject.name}_1.asset");
+            LVUtils.SaveTexture3DAsAsset(tex2, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_{gameObject.name}_2.asset");
+            
+            // Applying textures to volume
+            Texture0 = tex0;
+            Texture1 = tex1;
+            Texture2 = tex2;
 
         }
 

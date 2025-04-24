@@ -213,7 +213,7 @@ public class LightVolumeSetupEditor : Editor {
 
         GUILayout.Space(10);
 
-        if (IsInPrefabAsset(_lightVolumeSetup)) {
+        if (LVUtils.IsInPrefabAsset(_lightVolumeSetup)) {
             EditorGUILayout.HelpBox("This component is part of a prefab asset (not in the scene). Please, use one that is placed on your scene!", MessageType.Warning);
             GUILayout.Space(10);
         } else if (_isMultipleInstancesError) {
@@ -234,14 +234,6 @@ public class LightVolumeSetupEditor : Editor {
 
         serializedObject.ApplyModifiedProperties();
 
-    }
-
-    // Check if it's previewed as a prefab, or it's a part of a scene
-    bool IsInPrefabAsset(Object obj) {
-        var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
-        var prefabType = PrefabUtility.GetPrefabAssetType(obj);
-        var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
-        return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
     }
 
 }

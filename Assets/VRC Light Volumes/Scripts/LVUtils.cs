@@ -53,7 +53,7 @@ public class LVUtils {
             texture.Apply(updateMipmaps: false);
             return true;
         } catch (UnityException ex) {
-            Debug.LogError($"[LightVolumeUtils] Failed to SetPixels in the final Texture3D atlas. Error: {ex.Message}");
+            Debug.LogError($"[LightVolumeUtils] Failed to SetPixels in the Texture3D. Error: {ex.Message}");
             return false;
         }
     }
@@ -87,14 +87,14 @@ public class LVUtils {
             EditorUtility.SetDirty(textureToSave);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log($"[LightVolumeUtils] 3D Atlas saved at path: '{assetPath}'");
+            Debug.Log($"[LightVolumeUtils] Texture3D saved at path: '{assetPath}'");
             return true;
         } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeUtils] Error saving 3D Atlas at path: '{assetPath}': {e.Message}");
+            Debug.LogError($"[LightVolumeUtils] Error saving Texture3D at path: '{assetPath}': {e.Message}");
             return false;
         }
 #else
-        Debug.LogError($"[LightVolumeUtils] You can only save 3D textures in editor!");
+        Debug.LogError($"[LightVolumeUtils] You can only save Texture3D in editor!");
         return false;
 #endif
     }

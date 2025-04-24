@@ -1,6 +1,10 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEditor;
+using System.Collections;
+
+
 #if UNITY_EDITOR
 using UnityEngine.SceneManagement;
 #endif
@@ -58,7 +62,8 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         }
 #endif
         if (!Application.isPlaying && !_subscribedToUnityLightmapper) {
-            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += OnUnityLightmapperFinishedRender;
+            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += OnAdditionalProbesCompleted;
+            Lightmapping.bakeStarted += OnUnityBakingStarted;
             _subscribedToUnityLightmapper = true;
         }
     }
@@ -72,8 +77,10 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         }
 #endif
         if (!Application.isPlaying && _subscribedToUnityLightmapper) {
-            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted -= OnUnityLightmapperFinishedRender;
+            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted -= OnAdditionalProbesCompleted;
+            Lightmapping.bakeStarted -= OnUnityBakingStarted;
             _subscribedToUnityLightmapper = false;
+            
         }
     }
 
@@ -91,12 +98,26 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 #endif
 
     // On Unity Lightmapper baked
-    private void OnUnityLightmapperFinishedRender() {
+    private void OnAdditionalProbesCompleted() {
         if (BakingMode != Baking.UnityLightmapper) return;
-        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < volumes.Length; i++) {
-            if (volumes[i].Bake) {
-                volumes[i].BakedRotation = volumes[i].GetRotation();
+        for (int i = 0; i < LightVolumes.Length; i++) {
+            if (LightVolumes[i].Bake) {
+                LightVolumes[i].Save3DTextures(i);
+                LightVolumes[i].RemoveAdditionalProbes(i);
+                LightVolumes[i].BakedRotation = LightVolumes[i].GetRotation();
+            }
+        }
+        Debug.Log($"[LightVolumeSetup] Additional probes baking finished! Generating 3D Atlas...");
+        GenerateAtlas();
+        Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
+    }
+
+    // On Unity Lightmapper started baking
+    private void OnUnityBakingStarted() {
+        for (int i = 0; i < LightVolumes.Length; i++) {
+            if (LightVolumes[i].Bake) {
+                Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{LightVolumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
+                LightVolumes[i].SetAdditionalProbes(i);
             }
         }
     }
@@ -121,11 +142,11 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         for (int i = 0; i < LightVolumes.Length; i++) {
             if (LightVolumes[i] == null) {
-                Debug.LogError("[LightVolumeAtlaser] One of the light volumes is not setuped!");
+                Debug.LogError("[LightVolumeSetup] One of the light volumes is not setuped!");
                 return;
             }
             if (LightVolumes[i].Texture0 == null || LightVolumes[i].Texture1 == null || LightVolumes[i].Texture2 == null) {
-                Debug.LogError("[LightVolumeAtlaser] One of the light volumes is not baked!");
+                Debug.LogError("[LightVolumeSetup] One of the light volumes is not baked!");
                 return;
             }
             textures[i * 3] = LightVolumes[i].Texture0;
