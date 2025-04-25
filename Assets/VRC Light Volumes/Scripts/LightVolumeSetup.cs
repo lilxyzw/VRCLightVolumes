@@ -25,8 +25,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     public bool LightProbesBlending = true;
     public bool SharpBounds = true;
     public bool DynamicVolumes = false;
-    [Header("Atlas Packing")]
-    public int StochasticIterations = 5000;
+
     public Texture3D LightVolumeAtlas;
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
@@ -156,7 +155,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             textures[i * 3 + 2] = LightVolumes[i].Texture2;
         }
 
-        var atlas = Texture3DAtlasGenerator.CreateAtlasStochastic(textures, StochasticIterations);
+        var atlas = Texture3DAtlasGenerator.CreateAtlas(textures);
 
         LightVolumeAtlas = atlas.Texture;
 
