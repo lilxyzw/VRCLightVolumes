@@ -34,6 +34,14 @@ public class LightVolume : MonoBehaviour {
     private Quaternion _prevRot = Quaternion.identity;
     private Vector3 _prevScl = Vector3.one;
 
+    // Preview
+    private Material _previewMaterial;
+    private Mesh _previewMesh;
+    private ComputeBuffer _posBuf;
+    private ComputeBuffer _argsBuf;
+    static readonly int _previewPosID = Shader.PropertyToID("_Positions");
+    static readonly int _previewScaleID = Shader.PropertyToID("_Scale");
+
     // Position, Rotation and Scale of the final light volume, depending on the current setup
     public Vector3 GetPosition() {
         return transform.position;
@@ -136,8 +144,6 @@ public class LightVolume : MonoBehaviour {
             Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
 
-
-
             // Quick shortcuts to SH L1 components
             const int r = 0;
             const int g = 1;
@@ -236,8 +242,11 @@ public class LightVolume : MonoBehaviour {
         }
 #endif
     }
+
 #if UNITY_EDITOR
+
     private void Update() {
+
 #if BAKERY_INCLUDED
         if (Bake && (Texture0 == null || Texture1 == null || Texture2 == null) && LightVolumeSetup.Instance.IsBakeryMode && BakeryVolume != null  && BakeryVolume.bakedTexture0 != null) {
             Texture0 = BakeryVolume.bakedTexture0;
@@ -245,6 +254,7 @@ public class LightVolume : MonoBehaviour {
             Texture2 = BakeryVolume.bakedTexture2;
         }
 #endif
+
         if (Selection.activeGameObject != gameObject) return;
         SetupDependencies();
 
@@ -255,21 +265,66 @@ public class LightVolume : MonoBehaviour {
             _prevRot = transform.rotation;
             _prevScl = transform.localScale;
         }
+
+        // If Preview enabled
+        if (!PreviewProbes || _probesPositions == null || _probesPositions.Length == 0) return;
+
+        // Initialize Buffers
+        if (_posBuf == null || _posBuf.count != _probesPositions.Length) {
+            ReleasePreviewBuffers();
+            _posBuf = new ComputeBuffer(_probesPositions.Length, sizeof(float) * 3);
+            _argsBuf = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+        }
+
+        // Generate Sphere mesh
+        if (_previewMesh == null) {
+            _previewMesh = LVUtils.GenerateIcoSphere(0.5f, 0);
+        }
+
+        // Create Material
+        if (_previewMaterial == null) {
+            _previewMaterial = new Material(Shader.Find("Hidden/LightVolumesPreview"));
+        }
+
+        // Calculating radius
+        Vector3 scale = GetScale();
+        Vector3 res = Resolution;
+        float radius = Mathf.Min(scale.z / res.z, Mathf.Min(scale.x / res.x, scale.y / res.y)) / 3;
+
+        // Setting data to buffers
+        _posBuf.SetData(_probesPositions);
+        _previewMaterial.SetBuffer(_previewPosID, _posBuf);
+        _previewMaterial.SetFloat(_previewScaleID, radius);
+        _argsBuf.SetData(new uint[] { _previewMesh.GetIndexCount(0), (uint)_probesPositions.Length, _previewMesh.GetIndexStart(0), (uint)_previewMesh.GetBaseVertex(0), 0 });
+
+        Bounds bounds = LVUtils.BoundsFromTRS(GetMatrixTRS());
+        Graphics.DrawMeshInstancedIndirect(_previewMesh, 0, _previewMaterial, bounds, _argsBuf, 0, null, ShadowCastingMode.Off, false, gameObject.layer);
+
     }
 
+    // Releases compute buffer
+    void ReleasePreviewBuffers() {
+        if (_posBuf != null) { _posBuf.Release(); _posBuf = null; }
+        if (_argsBuf != null) { _argsBuf.Release(); _argsBuf = null; }
+    }
 
     private void OnValidate() {
         Recalculate();
+        if (PreviewProbes)
+            ReleasePreviewBuffers();
         LightVolumeSetup.Instance.SetupUdonBehaviour();
     }
-#endif
 
-    private void OnDrawGizmosSelected() {
-        if (PreviewProbes && Bake && _probesPositions != null) {
-            for (int i = 0; i < _probesPositions.Length; i++) {
-                Gizmos.DrawSphere(_probesPositions[i], 0.05f);
-            }
-        }
+    private void OnDisable() {
+        if (PreviewProbes)
+            ReleasePreviewBuffers();
     }
+
+    private void OnDestroy() {
+        if (PreviewProbes)
+            ReleasePreviewBuffers();
+    }
+
+#endif
 
 }

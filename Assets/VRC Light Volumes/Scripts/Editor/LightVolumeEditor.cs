@@ -48,6 +48,14 @@ public class LightVolumeEditor : Editor {
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
+        int vCount = volume.GetVoxelCount();
+
+        GUILayout.Space(10);
+
+        GUILayout.Label($"Size in VRAM: {SizeInVRAM(vCount)} MB");
+        GUILayout.Label($"Size in bundle: {SizeInBundle(vCount)} MB (Approximately)");
+
+
 #if BAKERY_INCLUDED
         float3 rotEuler = volume.transform.rotation.eulerAngles;
 
@@ -217,6 +225,18 @@ public class LightVolumeEditor : Editor {
             Tools.current = _savedTool;
             _previousTool = _savedTool;
         }
+    }
+
+    // Real size in VRAM
+    string SizeInVRAM(int vCount) {
+        float mb = vCount * 8 * 3 / (float)(1024 * 1024);
+        return mb.ToString("0.00");
+    }
+
+    // Approximate size in Asset bundle
+    string SizeInBundle(int vCount) {
+        float mb = vCount * 8 * 3 * 0.4f / (float)(1024 * 1024);
+        return mb.ToString("0.00");
     }
 
 }
