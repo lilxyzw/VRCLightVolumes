@@ -136,10 +136,7 @@ public class LightVolume : MonoBehaviour {
             Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
 
-            // Color arrays to store voxel data
-            Color[] c0 = new Color[vCount];
-            Color[] c1 = new Color[vCount];
-            Color[] c2 = new Color[vCount];
+
 
             // Quick shortcuts to SH L1 components
             const int r = 0;
@@ -149,12 +146,36 @@ public class LightVolume : MonoBehaviour {
             const int x = 3;
             const int y = 1;
             const int z = 2;
-            const float coeff = 1.45f; // To transform to bakery non-linear data format. Should be 1.7699115f actually, but 1.45 just works better
-            // Setting voxel data
+            const float coeff = 1.65f; // To transform to bakery non-linear data format. Should be 1.7699115f actually
+
+            // Separating data for denoising
+            Vector3[] L0 = new Vector3[vCount];
+            Vector3[] L1r = new Vector3[vCount];
+            Vector3[] L1g = new Vector3[vCount];
+            Vector3[] L1b = new Vector3[vCount];
             for (int i = 0; i < vCount; i++) {
-                c0[i] = new Color(probes[i][r, a], probes[i][g, a], probes[i][b, a], probes[i][r, z] * coeff);
-                c1[i] = new Color(probes[i][r, x] * coeff, probes[i][g, x] * coeff, probes[i][b, x] * coeff, probes[i][g, z] * coeff);
-                c2[i] = new Color(probes[i][r, y] * coeff, probes[i][g, y] * coeff, probes[i][b, y] * coeff, probes[i][b, z] * coeff);
+                L0[i] = new Vector3(probes[i][r, a], probes[i][g, a], probes[i][b, a]);
+                L1r[i] = new Vector3(probes[i][r, x], probes[i][r, y], probes[i][r, z]);
+                L1g[i] = new Vector3(probes[i][g, x], probes[i][g, y], probes[i][g, z]);
+                L1b[i] = new Vector3(probes[i][b, x], probes[i][b, y], probes[i][b, z]);
+            }
+
+            // Denoising
+            if (LightVolumeSetup.Instance.Denoise) {
+                L0 =  LVUtils.BilateralDenoise3D(L0, w, h, d, 1, 0.05f);
+                L1r = LVUtils.BilateralDenoise3D(L1r, w, h, d, 1, 0.05f);
+                L1g = LVUtils.BilateralDenoise3D(L1g, w, h, d, 1, 0.05f);
+                L1b = LVUtils.BilateralDenoise3D(L1b, w, h, d, 1, 0.05f);
+            }
+
+            // Setting voxel data
+            Color[] c0 = new Color[vCount];
+            Color[] c1 = new Color[vCount];
+            Color[] c2 = new Color[vCount];
+            for (int i = 0; i < vCount; i++) {
+                c0[i] = new Color(L0[i].x, L0[i].y, L0[i].z, L1r[i].z * coeff);
+                c1[i] = new Color(L1r[i].x * coeff, L1g[i].x * coeff, L1b[i].x * coeff, L1g[i].z * coeff);
+                c2[i] = new Color(L1r[i].y * coeff, L1g[i].y * coeff, L1b[i].y * coeff, L1b[i].z * coeff);
             }
 
             // Apply Pixel Data to Texture

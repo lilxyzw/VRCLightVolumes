@@ -99,4 +99,46 @@ public class LVUtils {
 #endif
     }
 
+    // Simple 3D denoiser
+    public static Vector3[] BilateralDenoise3D(Vector3[] input, int w, int h, int d, float sigmaSpatial = 1f, float sigmaRange = 0.1f) {
+        Vector3[] output = new Vector3[input.Length];
+        int r = Mathf.CeilToInt(2f * sigmaSpatial);
+
+        for (int z = 0; z < d; z++)
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++) {
+                    int centerIdx = x + y * w + z * w * h;
+                    Vector3 center = input[centerIdx];
+                    Vector3 sum = Vector3.zero;
+                    float weightSum = 0f;
+
+                    for (int dz = -r; dz <= r; dz++)
+                        for (int dy = -r; dy <= r; dy++)
+                            for (int dx = -r; dx <= r; dx++) {
+                                int xx = x + dx;
+                                int yy = y + dy;
+                                int zz = z + dz;
+                                if (xx < 0 || yy < 0 || zz < 0 || xx >= w || yy >= h || zz >= d) continue;
+
+                                int nIdx = xx + yy * w + zz * w * h;
+                                Vector3 neighbor = input[nIdx];
+
+                                float spatialDist2 = dx * dx + dy * dy + dz * dz;
+                                float rangeDist2 = (neighbor - center).sqrMagnitude;
+
+                                float spatialWeight = Mathf.Exp(-spatialDist2 / (2f * sigmaSpatial * sigmaSpatial));
+                                float rangeWeight = Mathf.Exp(-rangeDist2 / (2f * sigmaRange * sigmaRange));
+
+                                float weight = spatialWeight * rangeWeight;
+                                sum += neighbor * weight;
+                                weightSum += weight;
+                            }
+
+                    output[centerIdx] = weightSum > 0f ? sum / weightSum : center;
+                }
+
+        return output;
+    }
+
+
 }

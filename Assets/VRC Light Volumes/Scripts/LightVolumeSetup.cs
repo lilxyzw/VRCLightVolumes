@@ -115,6 +115,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
     // On Unity Lightmapper started baking
     private void OnUnityBakingStarted() {
+        if (BakingMode != Baking.UnityLightmapper) return;
         for (int i = 0; i < LightVolumes.Length; i++) {
             if (LightVolumes[i].Bake) {
                 Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{LightVolumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
@@ -190,7 +191,6 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     }
 
     // Setups udon script
-    [ContextMenu("Setup Udon Behaviour")]
     public void SetupUdonBehaviour() {
 
         if (LVUtils.IsInPrefabAsset(this)) return;

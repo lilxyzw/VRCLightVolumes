@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: 40826da92c27024429d396d0ddffc790, type: 2}
+  m_LightingDataAsset: {fileID: 112000000, guid: 01bb586a93a2c6b42aa3497165d5151b, type: 2}
   m_LightingSettings: {fileID: 662152157}
 --- !u!196 &4
 NavMeshSettings:
@@ -309,7 +309,7 @@ Transform:
   m_GameObject: {fileID: 29941926}
   serializedVersion: 2
   m_LocalRotation: {x: -0.70710707, y: -0.00000089472485, z: -0.0000009890297, w: 0.7071066}
-  m_LocalPosition: {x: 0.18, y: 1.31, z: -0.35}
+  m_LocalPosition: {x: -0.232, y: 1.138, z: -14.108}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -453,12 +453,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texture0: {fileID: 11700000, guid: 681d6d974f945e04fb0a7c7bbf9542af, type: 2}
-  Texture1: {fileID: 11700000, guid: fa5a091a605178f4ebe9892accced90a, type: 2}
-  Texture2: {fileID: 11700000, guid: 8cf6be9230a5b7347b0aa2cf71f155d6, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  Texture0: {fileID: 11700000, guid: dc432c54b501a9f4c82ff8a69f2f16ed, type: 2}
+  Texture1: {fileID: 11700000, guid: ad466b1807045044d9db333ef25b7ced, type: 2}
+  Texture2: {fileID: 11700000, guid: f719d54fdcf3b2241b3d84c39647d2af, type: 2}
+  BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 16, y: 8, z: 16}
@@ -508,12 +508,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texture0: {fileID: 11700000, guid: 6a3c4b01f10f8da47b6ad1b0f029138a, type: 2}
-  Texture1: {fileID: 11700000, guid: 5537f72503015144c8d5770bb12ed49c, type: 2}
-  Texture2: {fileID: 11700000, guid: ee665e5dcbf921c49a411eeadee1fa39, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  Texture0: {fileID: 11700000, guid: 58b12534e63f21b489f5814f0ef41b1f, type: 2}
+  Texture1: {fileID: 11700000, guid: c5b45956ad1226a48bd68da3b09c0e5b, type: 2}
+  Texture2: {fileID: 11700000, guid: 732a63a58ee8b7c468cc3fdf032660bb, type: 2}
+  BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 6
   Resolution: {x: 60, y: 20, z: 60}
@@ -563,12 +563,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texture0: {fileID: 11700000, guid: c7bdf14fb1ea5a3429210a370a109baf, type: 2}
-  Texture1: {fileID: 11700000, guid: 936c5cca175ef6d4d9400091740e1379, type: 2}
-  Texture2: {fileID: 11700000, guid: 6596a90b8fd89b14cb0cd0d67ef1fdf1, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  Texture0: {fileID: 11700000, guid: 65eb25de132b3df448fc2cb7cac55c32, type: 2}
+  Texture1: {fileID: 11700000, guid: c0e3da55876d79a47ac47b5de17154cb, type: 2}
+  Texture2: {fileID: 11700000, guid: ac898adfe891a7646af39773fc3cff75, type: 2}
+  BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 8, y: 10, z: 22}
@@ -618,12 +618,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texture0: {fileID: 11700000, guid: e21b989724517074eb59344973c16a81, type: 2}
-  Texture1: {fileID: 11700000, guid: 3165c9a7b64f11e4e8b27738e5fc81cf, type: 2}
-  Texture2: {fileID: 11700000, guid: cd7e7c6504bab1e4e90baec6777c6268, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  Texture0: {fileID: 11700000, guid: a34ccdafc14ce0849813704f1bd177a9, type: 2}
+  Texture1: {fileID: 11700000, guid: 466bff89f8fb6514195b34ac77e11284, type: 2}
+  Texture2: {fileID: 11700000, guid: 1253d69785cf2ff41b7bd1b327fefe6d, type: 2}
+  BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 20, y: 18, z: 5}
@@ -1170,12 +1170,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texture0: {fileID: 11700000, guid: 0b8d6115b89a0744ebc7f68ac20d20c4, type: 2}
-  Texture1: {fileID: 11700000, guid: 4af3de4741e4bca4f919daeb047fc64c, type: 2}
-  Texture2: {fileID: 11700000, guid: 2a95ac5fff2880f409dc3c7532af1092, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  Texture0: {fileID: 11700000, guid: 281af07d522239f43a5224b822221951, type: 2}
+  Texture1: {fileID: 11700000, guid: 71f5820ba6c2962449babd40b35b7378, type: 2}
+  Texture2: {fileID: 11700000, guid: f6a45e437aa9fb640b84630e600a8ae6, type: 2}
+  BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 80, y: 40, z: 47}
@@ -1460,12 +1460,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texture0: {fileID: 11700000, guid: 20740687e204a4c4c999cf630291a55e, type: 2}
-  Texture1: {fileID: 11700000, guid: 2bc8e7b70c1e82c448d50d8c0827d121, type: 2}
-  Texture2: {fileID: 11700000, guid: 11302dba4b4b08b4a885239e9a487e7d, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  Texture0: {fileID: 11700000, guid: 7567dff6a5e22374384a98ef071bfb72, type: 2}
+  Texture1: {fileID: 11700000, guid: e5f9e95d9f126a740bf7d39593bed9d5, type: 2}
+  Texture2: {fileID: 11700000, guid: 7f4401e612e72a948ba07069b8f8b614, type: 2}
+  BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 20, y: 12, z: 20}
@@ -1515,12 +1515,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texture0: {fileID: 11700000, guid: bb85076edcb49c1449ec07bf577d511d, type: 2}
-  Texture1: {fileID: 11700000, guid: 2e4c8242f980865448b1d5e15093e530, type: 2}
-  Texture2: {fileID: 11700000, guid: 2b8559075f25af142beb07c522604d8b, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  Texture0: {fileID: 11700000, guid: 867f3103f272f5a45b6173c4988897c4, type: 2}
+  Texture1: {fileID: 11700000, guid: a1a771669ee4e764dbf40766ef85a32a, type: 2}
+  Texture2: {fileID: 11700000, guid: c1b6aca65edc74f4a877a0b214a0442d, type: 2}
+  BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 25, y: 22, z: 5}
@@ -2541,7 +2541,7 @@ LightingSettings:
   m_PVRSampleCount: 512
   m_PVREnvironmentSampleCount: 256
   m_PVREnvironmentReferencePointCount: 2048
-  m_LightProbeSampleCountMultiplier: 4
+  m_LightProbeSampleCountMultiplier: 16
   m_PVRBounces: 2
   m_PVRMinBounces: 2
   m_PVREnvironmentImportanceSampling: 1
@@ -4373,22 +4373,25 @@ MonoBehaviour:
   - 5
   - 6
   BakingMode: 0
+  Denoise: 1
   EdgeSmoothing: 0.25
-  StochasticIterations: 5000
-  LinearizeSphericalHarmonics: 1
+  LightProbesBlending: 1
+  SharpBounds: 1
+  DynamicVolumes: 0
+  StochasticIterations: 1000
   LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
   LightVolumeDataList:
   - Weight: 0
     UvwMin:
-    - {x: 0.011904762, y: 0.3425926, z: 0.22033899, w: 0}
-    - {x: 0.011904762, y: 0.21296297, z: 0.008474576, w: 0}
-    - {x: 0.011904762, y: 0.21296297, z: 0.34745762, w: 0}
+    - {x: 0.14583333, y: 0.79761904, z: 0.33673468, w: 0}
+    - {x: 0.15972222, y: 0.011904762, z: 0.64285713, w: 0}
+    - {x: 0.0069444445, y: 0.011904762, z: 0.64285713, w: 0}
     UvwMax:
-    - {x: 0.25, y: 0.4537037, z: 0.3898305, w: 0}
-    - {x: 0.25, y: 0.32407406, z: 0.1779661, w: 0}
-    - {x: 0.25, y: 0.32407406, z: 0.5169492, w: 0}
+    - {x: 0.2847222, y: 0.9404762, z: 0.5408163, w: 0}
+    - {x: 0.2986111, y: 0.15476191, z: 0.8469388, w: 0}
+    - {x: 0.14583333, y: 0.15476191, z: 0.8469388, w: 0}
     InvLocalEdgeSmooth: {x: 40.0821, y: 24.022232, z: 40, w: 0}
-    BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+    BakedRotation: {x: 0, y: 0, z: 0, w: 1}
     InvWorldMatrix:
       e00: 0.09979517
       e01: 0
@@ -4407,17 +4410,18 @@ MonoBehaviour:
       e32: 0
       e33: 1
     VolumeTransform: {fileID: 361893108}
+    IsAdditive: 0
   - Weight: 1
     UvwMin:
-    - {x: 0.27380952, y: 0.21296297, z: 0.008474576, w: 0}
-    - {x: 0.27380952, y: 0.41666666, z: 0.008474576, w: 0}
-    - {x: 0.011904762, y: 0.009259259, z: 0.008474576, w: 0}
+    - {x: 0.0069444445, y: 0.53571427, z: 0.15306123, w: 0}
+    - {x: 0.0069444445, y: 0.011904762, z: 0.010204081, w: 0}
+    - {x: 0.0069444445, y: 0.27380952, z: 0.15306123, w: 0}
     UvwMax:
-    - {x: 0.9880952, y: 0.39814815, z: 0.5169492, w: 0}
-    - {x: 0.9880952, y: 0.6018519, z: 0.5169492, w: 0}
-    - {x: 0.72619045, y: 0.19444445, z: 0.5169492, w: 0}
+    - {x: 0.4236111, y: 0.77380955, z: 0.7653061, w: 0}
+    - {x: 0.4236111, y: 0.25, z: 0.622449, w: 0}
+    - {x: 0.4236111, y: 0.5119048, z: 0.7653061, w: 0}
     InvLocalEdgeSmooth: {x: 40.0821, y: 13.032427, z: 40, w: 0}
-    BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+    BakedRotation: {x: 0, y: 0, z: 0, w: 1}
     InvWorldMatrix:
       e00: 0.09979517
       e01: 0
@@ -4436,17 +4440,18 @@ MonoBehaviour:
       e32: 0
       e33: 1
     VolumeTransform: {fileID: 38894219}
+    IsAdditive: 0
   - Weight: 2
     UvwMin:
-    - {x: 0.86904764, y: 0.009259259, z: 0.008474576, w: 0}
-    - {x: 0.75, y: 0.009259259, z: 0.008474576, w: 0}
-    - {x: 0.75, y: 0.009259259, z: 0.21186441, w: 0}
+    - {x: 0.4375, y: 0.5119048, z: 0.010204081, w: 0}
+    - {x: 0.0069444445, y: 0.79761904, z: 0.33673468, w: 0}
+    - {x: 0.07638889, y: 0.79761904, z: 0.33673468, w: 0}
     UvwMax:
-    - {x: 0.96428573, y: 0.10185185, z: 0.19491525, w: 0}
-    - {x: 0.8452381, y: 0.10185185, z: 0.19491525, w: 0}
-    - {x: 0.8452381, y: 0.10185185, z: 0.3983051, w: 0}
+    - {x: 0.49305555, y: 0.63095236, z: 0.23469388, w: 0}
+    - {x: 0.0625, y: 0.9166667, z: 0.56122446, w: 0}
+    - {x: 0.13194445, y: 0.9166667, z: 0.56122446, w: 0}
     InvLocalEdgeSmooth: {x: 16.082058, y: 20.049475, z: 44.07076, w: 0}
-    BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+    BakedRotation: {x: 0, y: 0, z: 0, w: 1}
     InvWorldMatrix:
       e00: 0.24872439
       e01: 0
@@ -4465,17 +4470,18 @@ MonoBehaviour:
       e32: 0
       e33: 1
     VolumeTransform: {fileID: 92299095}
+    IsAdditive: 0
   - Weight: 3
     UvwMin:
-    - {x: 0.011904762, y: 0.3425926, z: 0.06779661, w: 0}
-    - {x: 0.011904762, y: 0.21296297, z: 0.19491525, w: 0}
-    - {x: 0.011904762, y: 0.4722222, z: 0.22033899, w: 0}
+    - {x: 0.0069444445, y: 0.79761904, z: 0.15306123, w: 0}
+    - {x: 0.13194445, y: 0.79761904, z: 0.15306123, w: 0}
+    - {x: 0.3125, y: 0.011904762, z: 0.64285713, w: 0}
     UvwMax:
-    - {x: 0.20238096, y: 0.41666666, z: 0.20338982, w: 0}
-    - {x: 0.20238096, y: 0.28703704, z: 0.33050847, w: 0}
-    - {x: 0.20238096, y: 0.5462963, z: 0.3559322, w: 0}
+    - {x: 0.11805555, y: 0.89285713, z: 0.31632653, w: 0}
+    - {x: 0.24305555, y: 0.89285713, z: 0.31632653, w: 0}
+    - {x: 0.4236111, y: 0.10714286, z: 0.8061224, w: 0}
     InvLocalEdgeSmooth: {x: 32.01568, y: 16.036076, z: 32.011986, w: 0}
-    BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+    BakedRotation: {x: 0, y: 0, z: 0, w: 1}
     InvWorldMatrix:
       e00: 0.124938786
       e01: 0
@@ -4494,17 +4500,18 @@ MonoBehaviour:
       e32: 0
       e33: 1
     VolumeTransform: {fileID: 36975836}
+    IsAdditive: 0
   - Weight: 4
     UvwMin:
-    - {x: 0.011904762, y: 0.6203704, z: 0.06779661, w: 0}
-    - {x: 0.011904762, y: 0.39814815, z: 0.59322035, w: 0}
-    - {x: 0.011904762, y: 0.009259259, z: 0.5338983, w: 0}
+    - {x: 0.4375, y: 0.5119048, z: 0.25510204, w: 0}
+    - {x: 0.4375, y: 0.011904762, z: 0.010204081, w: 0}
+    - {x: 0.4375, y: 0.011904762, z: 0.5102041, w: 0}
     UvwMax:
-    - {x: 0.96428573, y: 0.9907407, z: 0.4661017, w: 0}
-    - {x: 0.96428573, y: 0.7685185, z: 0.9915254, w: 0}
-    - {x: 0.96428573, y: 0.37962964, z: 0.9322034, w: 0}
+    - {x: 0.9930556, y: 0.9880952, z: 0.7346939, w: 0}
+    - {x: 0.9930556, y: 0.48809522, z: 0.48979592, w: 0}
+    - {x: 0.9930556, y: 0.48809522, z: 0.9897959, w: 0}
     InvLocalEdgeSmooth: {x: 32.01568, y: 16.036076, z: 18.973816, w: 0}
-    BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+    BakedRotation: {x: 0, y: 0, z: 0, w: 1}
     InvWorldMatrix:
       e00: 0.124938786
       e01: 0
@@ -4523,17 +4530,18 @@ MonoBehaviour:
       e32: 0
       e33: 1
     VolumeTransform: {fileID: 309226902}
+    IsAdditive: 0
   - Weight: 5
     UvwMin:
-    - {x: 0.011904762, y: 0.4351852, z: 0.06779661, w: 0}
-    - {x: 0.011904762, y: 0.3425926, z: 0.008474576, w: 0}
-    - {x: 0.011904762, y: 0.4351852, z: 0.12711865, w: 0}
+    - {x: 0.0069444445, y: 0.27380952, z: 0.010204081, w: 0}
+    - {x: 0.0069444445, y: 0.5119048, z: 0.010204081, w: 0}
+    - {x: 0.0069444445, y: 0.5595238, z: 0.08163265, w: 0}
     UvwMax:
-    - {x: 0.25, y: 0.6018519, z: 0.11016949, w: 0}
-    - {x: 0.25, y: 0.5092593, z: 0.050847456, w: 0}
-    - {x: 0.25, y: 0.6018519, z: 0.16949153, w: 0}
+    - {x: 0.14583333, y: 0.48809522, z: 0.06122449, w: 0}
+    - {x: 0.14583333, y: 0.72619045, z: 0.06122449, w: 0}
+    - {x: 0.14583333, y: 0.77380955, z: 0.13265306, w: 0}
     InvLocalEdgeSmooth: {x: 7.9885674, y: 7.0573435, z: 1.8975372, w: 0}
-    BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+    BakedRotation: {x: 0, y: 0, z: 0, w: 1}
     InvWorldMatrix:
       e00: 0.50071555
       e01: 0
@@ -4552,17 +4560,18 @@ MonoBehaviour:
       e32: 0
       e33: 1
     VolumeTransform: {fileID: 170737170}
+    IsAdditive: 0
   - Weight: 6
     UvwMin:
-    - {x: 0.011904762, y: 0.39814815, z: 0.5338983, w: 0}
-    - {x: 0.27380952, y: 0.6203704, z: 0.008474576, w: 0}
-    - {x: 0.33333334, y: 0.39814815, z: 0.5338983, w: 0}
+    - {x: 0.0069444445, y: 0.27380952, z: 0.08163265, w: 0}
+    - {x: 0.15972222, y: 0.27380952, z: 0.010204081, w: 0}
+    - {x: 0.19444445, y: 0.27380952, z: 0.08163265, w: 0}
     UvwMax:
-    - {x: 0.30952382, y: 0.6018519, z: 0.5762712, w: 0}
-    - {x: 0.5714286, y: 0.8240741, z: 0.050847456, w: 0}
-    - {x: 0.63095236, y: 0.6018519, z: 0.5762712, w: 0}
+    - {x: 0.18055555, y: 0.53571427, z: 0.13265306, w: 0}
+    - {x: 0.33333334, y: 0.53571427, z: 0.06122449, w: 0}
+    - {x: 0.36805555, y: 0.53571427, z: 0.13265306, w: 0}
     InvLocalEdgeSmooth: {x: 10.060706, y: 8.823533, z: 1.8975372, w: 0}
-    BakedRotation: {x: -0, y: -0, z: -0, w: 1}
+    BakedRotation: {x: 0, y: 0, z: 0, w: 1}
     InvWorldMatrix:
       e00: 0.3975864
       e01: 0
@@ -4581,6 +4590,7 @@ MonoBehaviour:
       e32: 0
       e33: 1
     VolumeTransform: {fileID: 363958132}
+    IsAdditive: 0
 --- !u!4 &1462947543
 Transform:
   m_ObjectHideFlags: 0
@@ -4653,6 +4663,7 @@ MonoBehaviour:
   LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
   LightProbesBlending: 1
   SharpBounds: 1
+  DynamicVolumes: 0
   VolumesTransforms:
   - {fileID: 363958132}
   - {fileID: 170737170}
@@ -4662,13 +4673,13 @@ MonoBehaviour:
   - {fileID: 38894219}
   - {fileID: 361893108}
   InvBakedRotations:
-  - {x: -0, y: -0, z: -0, w: 1}
-  - {x: -0, y: -0, z: -0, w: 1}
-  - {x: -0, y: -0, z: -0, w: 1}
-  - {x: -0, y: -0, z: -0, w: 1}
-  - {x: -0, y: -0, z: -0, w: 1}
-  - {x: -0, y: -0, z: -0, w: 1}
-  - {x: -0, y: -0, z: -0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
   InvLocalEdgeSmooth:
   - {x: 10.060706, y: 8.823533, z: 1.8975372, w: 0}
   - {x: 7.9885674, y: 7.0573435, z: 1.8975372, w: 0}
@@ -4791,49 +4802,73 @@ MonoBehaviour:
     e32: 0
     e33: 1
   BoundsUvwMin:
-  - {x: 0.011904762, y: 0.39814815, z: 0.5338983, w: 0}
-  - {x: 0.27380952, y: 0.6203704, z: 0.008474576, w: 0}
-  - {x: 0.33333334, y: 0.39814815, z: 0.5338983, w: 0}
-  - {x: 0.011904762, y: 0.4351852, z: 0.06779661, w: 0}
-  - {x: 0.011904762, y: 0.3425926, z: 0.008474576, w: 0}
-  - {x: 0.011904762, y: 0.4351852, z: 0.12711865, w: 0}
-  - {x: 0.011904762, y: 0.6203704, z: 0.06779661, w: 0}
-  - {x: 0.011904762, y: 0.39814815, z: 0.59322035, w: 0}
-  - {x: 0.011904762, y: 0.009259259, z: 0.5338983, w: 0}
-  - {x: 0.011904762, y: 0.3425926, z: 0.06779661, w: 0}
-  - {x: 0.011904762, y: 0.21296297, z: 0.19491525, w: 0}
-  - {x: 0.011904762, y: 0.4722222, z: 0.22033899, w: 0}
-  - {x: 0.86904764, y: 0.009259259, z: 0.008474576, w: 0}
-  - {x: 0.75, y: 0.009259259, z: 0.008474576, w: 0}
-  - {x: 0.75, y: 0.009259259, z: 0.21186441, w: 0}
-  - {x: 0.27380952, y: 0.21296297, z: 0.008474576, w: 0}
-  - {x: 0.27380952, y: 0.41666666, z: 0.008474576, w: 0}
-  - {x: 0.011904762, y: 0.009259259, z: 0.008474576, w: 0}
-  - {x: 0.011904762, y: 0.3425926, z: 0.22033899, w: 0}
-  - {x: 0.011904762, y: 0.21296297, z: 0.008474576, w: 0}
-  - {x: 0.011904762, y: 0.21296297, z: 0.34745762, w: 0}
+  - {x: 0.0069444445, y: 0.27380952, z: 0.08163265, w: 0}
+  - {x: 0.15972222, y: 0.27380952, z: 0.010204081, w: 0}
+  - {x: 0.19444445, y: 0.27380952, z: 0.08163265, w: 0}
+  - {x: 0.0069444445, y: 0.27380952, z: 0.010204081, w: 0}
+  - {x: 0.0069444445, y: 0.5119048, z: 0.010204081, w: 0}
+  - {x: 0.0069444445, y: 0.5595238, z: 0.08163265, w: 0}
+  - {x: 0.4375, y: 0.5119048, z: 0.25510204, w: 0}
+  - {x: 0.4375, y: 0.011904762, z: 0.010204081, w: 0}
+  - {x: 0.4375, y: 0.011904762, z: 0.5102041, w: 0}
+  - {x: 0.0069444445, y: 0.79761904, z: 0.15306123, w: 0}
+  - {x: 0.13194445, y: 0.79761904, z: 0.15306123, w: 0}
+  - {x: 0.3125, y: 0.011904762, z: 0.64285713, w: 0}
+  - {x: 0.4375, y: 0.5119048, z: 0.010204081, w: 0}
+  - {x: 0.0069444445, y: 0.79761904, z: 0.33673468, w: 0}
+  - {x: 0.07638889, y: 0.79761904, z: 0.33673468, w: 0}
+  - {x: 0.0069444445, y: 0.53571427, z: 0.15306123, w: 0}
+  - {x: 0.0069444445, y: 0.011904762, z: 0.010204081, w: 0}
+  - {x: 0.0069444445, y: 0.27380952, z: 0.15306123, w: 0}
+  - {x: 0.14583333, y: 0.79761904, z: 0.33673468, w: 0}
+  - {x: 0.15972222, y: 0.011904762, z: 0.64285713, w: 0}
+  - {x: 0.0069444445, y: 0.011904762, z: 0.64285713, w: 0}
   BoundsUvwMax:
-  - {x: 0.30952382, y: 0.6018519, z: 0.5762712, w: 0}
-  - {x: 0.5714286, y: 0.8240741, z: 0.050847456, w: 0}
-  - {x: 0.63095236, y: 0.6018519, z: 0.5762712, w: 0}
-  - {x: 0.25, y: 0.6018519, z: 0.11016949, w: 0}
-  - {x: 0.25, y: 0.5092593, z: 0.050847456, w: 0}
-  - {x: 0.25, y: 0.6018519, z: 0.16949153, w: 0}
-  - {x: 0.96428573, y: 0.9907407, z: 0.4661017, w: 0}
-  - {x: 0.96428573, y: 0.7685185, z: 0.9915254, w: 0}
-  - {x: 0.96428573, y: 0.37962964, z: 0.9322034, w: 0}
-  - {x: 0.20238096, y: 0.41666666, z: 0.20338982, w: 0}
-  - {x: 0.20238096, y: 0.28703704, z: 0.33050847, w: 0}
-  - {x: 0.20238096, y: 0.5462963, z: 0.3559322, w: 0}
-  - {x: 0.96428573, y: 0.10185185, z: 0.19491525, w: 0}
-  - {x: 0.8452381, y: 0.10185185, z: 0.19491525, w: 0}
-  - {x: 0.8452381, y: 0.10185185, z: 0.3983051, w: 0}
-  - {x: 0.9880952, y: 0.39814815, z: 0.5169492, w: 0}
-  - {x: 0.9880952, y: 0.6018519, z: 0.5169492, w: 0}
-  - {x: 0.72619045, y: 0.19444445, z: 0.5169492, w: 0}
-  - {x: 0.25, y: 0.4537037, z: 0.3898305, w: 0}
-  - {x: 0.25, y: 0.32407406, z: 0.1779661, w: 0}
-  - {x: 0.25, y: 0.32407406, z: 0.5169492, w: 0}
+  - {x: 0.18055555, y: 0.53571427, z: 0.13265306, w: 0}
+  - {x: 0.33333334, y: 0.53571427, z: 0.06122449, w: 0}
+  - {x: 0.36805555, y: 0.53571427, z: 0.13265306, w: 0}
+  - {x: 0.14583333, y: 0.48809522, z: 0.06122449, w: 0}
+  - {x: 0.14583333, y: 0.72619045, z: 0.06122449, w: 0}
+  - {x: 0.14583333, y: 0.77380955, z: 0.13265306, w: 0}
+  - {x: 0.9930556, y: 0.9880952, z: 0.7346939, w: 0}
+  - {x: 0.9930556, y: 0.48809522, z: 0.48979592, w: 0}
+  - {x: 0.9930556, y: 0.48809522, z: 0.9897959, w: 0}
+  - {x: 0.11805555, y: 0.89285713, z: 0.31632653, w: 0}
+  - {x: 0.24305555, y: 0.89285713, z: 0.31632653, w: 0}
+  - {x: 0.4236111, y: 0.10714286, z: 0.8061224, w: 0}
+  - {x: 0.49305555, y: 0.63095236, z: 0.23469388, w: 0}
+  - {x: 0.0625, y: 0.9166667, z: 0.56122446, w: 0}
+  - {x: 0.13194445, y: 0.9166667, z: 0.56122446, w: 0}
+  - {x: 0.4236111, y: 0.77380955, z: 0.7653061, w: 0}
+  - {x: 0.4236111, y: 0.25, z: 0.622449, w: 0}
+  - {x: 0.4236111, y: 0.5119048, z: 0.7653061, w: 0}
+  - {x: 0.2847222, y: 0.9404762, z: 0.5408163, w: 0}
+  - {x: 0.2986111, y: 0.15476191, z: 0.8469388, w: 0}
+  - {x: 0.14583333, y: 0.15476191, z: 0.8469388, w: 0}
+  IsAdditive:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  _rotations:
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  - {x: 0, y: 0, z: 0, w: 1}
+  _needsToRotate:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
 --- !u!1 &1508458971
 GameObject:
   m_ObjectHideFlags: 0
