@@ -31,7 +31,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
     public bool SharpBounds = true;
     [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
-    public bool DynamicVolumes = false;
+    public bool AutoUpdateVolumes = false;
 
     public Texture3D LightVolumeAtlas;
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
@@ -41,10 +41,11 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     private LightVolumeManager _udonLightVolumeManager;
     private Baking _bakingModePrev;
 
-    public void SetShaderVariables() {
+    // Sets shader variables tthrough Udon Component
+    public void UpdateVolumes() {
         if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
         if (_udonLightVolumeManager == null) return;
-            _udonLightVolumeManager.SetShaderVariables();
+            _udonLightVolumeManager.UpdateVolumes();
     }
 
     protected override void OnInstanceCreated() {
@@ -252,11 +253,11 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         _udonLightVolumeManager.InvBakedRotations = invRotation;
         _udonLightVolumeManager.VolumesTransforms = volumeTransforms;
         _udonLightVolumeManager.IsAdditive = isAdditive;
-        _udonLightVolumeManager.DynamicVolumes = DynamicVolumes;
+        _udonLightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
         _udonLightVolumeManager.SharpBounds = SharpBounds;
         _udonLightVolumeManager.LightProbesBlending = LightProbesBlending;
 
-        SetShaderVariables();
+        UpdateVolumes();
 
     }
 

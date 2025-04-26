@@ -328,12 +328,18 @@ public class LightVolume : MonoBehaviour {
         LightVolumeSetup.Instance.SetupUdonBehaviour();
     }
 
+    private void OnEnable() {
+        LightVolumeSetup.Instance.UpdateVolumes();
+    }
+
     private void OnDisable() {
+        LightVolumeSetup.Instance.UpdateVolumes();
         if (PreviewVoxels)
             ReleasePreviewBuffers();
     }
 
     private void OnDestroy() {
+        LightVolumeSetup.Instance.UpdateVolumes();
         if (PreviewVoxels)
             ReleasePreviewBuffers();
     }

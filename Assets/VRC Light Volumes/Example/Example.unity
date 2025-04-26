@@ -228,6 +228,71 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 18359054}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &20666854
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 20666855}
+  - component: {fileID: 20666856}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Room
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &20666855
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 20666854}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 36975836}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &20666856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 20666854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: -0.004672289, y: 2.5049906, z: -17.99885}
+    m_Extent: {x: 4.00196, y: 2.0045094, z: 4.001498}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 16
+  resolutionY: 8
+  resolutionZ: 16
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &29941926
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,7 +503,8 @@ Transform:
   m_LocalPosition: {x: -0.004672289, y: 2.5049906, z: -17.99885}
   m_LocalScale: {x: 8.00392, y: 4.009019, z: 8.002996}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 20666855}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &36975837
@@ -462,8 +528,8 @@ MonoBehaviour:
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 16, y: 8, z: 16}
-  PreviewProbes: 0
-  BakeryVolume: {fileID: 0}
+  PreviewVoxels: 0
+  BakeryVolume: {fileID: 20666856}
 --- !u!1 &38894218
 GameObject:
   m_ObjectHideFlags: 0
@@ -493,7 +559,8 @@ Transform:
   m_LocalPosition: {x: 0.0022794008, y: 2.1295347, z: 0.0044533014}
   m_LocalScale: {x: 10.020523, y: 3.2581067, z: 10}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1726651233}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &38894220
@@ -517,8 +584,8 @@ MonoBehaviour:
   AdaptiveResolution: 1
   VoxelsPerUnit: 6
   Resolution: {x: 60, y: 20, z: 60}
-  PreviewProbes: 0
-  BakeryVolume: {fileID: 0}
+  PreviewVoxels: 0
+  BakeryVolume: {fileID: 1726651234}
 --- !u!1 &92299094
 GameObject:
   m_ObjectHideFlags: 0
@@ -548,7 +615,8 @@ Transform:
   m_LocalPosition: {x: -0.0014894605, y: 3.0066655, z: -9.493307}
   m_LocalScale: {x: 4.0205145, y: 5.0123687, z: 11.01769}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 115427557}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &92299096
@@ -572,8 +640,73 @@ MonoBehaviour:
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 8, y: 10, z: 22}
-  PreviewProbes: 0
-  BakeryVolume: {fileID: 0}
+  PreviewVoxels: 0
+  BakeryVolume: {fileID: 115427558}
+--- !u!1 &115427556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 115427557}
+  - component: {fileID: 115427558}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Bridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &115427557
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115427556}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 92299095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &115427558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115427556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: -0.0014894605, y: 3.0066655, z: -9.493307}
+    m_Extent: {x: 2.0102572, y: 2.5061843, z: 5.508845}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 8
+  resolutionY: 10
+  resolutionZ: 22
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &170737169
 GameObject:
   m_ObjectHideFlags: 0
@@ -603,7 +736,8 @@ Transform:
   m_LocalPosition: {x: 1.9988012, y: 1.5592221, z: -21.762014}
   m_LocalScale: {x: 1.9971418, y: 1.7643359, z: 0.4743843}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1488254414}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &170737171
@@ -627,8 +761,8 @@ MonoBehaviour:
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 20, y: 18, z: 5}
-  PreviewProbes: 0
-  BakeryVolume: {fileID: 0}
+  PreviewVoxels: 0
+  BakeryVolume: {fileID: 1488254415}
 --- !u!1 &188626093
 GameObject:
   m_ObjectHideFlags: 0
@@ -963,7 +1097,7 @@ Transform:
   m_GameObject: {fileID: 253737758}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.18, y: 1.65, z: -1.73}
+  m_LocalPosition: {x: -0.13, y: 2.459, z: -10.39}
   m_LocalScale: {x: 0.52993333, y: 4.4365, z: 4.4365}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1260,7 +1394,8 @@ Transform:
   m_LocalPosition: {x: -0.004672289, y: 2.5049906, z: -17.877478}
   m_LocalScale: {x: 8.00392, y: 4.009019, z: 4.743454}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1790399073}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &309226903
@@ -1284,8 +1419,8 @@ MonoBehaviour:
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 80, y: 40, z: 47}
-  PreviewProbes: 0
-  BakeryVolume: {fileID: 0}
+  PreviewVoxels: 0
+  BakeryVolume: {fileID: 1790399074}
 --- !u!1 &336715844
 GameObject:
   m_ObjectHideFlags: 0
@@ -1550,7 +1685,8 @@ Transform:
   m_LocalPosition: {x: 0.0022796392, y: 5.5058107, z: 0.0044533014}
   m_LocalScale: {x: 10.020525, y: 6.005558, z: 10}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1740739806}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &361893109
@@ -1574,8 +1710,8 @@ MonoBehaviour:
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 20, y: 12, z: 20}
-  PreviewProbes: 0
-  BakeryVolume: {fileID: 0}
+  PreviewVoxels: 0
+  BakeryVolume: {fileID: 1740739807}
 --- !u!1 &363958131
 GameObject:
   m_ObjectHideFlags: 0
@@ -1605,7 +1741,8 @@ Transform:
   m_LocalPosition: {x: -1.9965378, y: 1.600448, z: -21.762014}
   m_LocalScale: {x: 2.5151765, y: 2.2058833, z: 0.4743843}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1419653208}
   m_Father: {fileID: 1462947543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &363958133
@@ -1629,8 +1766,8 @@ MonoBehaviour:
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 25, y: 22, z: 5}
-  PreviewProbes: 0
-  BakeryVolume: {fileID: 0}
+  PreviewVoxels: 0
+  BakeryVolume: {fileID: 1419653209}
 --- !u!1 &374555900
 GameObject:
   m_ObjectHideFlags: 0
@@ -4271,6 +4408,71 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1415112820}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1419653207
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1419653208}
+  - component: {fileID: 1419653209}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Chart
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1419653208
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1419653207}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 363958132}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1419653209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1419653207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: -1.9965378, y: 1.600448, z: -21.762014}
+    m_Extent: {x: 1.2575883, y: 1.1029416, z: 0.23719215}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 25
+  resolutionY: 22
+  resolutionZ: 5
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &1420207559
 GameObject:
   m_ObjectHideFlags: 0
@@ -4477,12 +4679,13 @@ MonoBehaviour:
   - 4
   - 5
   - 6
-  BakingMode: 0
+  BakingMode: 1
   Denoise: 1
+  FixLightProbesL1: 1
   EdgeSmoothing: 0.25
   LightProbesBlending: 1
   SharpBounds: 1
-  DynamicVolumes: 0
+  AutoUpdateVolumes: 0
   LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
   LightVolumeDataList:
   - Weight: 0
@@ -4767,7 +4970,7 @@ MonoBehaviour:
   LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
   LightProbesBlending: 1
   SharpBounds: 1
-  DynamicVolumes: 0
+  AutoUpdateVolumes: 0
   VolumesTransforms:
   - {fileID: 363958132}
   - {fileID: 170737170}
@@ -4957,22 +5160,71 @@ MonoBehaviour:
   - 0
   - 0
   - 0
-  _rotations:
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  - {x: 0, y: 0, z: 0, w: 1}
-  _needsToRotate:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
+--- !u!1 &1488254413
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1488254414}
+  - component: {fileID: 1488254415}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Art
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1488254414
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1488254413}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 170737170}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1488254415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1488254413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: 1.9988012, y: 1.5592221, z: -21.762014}
+    m_Extent: {x: 0.9985709, y: 0.88216794, z: 0.23719215}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 20
+  resolutionY: 18
+  resolutionZ: 5
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &1508458971
 GameObject:
   m_ObjectHideFlags: 0
@@ -6763,6 +7015,71 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1720450598}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1726651232
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1726651233}
+  - component: {fileID: 1726651234}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Main
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1726651233
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1726651232}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 38894219}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1726651234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1726651232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: 0.0022794008, y: 2.1295347, z: 0.0044533014}
+    m_Extent: {x: 5.0102615, y: 1.6290534, z: 5}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 60
+  resolutionY: 20
+  resolutionZ: 60
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &1738284999
 GameObject:
   m_ObjectHideFlags: 0
@@ -6893,6 +7210,71 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!1 &1740739805
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1740739806}
+  - component: {fileID: 1740739807}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Main Top
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1740739806
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1740739805}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 361893108}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1740739807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1740739805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: 0.0022796392, y: 5.5058107, z: 0.0044533014}
+    m_Extent: {x: 5.0102625, y: 3.002779, z: 5}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 20
+  resolutionY: 12
+  resolutionZ: 20
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &1741298006
 GameObject:
   m_ObjectHideFlags: 0
@@ -6976,6 +7358,71 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1741298006}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1790399072
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1790399073}
+  - component: {fileID: 1790399074}
+  m_Layer: 0
+  m_Name: Bakery Volume - Light Volume Projector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1790399073
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1790399072}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 309226902}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1790399074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1790399072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ce3c1d3490b7143a67ebdc73cab6c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableBaking: 1
+  bounds:
+    m_Center: {x: -0.004672289, y: 2.5049906, z: -17.877478}
+    m_Extent: {x: 4.00196, y: 2.0045094, z: 2.371727}
+  adaptiveRes: 0
+  voxelsPerUnit: 0.5
+  resolutionX: 80
+  resolutionY: 40
+  resolutionZ: 47
+  encoding: 0
+  shadowmaskEncoding: 0
+  firstLightIsAlwaysAlpha: 0
+  denoise: 1
+  isGlobal: 0
+  bakedTexture0: {fileID: 0}
+  bakedTexture1: {fileID: 0}
+  bakedTexture2: {fileID: 0}
+  bakedTexture3: {fileID: 0}
+  bakedMask: {fileID: 0}
+  supportRotationAfterBake: 0
+  rotateAroundY: 1
 --- !u!1 &1914527196
 GameObject:
   m_ObjectHideFlags: 0
