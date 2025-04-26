@@ -72,7 +72,7 @@ public class LightVolumeEditor : Editor {
         }
 
 #else
-        if (volume.BakingMode == LightVolume.Baking.Bakery) {
+        if (LightVolumeSetup.Instance.BakingMode == LightVolumeSetup.Baking.Bakery) {
             GUILayout.Space(10);
             EditorGUILayout.HelpBox("To use Bakery mode, please include Bakery into your project!", MessageType.Error);
         }

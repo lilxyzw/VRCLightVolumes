@@ -51,11 +51,15 @@ public class LightVolume : MonoBehaviour {
     }
     public Quaternion GetRotation() {
         if (LightVolumeSetup.Instance.IsBakeryMode && !Application.isPlaying && Bake) {
-            if(typeof(BakeryVolume).GetField("rotateAroundY") != null) {
+#if BAKERY_INCLUDED
+            if(typeof(BakeryVolume).GetField("rotateAroundY") != null) { // Some Bakery versions does not support rotateAroundY, so we'll check it
                 return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
             } else {
                 return Quaternion.identity;
             }
+#else
+            return Quaternion.identity;
+#endif
         } else {
             return transform.rotation;
         }
