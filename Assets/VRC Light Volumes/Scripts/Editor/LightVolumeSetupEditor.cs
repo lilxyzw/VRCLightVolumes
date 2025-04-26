@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
-
-using UnityEditor.SceneManagement;
+using System.Collections.Generic;
 
 [CustomEditor(typeof(LightVolumeSetup))]
 public class LightVolumeSetupEditor : Editor {
@@ -223,8 +222,12 @@ public class LightVolumeSetupEditor : Editor {
 
         reorderableList.DoLayoutList();
 
-        string[] hiddenFields = new string[] { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
-        DrawPropertiesExcluding(serializedObject, hiddenFields);
+        List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
+        if (_lightVolumeSetup.BakingMode != LightVolumeSetup.Baking.Bakery) {
+            hiddenFields.Add("FixLightProbesL1");
+        }
+
+        DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());
 
         GUILayout.Space(5);
 

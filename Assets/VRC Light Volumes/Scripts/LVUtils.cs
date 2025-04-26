@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using UnityEngine.Rendering;
+
 
 #if UNITY_EDITOR
 using System.IO;
@@ -216,6 +218,51 @@ public class LVUtils {
             verts.Add(mid);
             return idx;
         }
+    }
+
+    // Fixes bakery L1 probe channel
+    public static Vector3 LinearizeSingleSH(float L0, Vector3 L1) {
+        L1 = L1 / 2;
+        float L1length = L1.magnitude;
+        if (L1length > 0.0 && L0 > 0.0) {
+            L1 *= Mathf.Min(L0 / L1length, 1.13f);
+        }
+        return L1;
+    }
+
+    // Fizes bakery L1 probe
+    public static SphericalHarmonicsL2 LinearizeSH(SphericalHarmonicsL2 sh) {
+
+        const int r = 0;
+        const int g = 1;
+        const int b = 2;
+        const int a = 0;
+        const int x = 3;
+        const int y = 1;
+        const int z = 2;
+
+        Vector3 L0  = new Vector3(sh[r, a], sh[g, a], sh[b, a]);
+        Vector3 L1r = new Vector3(sh[r, x], sh[r, y], sh[r, z]);
+        Vector3 L1g = new Vector3(sh[g, x], sh[g, y], sh[g, z]);
+        Vector3 L1b = new Vector3(sh[b, x], sh[b, y], sh[b, z]);
+
+        L1r = LinearizeSingleSH(L0.x, L1r);
+        L1g = LinearizeSingleSH(L0.y, L1g);
+        L1b = LinearizeSingleSH(L0.z, L1b);
+
+        sh[r, x] = L1r.x;
+        sh[r, y] = L1r.y;
+        sh[r, z] = L1r.z;
+
+        sh[g, x] = L1g.x;
+        sh[g, y] = L1g.y;
+        sh[g, z] = L1g.z;
+
+        sh[b, x] = L1b.x;
+        sh[b, y] = L1b.y;
+        sh[b, z] = L1b.z;
+
+        return sh;
     }
 
 }

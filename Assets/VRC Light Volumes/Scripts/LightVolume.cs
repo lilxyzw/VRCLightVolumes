@@ -10,18 +10,27 @@ using UnityEngine.SceneManagement;
 public class LightVolume : MonoBehaviour {
 
     [Header("Baked Data")]
+    [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L0r, L0g, L0b, L1r.z)")]
     public Texture3D Texture0;
+    [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.x, L1g.x, L1b.x, L1g.z)")]
     public Texture3D Texture1;
+    [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
     public Texture3D Texture2;
+    [Tooltip("Rotation of the volume it was baked with. Do not modify!")]
     public Quaternion BakedRotation = Quaternion.identity;
+    [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
     public bool IsAdditive;
 
     [Header("Baking Setup")]
+    [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
     public bool Bake = true;
+    [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
     public bool AdaptiveResolution = true;
+    [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
     public float VoxelsPerUnit = 2;
+    [Tooltip("Manual Light Volume resolution in voxel count.")]
     public Vector3Int Resolution = new Vector3Int(16, 16, 16);
-    public bool PreviewProbes;
+    public bool PreviewVoxels;
 #if BAKERY_INCLUDED
     public BakeryVolume BakeryVolume;
 #endif
@@ -118,7 +127,7 @@ public class LightVolume : MonoBehaviour {
     public void Recalculate() {
         if (AdaptiveResolution)
             RecalculateAdaptiveResolution();
-        if (PreviewProbes && Bake)
+        if (PreviewVoxels && Bake)
             RecalculateProbesPositions();
     }
 #if UNITY_EDITOR
@@ -164,7 +173,7 @@ public class LightVolume : MonoBehaviour {
             Vector3[] L1g = new Vector3[vCount];
             Vector3[] L1b = new Vector3[vCount];
             for (int i = 0; i < vCount; i++) {
-                L0[i] = new Vector3(probes[i][r, a], probes[i][g, a], probes[i][b, a]);
+                L0[i]  = new Vector3(probes[i][r, a], probes[i][g, a], probes[i][b, a]);
                 L1r[i] = new Vector3(probes[i][r, x], probes[i][r, y], probes[i][r, z]);
                 L1g[i] = new Vector3(probes[i][g, x], probes[i][g, y], probes[i][g, z]);
                 L1b[i] = new Vector3(probes[i][b, x], probes[i][b, y], probes[i][b, z]);
@@ -271,7 +280,7 @@ public class LightVolume : MonoBehaviour {
         }
 
         // If Preview enabled
-        if (!PreviewProbes || _probesPositions == null || _probesPositions.Length == 0) return;
+        if (!PreviewVoxels || _probesPositions == null || _probesPositions.Length == 0) return;
 
         // Initialize Buffers
         if (_posBuf == null || _posBuf.count != _probesPositions.Length) {
@@ -314,18 +323,18 @@ public class LightVolume : MonoBehaviour {
 
     private void OnValidate() {
         Recalculate();
-        if (PreviewProbes)
+        if (PreviewVoxels)
             ReleasePreviewBuffers();
         LightVolumeSetup.Instance.SetupUdonBehaviour();
     }
 
     private void OnDisable() {
-        if (PreviewProbes)
+        if (PreviewVoxels)
             ReleasePreviewBuffers();
     }
 
     private void OnDestroy() {
-        if (PreviewProbes)
+        if (PreviewVoxels)
             ReleasePreviewBuffers();
     }
 

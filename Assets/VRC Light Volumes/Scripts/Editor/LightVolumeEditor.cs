@@ -24,7 +24,7 @@ public class LightVolumeEditor : Editor {
         editBoundsContent.text = " Edit Bounds";
 
         GUIContent previewProbesContent = EditorGUIUtility.IconContent("LightProbeGroup Gizmo");
-        previewProbesContent.text = " Preview Probes";
+        previewProbesContent.text = " Preview Voxels";
 
         GUIStyle toggleStyle = new GUIStyle(GUI.skin.button);
         toggleStyle.imagePosition = ImagePosition.ImageLeft;
@@ -38,10 +38,10 @@ public class LightVolumeEditor : Editor {
 
         bool newIsEditMode = GUILayout.Toggle(_isEditMode, editBoundsContent, toggleStyle);
         GUILayout.Space(10);
-        bool newPreviewProbes = GUILayout.Toggle(volume.PreviewProbes, previewProbesContent, toggleStyle);
-        if (newPreviewProbes != volume.PreviewProbes) {
+        bool newPreviewProbes = GUILayout.Toggle(volume.PreviewVoxels, previewProbesContent, toggleStyle);
+        if (newPreviewProbes != volume.PreviewVoxels) {
             volume.RecalculateProbesPositions();
-            volume.PreviewProbes = newPreviewProbes;
+            volume.PreviewVoxels = newPreviewProbes;
             SceneView.RepaintAll();
         }
 
@@ -106,7 +106,7 @@ public class LightVolumeEditor : Editor {
             SceneView.RepaintAll();
         }
 
-        List<string> hiddenFields = new List<string> { "m_Script", "PreviewProbes" };
+        List<string> hiddenFields = new List<string> { "m_Script", "PreviewVoxels" };
 
 #if BAKERY_INCLUDED
         hiddenFields.Add("BakeryVolume");
@@ -116,7 +116,6 @@ public class LightVolumeEditor : Editor {
             hiddenFields.Add("AdaptiveResolution");
             hiddenFields.Add("Resolution");
             hiddenFields.Add("VoxelsPerUnit");
-            hiddenFields.Add("PreviewProbes");
         } if (volume.AdaptiveResolution) {
             
         } else {
@@ -218,7 +217,7 @@ public class LightVolumeEditor : Editor {
     // Bring back tools
     void OnDisable() {
         LightVolume volume = (LightVolume)target;
-        volume.PreviewProbes = false;
+        volume.PreviewVoxels = false;
         Tools.hidden = false;
         if (_isEditMode) {
             // Went from edit mode

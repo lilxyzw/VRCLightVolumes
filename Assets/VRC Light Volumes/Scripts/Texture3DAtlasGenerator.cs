@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.EditorCoroutines.Editor;
 
 public struct Atlas3D {
     public Texture3D Texture;
@@ -184,14 +183,14 @@ public static class Texture3DAtlasGenerator {
                     Color tex1 = colors1[index];
                     Color tex2 = colors2[index];
 
-                    Vector3 L0 = new Vector3(tex0.r, tex0.g, tex0.b);
+                    Vector3 L0 =  new Vector3(tex0.r, tex0.g, tex0.b);
                     Vector3 L1r = new Vector3(tex1.r, tex2.r, tex0.a);
                     Vector3 L1g = new Vector3(tex1.g, tex2.g, tex1.a);
                     Vector3 L1b = new Vector3(tex1.b, tex2.b, tex2.a);
 
-                    L1r = LinearizeSingleSH(L0.x, L1r);
-                    L1g = LinearizeSingleSH(L0.y, L1g);
-                    L1b = LinearizeSingleSH(L0.z, L1b);
+                    L1r = LVUtils.LinearizeSingleSH(L0.x, L1r);
+                    L1g = LVUtils.LinearizeSingleSH(L0.y, L1g);
+                    L1b = LVUtils.LinearizeSingleSH(L0.z, L1b);
 
                     colors0[index] = new Color(L0.x, L0.y, L0.z, L1r.z);
                     colors1[index] = new Color(L1r.x, L1g.x, L1b.x, L1g.z);
@@ -207,16 +206,6 @@ public static class Texture3DAtlasGenerator {
 
         return t;
 
-    }
-
-    // Returns modified L1
-    private static Vector3 LinearizeSingleSH(float L0, Vector3 L1) {
-        L1 = L1 / 2;
-        float L1length = L1.magnitude;
-        if (L1length > 0.0 && L0 > 0.0) {
-            L1 *= Mathf.Min(L0 / L1length, 1.13f);
-        }
-        return L1;
     }
 
 }

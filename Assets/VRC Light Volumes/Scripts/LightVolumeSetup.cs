@@ -2,7 +2,9 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+
 #if UNITY_EDITOR
+using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 #endif
 
@@ -11,16 +13,24 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     public LightVolume[] LightVolumes = new LightVolume[0];
     public float[] LightVolumesWeights = new float[0];
     [Header("Baking")]
+    [Tooltip("Bakery usually gives better results and works faster.")]
 #if BAKERY_INCLUDED
     public Baking BakingMode = Baking.Bakery;
 #else
     public Baking BakingMode = Baking.UnityLightmapper;
 #endif
+    [Tooltip("Removes baked noise in Light Volumes but may slightly reduce sharpness. Recommended to keep it enabled.")]
     public bool Denoise = true;
+    [Tooltip("Automatically fixes Bakery's \"burned\" light probes after a scene bake. But decreases their contrast slightly.")] 
+    public bool FixLightProbesL1 = true;
     [Header("Visuals")]
+    [Tooltip("Size in meters of the overlapping regions between Light Volumes for smooth blending.")]
     [Range(0, 1)] public float EdgeSmoothing = 0.25f;
+    [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
     public bool LightProbesBlending = true;
+    [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
     public bool SharpBounds = true;
+    [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
     public bool DynamicVolumes = false;
 
     public Texture3D LightVolumeAtlas;
@@ -91,6 +101,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 volumes[i].BakedRotation = volumes[i].GetRotation();
             }
         }
+        if (FixLightProbesL1) FixLightProbes();
     }
 #endif
 
@@ -179,9 +190,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         }
 
-#if UNITY_EDITOR
         LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_LightVolumeAtlas.asset");
-#endif
         SetupUdonBehaviour();
 
     }
@@ -251,7 +260,34 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
     }
 
+    // Fixes light probes baked with Bakery L1
+    private static void FixLightProbes() {
+
+        var probes = LightmapSettings.lightProbes;
+        if (probes == null || probes.count == 0) {
+            Debug.LogWarning("[LightVolumeSetup] No Light Probes found to fix.");
+            return;
+        }
+
+        var shs = probes.bakedProbes;
+        for (int i = 0; i < shs.Length; ++i) {
+            shs[i] = LVUtils.LinearizeSH(shs[i]);
+        }
+
+        probes.bakedProbes = shs;
+        EditorUtility.SetDirty(probes);
+        EditorSceneManager.MarkAllScenesDirty();
+
+        AssetDatabase.SaveAssets();
+        EditorSceneManager.SaveOpenScenes();
+
+        Debug.Log($"[LightVolumeSetup] {shs.Length} Light Probes fixed!");
+
+    }
+
 #endif
+
+
 
     public enum Baking {
         UnityLightmapper,
