@@ -122,7 +122,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
         _rotations = new Vector4[_enabledCount];
         _needsToRotate = new float[_enabledCount];
         for (int i = 0; i < _enabledCount; i++) {
-            InvWorldMatrix[i] = Matrix4x4.TRS(_volumesTransforms[i].position, _volumesTransforms[i].rotation, _volumesTransforms[i].lossyScale).inverse;
+            _invWorldMatrix[i] = Matrix4x4.TRS(_volumesTransforms[i].position, _volumesTransforms[i].rotation, _volumesTransforms[i].lossyScale).inverse;
             Quaternion rot = _volumesTransforms[i].rotation * _invBakedRotations[i];
             _needsToRotate[i] = rot == Quaternion.identity ? 0 : 1;
             _rotations[i] = new Vector4(rot.x, rot.y, rot.z, rot.w);
