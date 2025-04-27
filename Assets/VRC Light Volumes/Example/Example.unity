@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.6622641, g: 0.7576248, b: 1, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: b49d6dbc937465547972739694416d84, type: 2}
+  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -309,7 +309,7 @@ Transform:
   m_GameObject: {fileID: 29941926}
   serializedVersion: 2
   m_LocalRotation: {x: -0.70710707, y: -0.00000089472485, z: -0.0000009890297, w: 0.7071066}
-  m_LocalPosition: {x: -0.0000019980234, y: 1.4900006, z: -15.4}
+  m_LocalPosition: {x: 0.0000026640312, y: 1.4899992, z: -14.84}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1201,7 +1201,7 @@ MonoBehaviour:
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
-  Resolution: {x: 80, y: 40, z: 47}
+  Resolution: {x: 80, y: 40, z: 48}
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 309226904}
@@ -4162,7 +4162,7 @@ MonoBehaviour:
   - {fileID: 1541478410}
   spawnOrder: 2
   spawnOrientation: 0
-  ReferenceCamera: {fileID: 0}
+  ReferenceCamera: {fileID: 400136964}
   RespawnHeightY: -10
   ObjectBehaviourAtRespawnHeight: 0
   ForbidUserPortals: 0
