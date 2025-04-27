@@ -10,6 +10,7 @@ public static class HierarchyMenu {
         var go = new GameObject(GetUniqueName("Light Volume"));
 
         go.AddComponent<LightVolume>();
+        go.AddComponent<LightVolumeInstance>();
 
         GameObjectUtility.SetParentAndAlign(go, cmd.context as GameObject);
         Undo.RegisterCreatedObjectUndo(go, $"Create new Light Volume");

@@ -24,8 +24,6 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     [Tooltip("Automatically fixes Bakery's \"burned\" light probes after a scene bake. But decreases their contrast slightly.")] 
     public bool FixLightProbesL1 = true;
     [Header("Visuals")]
-    [Tooltip("Size in meters of the overlapping regions between Light Volumes for smooth blending.")]
-    [Range(0, 1)] public float EdgeSmoothing = 0.25f;
     [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
     public bool LightProbesBlending = true;
     [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
@@ -33,7 +31,6 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
     public bool AutoUpdateVolumes = false;
 
-    public Texture3D LightVolumeAtlas;
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
     public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
@@ -98,8 +95,8 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         if (BakingMode != Baking.Bakery) return;
         LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < volumes.Length; i++) {
-            if (volumes[i].Bake) {
-                volumes[i].BakedRotation = volumes[i].GetRotation();
+            if (volumes[i].Bake && volumes[i].LightVolumeInstance != null) {
+                volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
             }
         }
         if (FixLightProbesL1) FixLightProbes();
@@ -113,7 +110,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             if (LightVolumes[i].Bake) {
                 LightVolumes[i].Save3DTextures(i);
                 LightVolumes[i].RemoveAdditionalProbes(i);
-                LightVolumes[i].BakedRotation = LightVolumes[i].GetRotation();
+                if (LightVolumes[i].LightVolumeInstance != null) LightVolumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(LightVolumes[i].GetRotation());
             }
         }
         Debug.Log($"[LightVolumeSetup] Additional probes baking finished! Generating 3D Atlas...");
@@ -133,18 +130,34 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     }
 
     private void Update() {
+
+        // Creates LightVolumeInstance if needed
+        if (_udonLightVolumeManager == null && !TryGetComponent(out _udonLightVolumeManager)) {
+            _udonLightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
+        }
+
         // Resetup required game objects and components for light volumes in new baking mode
-        if(_bakingModePrev != BakingMode) {
+        if (_bakingModePrev != BakingMode) {
             _bakingModePrev = BakingMode;
             var volumes = FindObjectsOfType<LightVolume>();
             for (int i = 0; i < volumes.Length; i++) {
                 volumes[i].SetupDependencies();
             }
         }
+
+        if (Selection.activeGameObject != gameObject) return;
+
+        _udonLightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
+        _udonLightVolumeManager.LightProbesBlending = LightProbesBlending;
+        _udonLightVolumeManager.SharpBounds = SharpBounds;
+
     }
 
     // Generates atlas and setups udon script
     public void GenerateAtlas() {
+
+        if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
+        if (_udonLightVolumeManager == null) return;
 
         if (LightVolumes.Length == 0) return;
 
@@ -166,29 +179,23 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         var atlas = Texture3DAtlasGenerator.CreateAtlas(textures);
 
-        LightVolumeAtlas = atlas.Texture;
+        _udonLightVolumeManager.LightVolumeAtlas = atlas.Texture;
 
         LightVolumeDataList.Clear();
 
         for (int i = 0; i < LightVolumes.Length; i++) {
 
-            int i3 = i * 3;
+            if (LightVolumes[i] == null || LightVolumes[i].LightVolumeInstance == null) continue;
 
-            LightVolumeDataList.Add(new LightVolumeData(
-                i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                Vector4.zero,
-                Matrix4x4.identity,
-                atlas.BoundsUvwMin[i3],
-                atlas.BoundsUvwMin[i3 + 1],
-                atlas.BoundsUvwMin[i3 + 2],
-                atlas.BoundsUvwMax[i3],
-                atlas.BoundsUvwMax[i3 + 1],
-                atlas.BoundsUvwMax[i3 + 2],
-                Quaternion.identity,
-                null,
-                false
-            ));
+            LightVolumes[i].LightVolumeInstance.BoundsUvwMin0 = atlas.BoundsUvwMin[i * 3];
+            LightVolumes[i].LightVolumeInstance.BoundsUvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
+            LightVolumes[i].LightVolumeInstance.BoundsUvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
 
+            LightVolumes[i].LightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
+            LightVolumes[i].LightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
+            LightVolumes[i].LightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
+
+            LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0, LightVolumes[i].LightVolumeInstance));
         }
 
         LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_LightVolumeAtlas.asset");
@@ -207,56 +214,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             LightVolumesWeights = new float[LightVolumes.Length];
         }
 
-        var v05 = new Vector3(0.5f, 0.5f, 0.5f);
-
-        // Update Weights because can be desynced
-        for (int i = 0; i < LightVolumeDataList.Count; i++) {
-
-            if (LightVolumes.Length <= i || !LightVolumes[i].gameObject.TryGetComponent(out LightVolume lightVolume)) continue;
-
-            // Volume data
-            var pos = lightVolume.GetPosition();
-            var rot = lightVolume.GetRotation();
-            var scl = lightVolume.GetScale();
-
-            // Inversed World Matrix for Free rotation
-            Matrix4x4 invMatrix = Matrix4x4.TRS(pos, rot, scl).inverse;
-            Vector4 localEdgeSmooth = new Vector4(scl.x, scl.y, scl.z, 0) / EdgeSmoothing;
-            Quaternion invBakedlRotation = Quaternion.Inverse(lightVolume.BakedRotation);
-
-            LightVolumeDataList[i] = new LightVolumeData(
-                i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0,
-                localEdgeSmooth,
-                invMatrix,
-                LightVolumeDataList[i].UvwMin[0],
-                LightVolumeDataList[i].UvwMin[1],
-                LightVolumeDataList[i].UvwMin[2],
-                LightVolumeDataList[i].UvwMax[0],
-                LightVolumeDataList[i].UvwMax[1],
-                LightVolumeDataList[i].UvwMax[2],
-                invBakedlRotation,
-                lightVolume.transform,
-                lightVolume.IsAdditive
-            );
-
-        }
-        
-        var sortedData = LightVolumeDataSorter.SortData(LightVolumeDataList);
-        
-        LightVolumeDataSorter.GetData(sortedData, out Vector4[] invLocalEdgeSmooth, out Matrix4x4[] invWorldMatrix, out Vector4[] boundsUvwMin, out Vector4[] boundsUvwMax, out Quaternion[] invRotation, out Transform[] volumeTransforms, out float[] isAdditive);
-
-        _udonLightVolumeManager.InvLocalEdgeSmooth = invLocalEdgeSmooth;
-        _udonLightVolumeManager.BoundsUvwMin = boundsUvwMin;
-        _udonLightVolumeManager.BoundsUvwMax = boundsUvwMax;
-        _udonLightVolumeManager.InvWorldMatrix = invWorldMatrix;
-        _udonLightVolumeManager.LightVolumeAtlas = LightVolumeAtlas;
-        _udonLightVolumeManager.InvBakedRotations = invRotation;
-        _udonLightVolumeManager.VolumesTransforms = volumeTransforms;
-        _udonLightVolumeManager.IsAdditive = isAdditive;
-        _udonLightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
-        _udonLightVolumeManager.SharpBounds = SharpBounds;
-        _udonLightVolumeManager.LightProbesBlending = LightProbesBlending;
-
+        _udonLightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
         UpdateVolumes();
 
     }

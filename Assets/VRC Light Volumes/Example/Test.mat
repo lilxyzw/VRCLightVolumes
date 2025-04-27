@@ -89,7 +89,7 @@ Material:
     - _Mode: 3
     - _NormalPower: 1
     - _OcclusionStrength: 1
-    - _Opacity: 0.02
+    - _Opacity: 0.036
     - _Parallax: 0.02
     - _Shadow: 0.92
     - _Smoothness: 0

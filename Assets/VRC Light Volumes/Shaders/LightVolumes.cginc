@@ -21,7 +21,7 @@ uniform float4x4 _UdonLightVolumeInvWorldMatrix[256];
 uniform float4 _UdonLightVolumeRotation[256];
 
 // If we actually need to rotate L1 components at all
-uniform float _UdonLightVolumeNeedsRotation[256];
+uniform float _UdonLightVolumeIsRotated[256];
 
 // Is this light volume in additive mode?
 uniform float _UdonLightVolumeAdditive[256];
@@ -32,6 +32,9 @@ uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[256];
 // AABB Bounds of islands on the 3D Texture atlas
 uniform float4 _UdonLightVolumeUvwMin[768];
 uniform float4 _UdonLightVolumeUvwMax[768];
+
+// Color multiplier
+uniform float4 _UdonLightVolumeColor[256];
 
 // Rotates vector by quaternion
 float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
@@ -103,9 +106,15 @@ void LV_SampleVolume(int id, float3 localUVW, out float3 L0, out float3 L1r, out
                 
     // Sample additive
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
-                
+    
+    // Color correction
+    L0 = L0 * _UdonLightVolumeColor[id].rgb;
+    L1r = L1r * _UdonLightVolumeColor[id].r;
+    L1g = L1g * _UdonLightVolumeColor[id].g;
+    L1b = L1b * _UdonLightVolumeColor[id].b;
+    
     // Rotate if needed
-    if (_UdonLightVolumeNeedsRotation[id] != 0) {
+    if (_UdonLightVolumeIsRotated[id] != 0) {
         L1r = LV_MultiplyVectorByQuaternion(L1r, _UdonLightVolumeRotation[id]);
         L1g = LV_MultiplyVectorByQuaternion(L1g, _UdonLightVolumeRotation[id]);
         L1b = LV_MultiplyVectorByQuaternion(L1b, _UdonLightVolumeRotation[id]);

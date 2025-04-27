@@ -9,6 +9,17 @@ using UnityEngine.SceneManagement;
 [ExecuteAlways]
 public class LightVolume : MonoBehaviour {
 
+    [Header("Volume Setup")]
+    [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance.")]
+    public bool Dynamic;
+    [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
+    public bool Additive;
+    [Tooltip("Multiplies the volume’s color by this value.")]
+    [ColorUsage(showAlpha: false, hdr: true)]
+    public Color Color = Color.white;
+    [Tooltip("Size in meters of this Light Volume's overlapping regions for smooth blending with other volumes.")]
+    [Range(0, 1)]public float SmoothBlending= 0.25f;
+
     [Header("Baked Data")]
     [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L0r, L0g, L0b, L1r.z)")]
     public Texture3D Texture0;
@@ -16,10 +27,7 @@ public class LightVolume : MonoBehaviour {
     public Texture3D Texture1;
     [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
     public Texture3D Texture2;
-    [Tooltip("Rotation of the volume it was baked with. Do not modify!")]
-    public Quaternion BakedRotation = Quaternion.identity;
-    [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
-    public bool IsAdditive;
+    
 
     [Header("Baking Setup")]
     [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
@@ -34,6 +42,7 @@ public class LightVolume : MonoBehaviour {
 #if BAKERY_INCLUDED
     public BakeryVolume BakeryVolume;
 #endif
+    public LightVolumeInstance LightVolumeInstance;
 
     // Light probes world positions
     private Vector3[] _probesPositions;
@@ -254,6 +263,16 @@ public class LightVolume : MonoBehaviour {
 
         }
 #endif
+        // Creates LightVolumeInstance if needed
+        if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
+            LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
+        }
+
+        LightVolumeInstance.IsDynamic = Dynamic;
+        LightVolumeInstance.IsAdditive = Additive;
+        LightVolumeInstance.Color = Color;
+        LightVolumeInstance.SetSmoothBlending(SmoothBlending);
+
     }
 
 #if UNITY_EDITOR
@@ -269,6 +288,7 @@ public class LightVolume : MonoBehaviour {
 #endif
 
         if (Selection.activeGameObject != gameObject) return;
+
         SetupDependencies();
 
         // Update udon Behaviour if Volume changed transform
@@ -329,6 +349,9 @@ public class LightVolume : MonoBehaviour {
     }
 
     private void OnEnable() {
+        if(LightVolumeInstance == null) {
+            LightVolumeInstance = GetComponent<LightVolumeInstance>();
+        }
         LightVolumeSetup.Instance.UpdateVolumes();
     }
 

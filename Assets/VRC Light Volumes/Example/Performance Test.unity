@@ -751,6 +751,8 @@ GameObject:
   m_Component:
   - component: {fileID: 36975836}
   - component: {fileID: 36975837}
+  - component: {fileID: 36975838}
+  - component: {fileID: 36975839}
   m_Layer: 0
   m_Name: Light Volume Room
   m_TagString: Untagged
@@ -786,18 +788,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Dynamic: 0
+  Additive: 0
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  SmoothBlending: 0.25
   Texture0: {fileID: 11700000, guid: 681d6d974f945e04fb0a7c7bbf9542af, type: 2}
   Texture1: {fileID: 11700000, guid: fa5a091a605178f4ebe9892accced90a, type: 2}
   Texture2: {fileID: 11700000, guid: 8cf6be9230a5b7347b0aa2cf71f155d6, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 16, y: 8, z: 16}
-  PreviewProbes: 0
+  PreviewVoxels: 0
   BakeryVolume: {fileID: 357692241}
+  LightVolumeInstance: {fileID: 36975838}
+--- !u!114 &36975838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36975835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bc8ec8ba5e5f3408667533e591f313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _udonSharpBackingUdonBehaviour: {fileID: 36975839}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  IsDynamic: 0
+  IsAdditive: 0
+  InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  BoundsUvwMin0: {x: 0.0121951215, y: 0.75, z: 0.8912281, w: 0}
+  BoundsUvwMin1: {x: 0.76829267, y: 0.022727273, z: 0.51929826, w: 0}
+  BoundsUvwMin2: {x: 0.0121951215, y: 0.52272725, z: 0.8912281, w: 0}
+  BoundsUvwMax0: {x: 0.20731707, y: 0.9318182, z: 0.94736844, w: 0}
+  BoundsUvwMax1: {x: 0.9634146, y: 0.20454545, z: 0.5754386, w: 0}
+  BoundsUvwMax2: {x: 0.20731707, y: 0.70454544, z: 0.94736844, w: 0}
+  InvLocalEdgeSmoothing: {x: 32.01568, y: 16.036076, z: 32.011986, w: 0}
+  InvWorldMatrix:
+    e00: 0.124938786
+    e01: 0
+    e02: 0
+    e03: 0.0005837501
+    e10: 0
+    e11: 0.24943759
+    e12: 0
+    e13: -0.6248388
+    e20: 0
+    e21: 0
+    e22: 0.124953195
+    e23: 2.249014
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  RelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+  IsRotated: 0
+--- !u!114 &36975839
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36975835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactTextPlacement: {fileID: 0}
+  interactText: Use
+  interactTextGO: {fileID: 0}
+  proximity: 2
+  SynchronizePosition: 0
+  AllowCollisionOwnershipTransfer: 0
+  Reliable: 0
+  _syncMethod: 1
+  serializedProgramAsset: {fileID: 11400000, guid: 4900c317bc7e4b04cbe3ccd9f340311d, type: 2}
+  programSource: {fileID: 11400000, guid: 78b75a58aad622e40bdf6e6d713d2487, type: 2}
+  serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
+  publicVariablesUnityEngineObjects: []
+  publicVariablesSerializationDataFormat: 0
 --- !u!1 &38894218
 GameObject:
   m_ObjectHideFlags: 0
@@ -808,6 +889,8 @@ GameObject:
   m_Component:
   - component: {fileID: 38894219}
   - component: {fileID: 38894220}
+  - component: {fileID: 38894221}
+  - component: {fileID: 38894222}
   m_Layer: 0
   m_Name: Light Volume Main
   m_TagString: Untagged
@@ -843,18 +926,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Dynamic: 0
+  Additive: 0
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  SmoothBlending: 0.25
   Texture0: {fileID: 11700000, guid: 6a3c4b01f10f8da47b6ad1b0f029138a, type: 2}
   Texture1: {fileID: 11700000, guid: 5537f72503015144c8d5770bb12ed49c, type: 2}
   Texture2: {fileID: 11700000, guid: ee665e5dcbf921c49a411eeadee1fa39, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 6
   Resolution: {x: 60, y: 20, z: 60}
-  PreviewProbes: 0
+  PreviewVoxels: 0
   BakeryVolume: {fileID: 674120800}
+  LightVolumeInstance: {fileID: 38894221}
+--- !u!114 &38894221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 38894218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bc8ec8ba5e5f3408667533e591f313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _udonSharpBackingUdonBehaviour: {fileID: 38894222}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  IsDynamic: 0
+  IsAdditive: 0
+  InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  BoundsUvwMin0: {x: 0.0121951215, y: 0.022727273, z: 0.51929826, w: 0}
+  BoundsUvwMin1: {x: 0.0121951215, y: 0.52272725, z: 0.51929826, w: 0}
+  BoundsUvwMin2: {x: 0.0121951215, y: 0.022727273, z: 0.7368421, w: 0}
+  BoundsUvwMax0: {x: 0.74390244, y: 0.47727272, z: 0.72982454, w: 0}
+  BoundsUvwMax1: {x: 0.74390244, y: 0.97727275, z: 0.72982454, w: 0}
+  BoundsUvwMax2: {x: 0.74390244, y: 0.47727272, z: 0.94736844, w: 0}
+  InvLocalEdgeSmoothing: {x: 40.0821, y: 13.032427, z: 40, w: 0}
+  InvWorldMatrix:
+    e00: 0.09979517
+    e01: 0
+    e02: 0
+    e03: -0.00022749699
+    e10: 0
+    e11: 0.30692673
+    e12: 0
+    e13: -0.6536111
+    e20: 0
+    e21: 0
+    e22: 0.1
+    e23: -0.00044533014
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  RelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+  IsRotated: 0
+--- !u!114 &38894222
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 38894218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactTextPlacement: {fileID: 0}
+  interactText: Use
+  interactTextGO: {fileID: 0}
+  proximity: 2
+  SynchronizePosition: 0
+  AllowCollisionOwnershipTransfer: 0
+  Reliable: 0
+  _syncMethod: 1
+  serializedProgramAsset: {fileID: 11400000, guid: 4900c317bc7e4b04cbe3ccd9f340311d, type: 2}
+  programSource: {fileID: 11400000, guid: 78b75a58aad622e40bdf6e6d713d2487, type: 2}
+  serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
+  publicVariablesUnityEngineObjects: []
+  publicVariablesSerializationDataFormat: 0
 --- !u!1 &53727332
 GameObject:
   m_ObjectHideFlags: 0
@@ -948,6 +1110,8 @@ GameObject:
   m_Component:
   - component: {fileID: 92299095}
   - component: {fileID: 92299096}
+  - component: {fileID: 92299097}
+  - component: {fileID: 92299098}
   m_Layer: 0
   m_Name: Light Volume Bridge
   m_TagString: Untagged
@@ -983,18 +1147,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Dynamic: 0
+  Additive: 0
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  SmoothBlending: 0.25
   Texture0: {fileID: 11700000, guid: c7bdf14fb1ea5a3429210a370a109baf, type: 2}
   Texture1: {fileID: 11700000, guid: 936c5cca175ef6d4d9400091740e1379, type: 2}
   Texture2: {fileID: 11700000, guid: 6596a90b8fd89b14cb0cd0d67ef1fdf1, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 8, y: 10, z: 22}
-  PreviewProbes: 0
+  PreviewVoxels: 0
   BakeryVolume: {fileID: 1234120316}
+  LightVolumeInstance: {fileID: 92299097}
+--- !u!114 &92299097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 92299094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bc8ec8ba5e5f3408667533e591f313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _udonSharpBackingUdonBehaviour: {fileID: 92299098}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  IsDynamic: 0
+  IsAdditive: 0
+  InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  BoundsUvwMin0: {x: 0.76829267, y: 0.022727273, z: 0.83859646, w: 0}
+  BoundsUvwMin1: {x: 0.76829267, y: 0.022727273, z: 0.5824561, w: 0}
+  BoundsUvwMin2: {x: 0.76829267, y: 0.022727273, z: 0.7368421, w: 0}
+  BoundsUvwMax0: {x: 0.86585367, y: 0.25, z: 0.9157895, w: 0}
+  BoundsUvwMax1: {x: 0.86585367, y: 0.25, z: 0.65964913, w: 0}
+  BoundsUvwMax2: {x: 0.86585367, y: 0.25, z: 0.81403506, w: 0}
+  InvLocalEdgeSmoothing: {x: 16.082058, y: 20.049475, z: 44.07076, w: 0}
+  InvWorldMatrix:
+    e00: 0.24872439
+    e01: 0
+    e02: 0
+    e03: 0.00037046513
+    e10: 0
+    e11: 0.19950648
+    e12: 0
+    e13: -0.5998492
+    e20: 0
+    e21: 0
+    e22: 0.09076313
+    e23: 0.86164224
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  RelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+  IsRotated: 0
+--- !u!114 &92299098
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 92299094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactTextPlacement: {fileID: 0}
+  interactText: Use
+  interactTextGO: {fileID: 0}
+  proximity: 2
+  SynchronizePosition: 0
+  AllowCollisionOwnershipTransfer: 0
+  Reliable: 0
+  _syncMethod: 1
+  serializedProgramAsset: {fileID: 11400000, guid: 4900c317bc7e4b04cbe3ccd9f340311d, type: 2}
+  programSource: {fileID: 11400000, guid: 78b75a58aad622e40bdf6e6d713d2487, type: 2}
+  serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
+  publicVariablesUnityEngineObjects: []
+  publicVariablesSerializationDataFormat: 0
 --- !u!1 &95890532
 GameObject:
   m_ObjectHideFlags: 0
@@ -1337,6 +1580,8 @@ GameObject:
   m_Component:
   - component: {fileID: 170737170}
   - component: {fileID: 170737171}
+  - component: {fileID: 170737172}
+  - component: {fileID: 170737173}
   m_Layer: 0
   m_Name: Light Volume Art
   m_TagString: Untagged
@@ -1372,18 +1617,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Dynamic: 0
+  Additive: 0
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  SmoothBlending: 0.25
   Texture0: {fileID: 11700000, guid: e21b989724517074eb59344973c16a81, type: 2}
   Texture1: {fileID: 11700000, guid: 3165c9a7b64f11e4e8b27738e5fc81cf, type: 2}
   Texture2: {fileID: 11700000, guid: cd7e7c6504bab1e4e90baec6777c6268, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 20, y: 18, z: 5}
-  PreviewProbes: 0
+  PreviewVoxels: 0
   BakeryVolume: {fileID: 1145546995}
+  LightVolumeInstance: {fileID: 170737172}
+--- !u!114 &170737172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170737169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bc8ec8ba5e5f3408667533e591f313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _udonSharpBackingUdonBehaviour: {fileID: 170737173}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  IsDynamic: 0
+  IsAdditive: 0
+  InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  BoundsUvwMin0: {x: 0.0121951215, y: 0.5681818, z: 0.95438594, w: 0}
+  BoundsUvwMin1: {x: 0.0121951215, y: 0.5681818, z: 0.97894734, w: 0}
+  BoundsUvwMin2: {x: 0.2804878, y: 0.52272725, z: 0.81403506, w: 0}
+  BoundsUvwMax0: {x: 0.25609756, y: 0.97727275, z: 0.97192985, w: 0}
+  BoundsUvwMax1: {x: 0.25609756, y: 0.97727275, z: 0.99649125, w: 0}
+  BoundsUvwMax2: {x: 0.5243902, y: 0.9318182, z: 0.83157897, w: 0}
+  InvLocalEdgeSmoothing: {x: 7.9885674, y: 7.0573435, z: 1.8975372, w: 0}
+  InvWorldMatrix:
+    e00: 0.50071555
+    e01: 0
+    e02: 0
+    e03: -1.0008309
+    e10: 0
+    e11: 0.5667855
+    e12: 0
+    e13: -0.8837445
+    e20: 0
+    e21: 0
+    e22: 2.1079955
+    e23: 45.87423
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  RelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+  IsRotated: 0
+--- !u!114 &170737173
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170737169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactTextPlacement: {fileID: 0}
+  interactText: Use
+  interactTextGO: {fileID: 0}
+  proximity: 2
+  SynchronizePosition: 0
+  AllowCollisionOwnershipTransfer: 0
+  Reliable: 0
+  _syncMethod: 1
+  serializedProgramAsset: {fileID: 11400000, guid: 4900c317bc7e4b04cbe3ccd9f340311d, type: 2}
+  programSource: {fileID: 11400000, guid: 78b75a58aad622e40bdf6e6d713d2487, type: 2}
+  serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
+  publicVariablesUnityEngineObjects: []
+  publicVariablesSerializationDataFormat: 0
 --- !u!1 &175676604
 GameObject:
   m_ObjectHideFlags: 0
@@ -2513,6 +2837,8 @@ GameObject:
   m_Component:
   - component: {fileID: 309226902}
   - component: {fileID: 309226903}
+  - component: {fileID: 309226904}
+  - component: {fileID: 309226905}
   m_Layer: 0
   m_Name: Light Volume Projector
   m_TagString: Untagged
@@ -2548,18 +2874,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Dynamic: 0
+  Additive: 0
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  SmoothBlending: 0.25
   Texture0: {fileID: 11700000, guid: 0b8d6115b89a0744ebc7f68ac20d20c4, type: 2}
   Texture1: {fileID: 11700000, guid: 4af3de4741e4bca4f919daeb047fc64c, type: 2}
   Texture2: {fileID: 11700000, guid: 2a95ac5fff2880f409dc3c7532af1092, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 80, y: 40, z: 47}
-  PreviewProbes: 0
+  PreviewVoxels: 0
   BakeryVolume: {fileID: 956994364}
+  LightVolumeInstance: {fileID: 309226904}
+--- !u!114 &309226904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309226901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bc8ec8ba5e5f3408667533e591f313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _udonSharpBackingUdonBehaviour: {fileID: 309226905}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  IsDynamic: 0
+  IsAdditive: 0
+  InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  BoundsUvwMin0: {x: 0.0121951215, y: 0.022727273, z: 0.34736842, w: 0}
+  BoundsUvwMin1: {x: 0.0121951215, y: 0.022727273, z: 0.1754386, w: 0}
+  BoundsUvwMin2: {x: 0.0121951215, y: 0.022727273, z: 0.003508772, w: 0}
+  BoundsUvwMax0: {x: 0.9878049, y: 0.9318182, z: 0.5122807, w: 0}
+  BoundsUvwMax1: {x: 0.9878049, y: 0.9318182, z: 0.34035087, w: 0}
+  BoundsUvwMax2: {x: 0.9878049, y: 0.9318182, z: 0.16842106, w: 0}
+  InvLocalEdgeSmoothing: {x: 32.01568, y: 16.036076, z: 18.973816, w: 0}
+  InvWorldMatrix:
+    e00: 0.124938786
+    e01: 0
+    e02: 0
+    e03: -0.058221474
+    e10: 0
+    e11: 0.24943759
+    e12: 0
+    e13: -0.6248388
+    e20: 0
+    e21: 0
+    e22: 0.21081685
+    e23: 3.8520453
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  RelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+  IsRotated: 0
+--- !u!114 &309226905
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309226901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactTextPlacement: {fileID: 0}
+  interactText: Use
+  interactTextGO: {fileID: 0}
+  proximity: 2
+  SynchronizePosition: 0
+  AllowCollisionOwnershipTransfer: 0
+  Reliable: 0
+  _syncMethod: 1
+  serializedProgramAsset: {fileID: 11400000, guid: 4900c317bc7e4b04cbe3ccd9f340311d, type: 2}
+  programSource: {fileID: 11400000, guid: 78b75a58aad622e40bdf6e6d713d2487, type: 2}
+  serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
+  publicVariablesUnityEngineObjects: []
+  publicVariablesSerializationDataFormat: 0
 --- !u!1 &336715844
 GameObject:
   m_ObjectHideFlags: 0
@@ -3018,6 +3423,8 @@ GameObject:
   m_Component:
   - component: {fileID: 361893108}
   - component: {fileID: 361893109}
+  - component: {fileID: 361893110}
+  - component: {fileID: 361893111}
   m_Layer: 0
   m_Name: Light Volume Main Top
   m_TagString: Untagged
@@ -3053,18 +3460,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Dynamic: 0
+  Additive: 0
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  SmoothBlending: 0.25
   Texture0: {fileID: 11700000, guid: 20740687e204a4c4c999cf630291a55e, type: 2}
   Texture1: {fileID: 11700000, guid: 2bc8e7b70c1e82c448d50d8c0827d121, type: 2}
   Texture2: {fileID: 11700000, guid: 11302dba4b4b08b4a885239e9a487e7d, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 20, y: 12, z: 20}
-  PreviewProbes: 0
+  PreviewVoxels: 0
   BakeryVolume: {fileID: 339864120}
+  LightVolumeInstance: {fileID: 361893110}
+--- !u!114 &361893110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361893107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bc8ec8ba5e5f3408667533e591f313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _udonSharpBackingUdonBehaviour: {fileID: 361893111}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  IsDynamic: 0
+  IsAdditive: 0
+  InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  BoundsUvwMin0: {x: 0.0121951215, y: 0.52272725, z: 0.7368421, w: 0}
+  BoundsUvwMin1: {x: 0.0121951215, y: 0.52272725, z: 0.81403506, w: 0}
+  BoundsUvwMin2: {x: 0.2804878, y: 0.52272725, z: 0.7368421, w: 0}
+  BoundsUvwMax0: {x: 0.25609756, y: 0.79545456, z: 0.80701756, w: 0}
+  BoundsUvwMax1: {x: 0.25609756, y: 0.79545456, z: 0.8842105, w: 0}
+  BoundsUvwMax2: {x: 0.5243902, y: 0.79545456, z: 0.80701756, w: 0}
+  InvLocalEdgeSmoothing: {x: 40.0821, y: 24.022232, z: 40, w: 0}
+  InvWorldMatrix:
+    e00: 0.09979517
+    e01: 0
+    e02: 0
+    e03: -0.00022749699
+    e10: 0
+    e11: 0.16651241
+    e12: 0
+    e13: -0.91678584
+    e20: 0
+    e21: 0
+    e22: 0.1
+    e23: -0.00044533014
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  RelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+  IsRotated: 0
+--- !u!114 &361893111
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361893107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactTextPlacement: {fileID: 0}
+  interactText: Use
+  interactTextGO: {fileID: 0}
+  proximity: 2
+  SynchronizePosition: 0
+  AllowCollisionOwnershipTransfer: 0
+  Reliable: 0
+  _syncMethod: 1
+  serializedProgramAsset: {fileID: 11400000, guid: 4900c317bc7e4b04cbe3ccd9f340311d, type: 2}
+  programSource: {fileID: 11400000, guid: 78b75a58aad622e40bdf6e6d713d2487, type: 2}
+  serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
+  publicVariablesUnityEngineObjects: []
+  publicVariablesSerializationDataFormat: 0
 --- !u!1 &363958131
 GameObject:
   m_ObjectHideFlags: 0
@@ -3075,6 +3561,8 @@ GameObject:
   m_Component:
   - component: {fileID: 363958132}
   - component: {fileID: 363958133}
+  - component: {fileID: 363958134}
+  - component: {fileID: 363958135}
   m_Layer: 0
   m_Name: Light Volume Chart
   m_TagString: Untagged
@@ -3110,18 +3598,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Dynamic: 0
+  Additive: 0
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  SmoothBlending: 0.25
   Texture0: {fileID: 11700000, guid: bb85076edcb49c1449ec07bf577d511d, type: 2}
   Texture1: {fileID: 11700000, guid: 2e4c8242f980865448b1d5e15093e530, type: 2}
   Texture2: {fileID: 11700000, guid: 2b8559075f25af142beb07c522604d8b, type: 2}
-  BakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  IsAdditive: 0
   Bake: 1
-  Denoise: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 25, y: 22, z: 5}
-  PreviewProbes: 0
+  PreviewVoxels: 0
   BakeryVolume: {fileID: 1038888397}
+  LightVolumeInstance: {fileID: 363958134}
+--- !u!114 &363958134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363958131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bc8ec8ba5e5f3408667533e591f313, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _udonSharpBackingUdonBehaviour: {fileID: 363958135}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  IsDynamic: 0
+  IsAdditive: 0
+  InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
+  BoundsUvwMin0: {x: 0.0121951215, y: 0.022727273, z: 0.95438594, w: 0}
+  BoundsUvwMin1: {x: 0.0121951215, y: 0.022727273, z: 0.97894734, w: 0}
+  BoundsUvwMin2: {x: 0.5487805, y: 0.022727273, z: 0.95438594, w: 0}
+  BoundsUvwMax0: {x: 0.31707317, y: 0.52272725, z: 0.97192985, w: 0}
+  BoundsUvwMax1: {x: 0.31707317, y: 0.52272725, z: 0.99649125, w: 0}
+  BoundsUvwMax2: {x: 0.85365856, y: 0.52272725, z: 0.97192985, w: 0}
+  InvLocalEdgeSmoothing: {x: 10.060706, y: 8.823533, z: 1.8975372, w: 0}
+  InvWorldMatrix:
+    e00: 0.3975864
+    e01: 0
+    e02: 0
+    e03: 0.7937963
+    e10: 0
+    e11: 0.45333314
+    e12: 0
+    e13: -0.7255361
+    e20: 0
+    e21: 0
+    e22: 2.1079955
+    e23: 45.87423
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+  RelativeRotation: {x: 0, y: 0, z: 0, w: 1}
+  IsRotated: 0
+--- !u!114 &363958135
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363958131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45115577ef41a5b4ca741ed302693907, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactTextPlacement: {fileID: 0}
+  interactText: Use
+  interactTextGO: {fileID: 0}
+  proximity: 2
+  SynchronizePosition: 0
+  AllowCollisionOwnershipTransfer: 0
+  Reliable: 0
+  _syncMethod: 1
+  serializedProgramAsset: {fileID: 11400000, guid: 4900c317bc7e4b04cbe3ccd9f340311d, type: 2}
+  programSource: {fileID: 11400000, guid: 78b75a58aad622e40bdf6e6d713d2487, type: 2}
+  serializedPublicVariablesBytesString: Ai8AAAAAATIAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAFQAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AAAAAAAYBAAAAAAAAACcBBAAAAHQAeQBwAGUAAWgAAABTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBMAGkAcwB0AGAAMQBbAFsAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4ALgBJAG4AdABlAHIAZgBhAGMAZQBzAC4ASQBVAGQAbwBuAFYAYQByAGkAYQBiAGwAZQAsACAAVgBSAEMALgBVAGQAbwBuAC4AQwBvAG0AbQBvAG4AXQBdACwAIABtAHMAYwBvAHIAbABpAGIAAQEJAAAAVgBhAHIAaQBhAGIAbABlAHMALwEAAAABaAAAAFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ARwBlAG4AZQByAGkAYwAuAEwAaQBzAHQAYAAxAFsAWwBWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAEkAbgB0AGUAcgBmAGEAYwBlAHMALgBJAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlACwAIABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgBdAF0ALAAgAG0AcwBjAG8AcgBsAGkAYgABAAAABgEAAAAAAAAAAi8CAAAAAUkAAABWAFIAQwAuAFUAZABvAG4ALgBDAG8AbQBtAG8AbgAuAFUAZABvAG4AVgBhAHIAaQBhAGIAbABlAGAAMQBbAFsAUwB5AHMAdABlAG0ALgBJAG4AdAAzADIALAAgAG0AcwBjAG8AcgBsAGkAYgBdAF0ALAAgAFYAUgBDAC4AVQBkAG8AbgAuAEMAbwBtAG0AbwBuAAIAAAAGAgAAAAAAAAAnAQQAAAB0AHkAcABlAAEXAAAAUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwAsACAAbQBzAGMAbwByAGwAaQBiACcBCgAAAFMAeQBtAGIAbwBsAE4AYQBtAGUAAR8AAABfAF8AXwBVAGQAbwBuAFMAaABhAHIAcABCAGUAaABhAHYAaQBvAHUAcgBWAGUAcgBzAGkAbwBuAF8AXwBfACcBBAAAAHQAeQBwAGUAARYAAABTAHkAcwB0AGUAbQAuAEkAbgB0ADMAMgAsACAAbQBzAGMAbwByAGwAaQBiABcBBQAAAFYAYQBsAHUAZQACAAAABwUHBQcF
+  publicVariablesUnityEngineObjects: []
+  publicVariablesSerializationDataFormat: 0
 --- !u!1 &369873506
 GameObject:
   m_ObjectHideFlags: 0
@@ -10833,10 +11400,26 @@ MonoBehaviour:
   - 5
   - 6
   BakingMode: 1
-  EdgeSmoothing: 0.25
-  StochasticIterations: 5000
-  LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
-  LightVolumeDataList: []
+  Denoise: 1
+  FixLightProbesL1: 1
+  LightProbesBlending: 1
+  SharpBounds: 1
+  AutoUpdateVolumes: 0
+  LightVolumeDataList:
+  - Weight: 0
+    LightVolumeInstance: {fileID: 361893110}
+  - Weight: 1
+    LightVolumeInstance: {fileID: 38894221}
+  - Weight: 2
+    LightVolumeInstance: {fileID: 92299097}
+  - Weight: 3
+    LightVolumeInstance: {fileID: 36975838}
+  - Weight: 4
+    LightVolumeInstance: {fileID: 309226904}
+  - Weight: 5
+    LightVolumeInstance: {fileID: 170737172}
+  - Weight: 6
+    LightVolumeInstance: {fileID: 363958134}
 --- !u!4 &1462947543
 Transform:
   m_ObjectHideFlags: 0
@@ -10906,19 +11489,18 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1462947544}
-  DynamicUpdate: 0
-  LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
+  LightVolumeAtlas: {fileID: 11700000, guid: bbe8dbf47d4870947b04285f54b7791a, type: 2}
   LightProbesBlending: 1
   SharpBounds: 1
-  VolumesTransforms: []
-  InvBakedRotations: []
-  InvLocalEdgeSmooth: []
-  InvWorldMatrix: []
-  BoundsUvwMin: []
-  BoundsUvwMax: []
-  IsAdditive: []
-  _rotations: []
-  _needsToRotate: []
+  AutoUpdateVolumes: 0
+  LightVolumeInstances:
+  - {fileID: 363958134}
+  - {fileID: 170737172}
+  - {fileID: 309226904}
+  - {fileID: 36975838}
+  - {fileID: 92299097}
+  - {fileID: 38894221}
+  - {fileID: 361893110}
 --- !u!1 &1482740580
 GameObject:
   m_ObjectHideFlags: 0
@@ -11673,6 +12255,34 @@ MonoBehaviour:
     ID: 12
     SerializedTypeNames:
     - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 170737169}
+    ID: 13
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 92299094}
+    ID: 14
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 363958131}
+    ID: 15
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 38894218}
+    ID: 16
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 361893107}
+    ID: 17
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 309226901}
+    ID: 18
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 36975835}
+    ID: 19
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   PlayerPersistence: []
@@ -11694,7 +12304,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &1541478411
 MonoBehaviour:
-  m_ObjectHideFlags: 2
+  m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -14814,7 +15424,7 @@ Transform:
   m_GameObject: {fileID: 1835763020}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.0000002533197}
-  m_LocalPosition: {x: -0.11, y: 2.68, z: -10.37}
+  m_LocalPosition: {x: -0.1, y: 2.68, z: -11.91}
   m_LocalScale: {x: 10, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:

@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using Unity.Mathematics;
 
+[CanEditMultipleObjects]
 [CustomEditor(typeof(LightVolume))]
 public class LightVolumeEditor : Editor {
 
