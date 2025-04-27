@@ -268,11 +268,16 @@ public class LightVolume : MonoBehaviour {
             LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
         }
 
+        SyncUdonScript();
+
+    }
+
+    // Syncs udon LightVolumeInstance script with this script
+    private void SyncUdonScript() {
         LightVolumeInstance.IsDynamic = Dynamic;
         LightVolumeInstance.IsAdditive = Additive;
         LightVolumeInstance.Color = Color;
         LightVolumeInstance.SetSmoothBlending(SmoothBlending);
-
     }
 
 #if UNITY_EDITOR
@@ -343,8 +348,8 @@ public class LightVolume : MonoBehaviour {
 
     private void OnValidate() {
         Recalculate();
-        if (PreviewVoxels)
-            ReleasePreviewBuffers();
+        if (PreviewVoxels) ReleasePreviewBuffers();
+        SyncUdonScript();
         LightVolumeSetup.Instance.SetupUdonBehaviour();
     }
 
@@ -365,6 +370,16 @@ public class LightVolume : MonoBehaviour {
         LightVolumeSetup.Instance.UpdateVolumes();
         if (PreviewVoxels)
             ReleasePreviewBuffers();
+    }
+
+    // Delete self in play mode
+    private void Start() {
+        if (Application.isPlaying) {
+            if(BakeryVolume != null) {
+                Destroy(BakeryVolume.gameObject);
+            }
+            Destroy(this);
+        }
     }
 
 #endif

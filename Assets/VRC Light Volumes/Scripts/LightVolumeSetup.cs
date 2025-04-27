@@ -147,10 +147,15 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         if (Selection.activeGameObject != gameObject) return;
 
+        SyncUdonScript();
+
+    }
+
+    // Syncs udon LightVolumeManager script with this script
+    private void SyncUdonScript() {
         _udonLightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
         _udonLightVolumeManager.LightProbesBlending = LightProbesBlending;
         _udonLightVolumeManager.SharpBounds = SharpBounds;
-
     }
 
     // Generates atlas and setups udon script
@@ -246,7 +251,17 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
 #endif
 
+    private void OnValidate() {
+        SyncUdonScript();
+        SetupUdonBehaviour();
+    }
 
+    // Delete self in play mode
+    private void Start() {
+        if (Application.isPlaying) {
+            Destroy(this);
+        }
+    }
 
     public enum Baking {
         UnityLightmapper,
