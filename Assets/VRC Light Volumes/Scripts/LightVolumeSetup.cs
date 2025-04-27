@@ -106,11 +106,12 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     // On Unity Lightmapper baked
     private void OnAdditionalProbesCompleted() {
         if (BakingMode != Baking.UnityLightmapper) return;
-        for (int i = 0; i < LightVolumes.Length; i++) {
-            if (LightVolumes[i].Bake) {
-                LightVolumes[i].Save3DTextures(i);
-                LightVolumes[i].RemoveAdditionalProbes(i);
-                if (LightVolumes[i].LightVolumeInstance != null) LightVolumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(LightVolumes[i].GetRotation());
+        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < volumes.Length; i++) {
+            if (volumes[i].Bake) {
+                volumes[i].Save3DTextures(i);
+                volumes[i].RemoveAdditionalProbes(i);
+                if (volumes[i].LightVolumeInstance != null) volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
             }
         }
         Debug.Log($"[LightVolumeSetup] Additional probes baking finished! Generating 3D Atlas...");
@@ -121,10 +122,11 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     // On Unity Lightmapper started baking
     private void OnUnityBakingStarted() {
         if (BakingMode != Baking.UnityLightmapper) return;
-        for (int i = 0; i < LightVolumes.Length; i++) {
-            if (LightVolumes[i].Bake) {
-                Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{LightVolumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
-                LightVolumes[i].SetAdditionalProbes(i);
+        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < volumes.Length; i++) {
+            if (volumes[i].Bake) {
+                Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
+                volumes[i].SetAdditionalProbes(i);
             }
         }
     }
@@ -153,6 +155,8 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
     // Syncs udon LightVolumeManager script with this script
     private void SyncUdonScript() {
+        if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
+        if (_udonLightVolumeManager == null) return;
         _udonLightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
         _udonLightVolumeManager.LightProbesBlending = LightProbesBlending;
         _udonLightVolumeManager.SharpBounds = SharpBounds;
@@ -249,12 +253,12 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
     }
 
-#endif
-
     private void OnValidate() {
         SyncUdonScript();
         SetupUdonBehaviour();
     }
+
+#endif
 
     // Delete self in play mode
     private void Start() {

@@ -263,10 +263,6 @@ public class LightVolume : MonoBehaviour {
 
         }
 #endif
-        // Creates LightVolumeInstance if needed
-        if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
-            LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
-        }
 
         SyncUdonScript();
 
@@ -274,6 +270,10 @@ public class LightVolume : MonoBehaviour {
 
     // Syncs udon LightVolumeInstance script with this script
     private void SyncUdonScript() {
+        // Creates LightVolumeInstance if needed
+        if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
+            LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
+        }
         LightVolumeInstance.IsDynamic = Dynamic;
         LightVolumeInstance.IsAdditive = Additive;
         LightVolumeInstance.Color = Color;

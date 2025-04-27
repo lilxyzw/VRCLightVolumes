@@ -107,7 +107,7 @@ public class LightVolumeEditor : Editor {
             SceneView.RepaintAll();
         }
 
-        List<string> hiddenFields = new List<string> { "m_Script", "PreviewVoxels" };
+        List<string> hiddenFields = new List<string> { "m_Script", "PreviewVoxels", "LightVolumeInstance" };
 
 #if BAKERY_INCLUDED
         hiddenFields.Add("BakeryVolume");
