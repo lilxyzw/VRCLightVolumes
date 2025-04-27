@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 public struct Atlas3D {
@@ -9,10 +10,10 @@ public struct Atlas3D {
 
 public static class Texture3DAtlasGenerator {
     public static Atlas3D CreateAtlas(Texture3D[] textures) {
-
-        // Lianerizing SH
+        
+        // Linearizing SH
         Texture3D[] texs = new Texture3D[textures.Length];
-        for (int i = 0; i < textures.Length / 3; i++) {
+        for (int i = 0; i < textures.Length / 3; ++i) {
             Texture3D[] bundle = { textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2] };
             bundle = LinearizeSphericalHarmonics(bundle);
             texs[i * 3] = bundle[0];
@@ -23,9 +24,31 @@ public static class Texture3DAtlasGenerator {
         int padding = 1;
         int count = texs.Length;
 
+        // Deduplication of same textures 3D
+        var keyToUnique = new Dictionary<string, int>();
+        var uniqueTexs = new List<Texture3D>();
+        var origToUnique = new int[count];
+
+        for (int i = 0; i < count; ++i) {
+            Texture3D t = texs[i];
+            NativeArray<byte> raw = t.GetPixelData<byte>(0);
+            Hash128 hash = Hash128.Compute(raw);
+            string key = $"{hash}_{t.width}_{t.height}_{t.depth}";
+
+            if (!keyToUnique.TryGetValue(key, out int uIdx)) {
+                uIdx = uniqueTexs.Count;
+                uniqueTexs.Add(t);
+                keyToUnique.Add(key, uIdx);
+            }
+            origToUnique[i] = uIdx;
+        }
+
+        int uniqueCount = uniqueTexs.Count;
+
+        // Urique islands packing
         var blocks = new List<(int index, int w, int h, int d)>();
-        for (int i = 0; i < count; i++)
-            blocks.Add((i, texs[i].width, texs[i].height, texs[i].depth));
+        for (int i = 0; i < uniqueCount; ++i)
+            blocks.Add((i, uniqueTexs[i].width, uniqueTexs[i].height, uniqueTexs[i].depth));
 
         blocks.Sort((a, b) => (b.w * b.h * b.d).CompareTo(a.w * a.h * a.d));
 
@@ -33,128 +56,126 @@ public static class Texture3DAtlasGenerator {
         int atlasW = 0, atlasH = 0, atlasD = 0;
 
         foreach (var block in blocks) {
-            int w = block.w + padding * 2;
-            int h = block.h + padding * 2;
-            int d = block.d + padding * 2;
+            int bw = block.w + padding * 2;
+            int bh = block.h + padding * 2;
+            int bd = block.d + padding * 2;
 
             Vector3Int bestPos = Vector3Int.zero;
-            int bestVolume = int.MaxValue;
+            int bestVol = int.MaxValue;
 
-            List<int> xCandidates = new List<int> { 0 };
-            List<int> yCandidates = new List<int> { 0 };
-            List<int> zCandidates = new List<int> { 0 };
-
+            List<int> xCand = new List<int> { 0 };
+            List<int> yCand = new List<int> { 0 };
+            List<int> zCand = new List<int> { 0 };
             foreach (var p in placed) {
-                xCandidates.Add(p.x + p.w);
-                yCandidates.Add(p.y + p.h);
-                zCandidates.Add(p.z + p.d);
+                xCand.Add(p.x + p.w);
+                yCand.Add(p.y + p.h);
+                zCand.Add(p.z + p.d);
             }
 
-            foreach (int x in xCandidates)
-                foreach (int y in yCandidates)
-                    foreach (int z in zCandidates) {
+            foreach (int x in xCand)
+                foreach (int y in yCand)
+                    foreach (int z in zCand) {
                         bool collides = false;
                         foreach (var p in placed) {
-                            if (x < p.x + p.w && x + w > p.x &&
-                                y < p.y + p.h && y + h > p.y &&
-                                z < p.z + p.d && z + d > p.z) {
-                                collides = true;
-                                break;
+                            if (x < p.x + p.w && x + bw > p.x && y < p.y + p.h && y + bh > p.y && z < p.z + p.d && z + bd > p.z) {
+                                collides = true; break;
                             }
                         }
-
                         if (collides) continue;
 
-                        int newW = Mathf.Max(atlasW, x + w);
-                        int newH = Mathf.Max(atlasH, y + h);
-                        int newD = Mathf.Max(atlasD, z + d);
-                        int volume = newW * newH * newD;
+                        int newW = Mathf.Max(atlasW, x + bw);
+                        int newH = Mathf.Max(atlasH, y + bh);
+                        int newD = Mathf.Max(atlasD, z + bd);
+                        int vol = newW * newH * newD;
 
-                        if (volume < bestVolume) {
-                            bestVolume = volume;
-                            bestPos = new Vector3Int(x, y, z);
-                        }
+                        if (vol < bestVol) { bestVol = vol; bestPos = new Vector3Int(x, y, z); }
                     }
 
-            placed.Add((bestPos.x, bestPos.y, bestPos.z, w, h, d, block.index));
-            atlasW = Mathf.Max(atlasW, bestPos.x + w);
-            atlasH = Mathf.Max(atlasH, bestPos.y + h);
-            atlasD = Mathf.Max(atlasD, bestPos.z + d);
+            placed.Add((bestPos.x, bestPos.y, bestPos.z, bw, bh, bd, block.index));
+            atlasW = Mathf.Max(atlasW, bestPos.x + bw);
+            atlasH = Mathf.Max(atlasH, bestPos.y + bh);
+            atlasD = Mathf.Max(atlasD, bestPos.z + bd);
         }
 
+        // Copying pixels
         var atlasPixels = new Color[atlasW * atlasH * atlasD];
-
-        Vector3[] boundsMin = new Vector3[count];
-        Vector3[] boundsMax = new Vector3[count];
+        var uniqueBoundsMin = new Vector3[uniqueCount];
+        var uniqueBoundsMax = new Vector3[uniqueCount];
 
         foreach (var p in placed) {
-            Texture3D tex = texs[p.index];
-            Color[] colors = tex.GetPixels();
-            int w = tex.width;
-            int h = tex.height;
-            int d = tex.depth;
+            Texture3D tex = uniqueTexs[p.index];
+            Color[] col = tex.GetPixels();
+            int w = tex.width,
+                      h = tex.height,
+                      d = tex.depth;
 
-            for (int z = 0; z < d; z++) {
-                for (int y = 0; y < h; y++) {
-                    for (int x = 0; x < w; x++) {
-                        int srcIndex = x + y * w + z * w * h;
-                        int dstX = p.x + x + padding;
-                        int dstY = p.y + y + padding;
-                        int dstZ = p.z + z + padding;
-                        int dstIndex = dstX + dstY * atlasW + dstZ * atlasW * atlasH;
-                        atlasPixels[dstIndex] = colors[srcIndex];
+            // Main island's pixels
+            for (int z = 0; z < d; ++z)
+                for (int y = 0; y < h; ++y)
+                    for (int x = 0; x < w; ++x) {
+                        int src = x + y * w + z * w * h;
+                        int dx = p.x + x + padding;
+                        int dy = p.y + y + padding;
+                        int dz = p.z + z + padding;
+                        int dst = dx + dy * atlasW + dz * atlasW * atlasH;
+                        atlasPixels[dst] = col[src];
                     }
-                }
-            }
 
-            // Padding: duplicate edge pixels
-            // X axis
-            for (int z = 0; z < d; z++) {
-                for (int y = 0; y < h; y++) {
+            // Padding X
+            for (int z = 0; z < d; ++z)
+                for (int y = 0; y < h; ++y) {
                     atlasPixels[(p.x + 0) + (p.y + padding + y) * atlasW + (p.z + padding + z) * atlasW * atlasH] =
-                        atlasPixels[(p.x + padding) + (p.y + padding + y) * atlasW + (p.z + padding + z) * atlasW * atlasH];
+                    atlasPixels[(p.x + padding) + (p.y + padding + y) * atlasW + (p.z + padding + z) * atlasW * atlasH];
 
                     atlasPixels[(p.x + padding + w) + (p.y + padding + y) * atlasW + (p.z + padding + z) * atlasW * atlasH] =
-                        atlasPixels[(p.x + padding + w - 1) + (p.y + padding + y) * atlasW + (p.z + padding + z) * atlasW * atlasH];
+                    atlasPixels[(p.x + padding + w - 1) + (p.y + padding + y) * atlasW + (p.z + padding + z) * atlasW * atlasH];
                 }
-            }
-            // Y axis
-            for (int z = 0; z < d; z++) {
-                for (int x = 0; x < w; x++) {
+
+            // Padding Y
+            for (int z = 0; z < d; ++z)
+                for (int x = 0; x < w; ++x) {
                     atlasPixels[(p.x + padding + x) + (p.y + 0) * atlasW + (p.z + padding + z) * atlasW * atlasH] =
-                        atlasPixels[(p.x + padding + x) + (p.y + padding) * atlasW + (p.z + padding + z) * atlasW * atlasH];
+                    atlasPixels[(p.x + padding + x) + (p.y + padding) * atlasW + (p.z + padding + z) * atlasW * atlasH];
 
                     atlasPixels[(p.x + padding + x) + (p.y + padding + h) * atlasW + (p.z + padding + z) * atlasW * atlasH] =
-                        atlasPixels[(p.x + padding + x) + (p.y + padding + h - 1) * atlasW + (p.z + padding + z) * atlasW * atlasH];
+                    atlasPixels[(p.x + padding + x) + (p.y + padding + h - 1) * atlasW + (p.z + padding + z) * atlasW * atlasH];
                 }
-            }
-            // Z axis
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
+
+            // Padding Z
+            for (int y = 0; y < h; ++y)
+                for (int x = 0; x < w; ++x) {
                     atlasPixels[(p.x + padding + x) + (p.y + padding + y) * atlasW + (p.z + 0) * atlasW * atlasH] =
-                        atlasPixels[(p.x + padding + x) + (p.y + padding + y) * atlasW + (p.z + padding) * atlasW * atlasH];
+                    atlasPixels[(p.x + padding + x) + (p.y + padding + y) * atlasW + (p.z + padding) * atlasW * atlasH];
 
                     atlasPixels[(p.x + padding + x) + (p.y + padding + y) * atlasW + (p.z + padding + d) * atlasW * atlasH] =
-                        atlasPixels[(p.x + padding + x) + (p.y + padding + y) * atlasW + (p.z + padding + d - 1) * atlasW * atlasH];
+                    atlasPixels[(p.x + padding + x) + (p.y + padding + y) * atlasW + (p.z + padding + d - 1) * atlasW * atlasH];
                 }
-            }
 
-            boundsMin[p.index] = new Vector3(
+            uniqueBoundsMin[p.index] = new Vector3(
                 (float)(p.x + padding) / atlasW,
                 (float)(p.y + padding) / atlasH,
-                (float)(p.z + padding) / atlasD
-            );
-            boundsMax[p.index] = new Vector3(
+                (float)(p.z + padding) / atlasD);
+
+            uniqueBoundsMax[p.index] = new Vector3(
                 (float)(p.x + padding + w) / atlasW,
                 (float)(p.y + padding + h) / atlasH,
-                (float)(p.z + padding + d) / atlasD
-            );
+                (float)(p.z + padding + d) / atlasD);
         }
 
-        Texture3D atlasTexture = new Texture3D(atlasW, atlasH, atlasD, TextureFormat.RGBAHalf, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-        LVUtils.Apply3DTextureData(atlasTexture, atlasPixels);
-        return new Atlas3D { Texture = atlasTexture, BoundsUvwMin = boundsMin, BoundsUvwMax = boundsMax };
+        // Bounds for duplicated islands
+        Vector3[] boundsMin = new Vector3[count];
+        Vector3[] boundsMax = new Vector3[count];
+        for (int i = 0; i < count; ++i) {
+            int u = origToUnique[i];
+            boundsMin[i] = uniqueBoundsMin[u];
+            boundsMax[i] = uniqueBoundsMax[u];
+        }
 
+        // Final Atlas 3D
+        Texture3D atlasTexture = new Texture3D(atlasW, atlasH, atlasD, TextureFormat.RGBAHalf, false) {wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+        LVUtils.Apply3DTextureData(atlasTexture, atlasPixels);
+
+        return new Atlas3D { Texture = atlasTexture, BoundsUvwMin = boundsMin, BoundsUvwMax = boundsMax };
     }
 
     private static Texture3D[] LinearizeSphericalHarmonics(Texture3D[] texs) {
