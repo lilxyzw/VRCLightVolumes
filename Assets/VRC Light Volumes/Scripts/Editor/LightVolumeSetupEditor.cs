@@ -89,7 +89,7 @@ public class LightVolumeSetupEditor : Editor {
                 }
             }
 
-            _lightVolumeSetup.SetupUdonBehaviour();
+            _lightVolumeSetup.SyncUdonScript();
 
         };
 
@@ -121,7 +121,7 @@ public class LightVolumeSetupEditor : Editor {
             list.serializedProperty.GetArrayElementAtIndex(index).objectReferenceValue = null;
             weightsProp.GetArrayElementAtIndex(index).floatValue = 0;
             list.index = index;
-            _lightVolumeSetup.SetupUdonBehaviour();
+            _lightVolumeSetup.SyncUdonScript();
         };
 
         // On Removing element
@@ -136,7 +136,7 @@ public class LightVolumeSetupEditor : Editor {
             if (list.index >= list.serializedProperty.arraySize - 1) {
                 list.index = list.serializedProperty.arraySize - 1;
             }
-            _lightVolumeSetup.SetupUdonBehaviour();
+            _lightVolumeSetup.SyncUdonScript();
         };
 
         // On Moving element around
@@ -148,7 +148,7 @@ public class LightVolumeSetupEditor : Editor {
                 weightsProp.arraySize = volumesProp.arraySize;
                 EditorUtility.SetDirty(target);
             }
-            _lightVolumeSetup.SetupUdonBehaviour();
+            _lightVolumeSetup.SyncUdonScript();
         };
 
         // On Drag and Drop in element
@@ -187,13 +187,9 @@ public class LightVolumeSetupEditor : Editor {
                     Event.current.Use();
                 }
             }
-            _lightVolumeSetup.SetupUdonBehaviour();
+            _lightVolumeSetup.SyncUdonScript();
         };
 
-    }
-
-    private void OnValidate() {
-        _lightVolumeSetup.SetupUdonBehaviour();
     }
 
     public override void OnInspectorGUI() {
@@ -222,7 +218,7 @@ public class LightVolumeSetupEditor : Editor {
 
         reorderableList.DoLayoutList();
 
-        List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList" };
+        List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev" };
         if (_lightVolumeSetup.BakingMode != LightVolumeSetup.Baking.Bakery) {
             hiddenFields.Add("FixLightProbesL1");
         }

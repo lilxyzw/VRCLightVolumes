@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using UnityEditor;
 
 #if UNITY_EDITOR
+using System.IO;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 #endif
 
-public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
+[ExecuteAlways]
+public class LightVolumeSetup : MonoBehaviour {
 
     public LightVolume[] LightVolumes = new LightVolume[0];
     public float[] LightVolumesWeights = new float[0];
@@ -34,29 +36,15 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
     public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
+    public LightVolumeManager LightVolumeManager;
 
-    private LightVolumeManager _udonLightVolumeManager;
-    private Baking _bakingModePrev;
-
-    // Sets shader variables tthrough Udon Component
-    public void UpdateVolumes() {
-        if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
-        if (_udonLightVolumeManager == null) return;
-            _udonLightVolumeManager.UpdateVolumes();
-    }
-
-    protected override void OnInstanceCreated() {
-        if(!TryGetComponent(out _udonLightVolumeManager)) {
-            _udonLightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
-        }
-    }
+    public Baking _bakingModePrev;
 
 #if UNITY_EDITOR
 
-#if BAKERY_INCLUDED
     private bool _subscribedToBakery = false;
-#endif
     private bool _subscribedToUnityLightmapper = false;
+
 
     // Subscribing to OnBaked events
     private void OnEnable() {
@@ -73,7 +61,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         }
     }
     
-    // Unsubscribing fron OnBaked events
+    // Unsubscribing from OnBaked events
     private void OnDisable() {
 #if BAKERY_INCLUDED
         if (!Application.isPlaying && _subscribedToBakery) {
@@ -103,7 +91,19 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
     }
 #endif
 
-    // On Unity Lightmapper baked
+    // On Unity Lightmapper started baking
+    private void OnUnityBakingStarted() {
+        if (BakingMode != Baking.UnityLightmapper) return;
+        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < volumes.Length; i++) {
+            if (volumes[i].Bake) {
+                Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
+                volumes[i].SetAdditionalProbes(i);
+            }
+        }
+    }
+
+    // On Unity Lightmapper baked additional probes
     private void OnAdditionalProbesCompleted() {
         if (BakingMode != Baking.UnityLightmapper) return;
         LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
@@ -119,56 +119,26 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
         Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
     }
 
-    // On Unity Lightmapper started baking
-    private void OnUnityBakingStarted() {
-        if (BakingMode != Baking.UnityLightmapper) return;
-        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < volumes.Length; i++) {
-            if (volumes[i].Bake) {
-                Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
-                volumes[i].SetAdditionalProbes(i);
-            }
-        }
-    }
-
     private void Update() {
-
-        // Creates LightVolumeInstance if needed
-        if (_udonLightVolumeManager == null && !TryGetComponent(out _udonLightVolumeManager)) {
-            _udonLightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
-        }
-
+        SetupDependencies();
         // Resetup required game objects and components for light volumes in new baking mode
         if (_bakingModePrev != BakingMode) {
             _bakingModePrev = BakingMode;
             var volumes = FindObjectsOfType<LightVolume>();
             for (int i = 0; i < volumes.Length; i++) {
-                volumes[i].SetupDependencies();
+                volumes[i].SetupBakeryDependencies();
             }
+            SyncUdonScript();
         }
 
-        if (Selection.activeGameObject != gameObject) return;
-
-        SyncUdonScript();
-
-    }
-
-    // Syncs udon LightVolumeManager script with this script
-    private void SyncUdonScript() {
-        if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
-        if (_udonLightVolumeManager == null) return;
-        _udonLightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
-        _udonLightVolumeManager.LightProbesBlending = LightProbesBlending;
-        _udonLightVolumeManager.SharpBounds = SharpBounds;
     }
 
     // Generates atlas and setups udon script
     public void GenerateAtlas() {
 
-        if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
-        if (_udonLightVolumeManager == null) return;
+        if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Length == 0) return;
 
-        if (LightVolumes.Length == 0) return;
+        SetupDependencies();
 
         Texture3D[] textures = new Texture3D[LightVolumes.Length * 3];
 
@@ -178,7 +148,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
                 return;
             }
             if (LightVolumes[i].Texture0 == null || LightVolumes[i].Texture1 == null || LightVolumes[i].Texture2 == null) {
-                Debug.LogError("[LightVolumeSetup] One of the light volumes is not baked!");
+                Debug.LogError($"[LightVolumeSetup] Light volume \"{LightVolumes[i].gameObject.name}\" is not baked!");
                 return;
             }
             textures[i * 3] = LightVolumes[i].Texture0;
@@ -188,7 +158,7 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         var atlas = Texture3DAtlasGenerator.CreateAtlas(textures);
 
-        _udonLightVolumeManager.LightVolumeAtlas = atlas.Texture;
+        LightVolumeManager.LightVolumeAtlas = atlas.Texture;
 
         LightVolumeDataList.Clear();
 
@@ -207,25 +177,29 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
             LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0, LightVolumes[i].LightVolumeInstance));
         }
 
-        LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_LightVolumeAtlas.asset");
-        SetupUdonBehaviour();
+        LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
+
+        SyncUdonScript();
 
     }
 
-    // Setups udon script
-    public void SetupUdonBehaviour() {
-
-        if (LVUtils.IsInPrefabAsset(this)) return;
-        if (_udonLightVolumeManager == null) _udonLightVolumeManager = GetComponent<LightVolumeManager>();
-        if (_udonLightVolumeManager == null) return;
-
-        if(LightVolumesWeights == null || LightVolumesWeights.Length != LightVolumes.Length) {
-            LightVolumesWeights = new float[LightVolumes.Length];
+    // Looks for LightVolumeManager udon script and setups it if needed
+    public void SetupDependencies() {
+        if (LightVolumeManager == null && !TryGetComponent(out LightVolumeManager)) {
+            LightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
         }
+    }
 
-        _udonLightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
-        UpdateVolumes();
+    // Syncs udon LightVolumeManager script with this script
+    public void SyncUdonScript() {
+        if (LightVolumeManager == null) return;
+        LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
+        LightVolumeManager.LightProbesBlending = LightProbesBlending;
+        LightVolumeManager.SharpBounds = SharpBounds;
 
+        if (LightVolumes.Length == 0) return;
+        LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+        LightVolumeManager.UpdateVolumes();
     }
 
     // Fixes light probes baked with Bakery L1
@@ -251,11 +225,6 @@ public class LightVolumeSetup : SingletonEditor<LightVolumeSetup> {
 
         Debug.Log($"[LightVolumeSetup] {shs.Length} Light Probes fixed!");
 
-    }
-
-    private void OnValidate() {
-        SyncUdonScript();
-        SetupUdonBehaviour();
     }
 
 #endif

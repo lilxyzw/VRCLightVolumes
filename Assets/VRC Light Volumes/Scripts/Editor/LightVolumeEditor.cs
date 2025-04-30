@@ -11,13 +11,16 @@ public class LightVolumeEditor : Editor {
     private Tool _savedTool;
     private Tool _previousTool;
 
+    LightVolume LightVolume;
+
     private void OnEnable() {
         _previousTool = Tools.current;
+        LightVolume = (LightVolume)target;
     }
 
     public override void OnInspectorGUI() {
 
-        LightVolume volume = (LightVolume)target;
+        LightVolume.SetupDependencies();
 
         serializedObject.Update();
 
@@ -39,17 +42,17 @@ public class LightVolumeEditor : Editor {
 
         bool newIsEditMode = GUILayout.Toggle(_isEditMode, editBoundsContent, toggleStyle);
         GUILayout.Space(10);
-        bool newPreviewProbes = GUILayout.Toggle(volume.PreviewVoxels, previewProbesContent, toggleStyle);
-        if (newPreviewProbes != volume.PreviewVoxels) {
-            volume.RecalculateProbesPositions();
-            volume.PreviewVoxels = newPreviewProbes;
+        bool newPreviewProbes = GUILayout.Toggle(LightVolume.PreviewVoxels, previewProbesContent, toggleStyle);
+        if (newPreviewProbes != LightVolume.PreviewVoxels) {
+            LightVolume.RecalculateProbesPositions();
+            LightVolume.PreviewVoxels = newPreviewProbes;
             SceneView.RepaintAll();
         }
 
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
-        int vCount = volume.GetVoxelCount();
+        int vCount = LightVolume.GetVoxelCount();
 
         GUILayout.Space(10);
 
@@ -58,22 +61,22 @@ public class LightVolumeEditor : Editor {
 
 
 #if BAKERY_INCLUDED
-        float3 rotEuler = volume.transform.rotation.eulerAngles;
+        float3 rotEuler = LightVolume.transform.rotation.eulerAngles;
 
         if (typeof(BakeryVolume).GetField("rotateAroundY") != null) {
-            if ((rotEuler.x != 0 || rotEuler.z != 0) && LightVolumeSetup.Instance.IsBakeryMode) {
+            if ((rotEuler.x != 0 || rotEuler.z != 0) && LightVolume.LightVolumeSetup.IsBakeryMode) {
                 GUILayout.Space(10);
                 EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is supported in the editor. Free rotation will still work at runtime.", MessageType.Warning);
             }
         } else {
-            if ((rotEuler.x != 0 || rotEuler.z != 0 || rotEuler.y != 0) && LightVolumeSetup.Instance.IsBakeryMode) {
+            if ((rotEuler.x != 0 || rotEuler.z != 0 || rotEuler.y != 0) && LightVolume.LightVolumeSetup.IsBakeryMode) {
                 GUILayout.Space(10);
                 EditorGUILayout.HelpBox("In Bakery baking mode with your Bakery version, volume rotation is not supported in the editor. Update Bakery to the latest version to bring the Y-axis rotation support. Free rotation will still work at runtime.", MessageType.Warning);
             }
         }
 
 #else
-        if (LightVolumeSetup.Instance.BakingMode == LightVolumeSetup.Baking.Bakery) {
+        if (LightVolume.LightVolumeSetup.BakingMode == LightVolumeSetup.Baking.Bakery) {
             GUILayout.Space(10);
             EditorGUILayout.HelpBox("To use Bakery mode, please include Bakery into your project!", MessageType.Error);
         }
@@ -107,17 +110,17 @@ public class LightVolumeEditor : Editor {
             SceneView.RepaintAll();
         }
 
-        List<string> hiddenFields = new List<string> { "m_Script", "PreviewVoxels", "LightVolumeInstance" };
+        List<string> hiddenFields = new List<string> { "m_Script", "PreviewVoxels", "LightVolumeInstance", "LightVolumeSetup" };
 
 #if BAKERY_INCLUDED
         hiddenFields.Add("BakeryVolume");
 #endif
 
-        if(!volume.Bake) {
+        if(!LightVolume.Bake) {
             hiddenFields.Add("AdaptiveResolution");
             hiddenFields.Add("Resolution");
             hiddenFields.Add("VoxelsPerUnit");
-        } if (volume.AdaptiveResolution) {
+        } if (LightVolume.AdaptiveResolution) {
             
         } else {
             hiddenFields.Add("VoxelsPerUnit");
@@ -131,10 +134,9 @@ public class LightVolumeEditor : Editor {
 
     private void OnSceneGUI() {
 
-        LightVolume volume = (LightVolume)target;
-        Transform transform = volume.transform;
+        Transform transform = LightVolume.transform;
 
-        Handles.matrix = volume.GetMatrixTRS();
+        Handles.matrix = LightVolume.GetMatrixTRS();
         Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
         Handles.color = Color.white;
         Handles.DrawWireCube(Vector3.zero, Vector3.one);
@@ -149,9 +151,9 @@ public class LightVolumeEditor : Editor {
         Tools.hidden = true;
 
         // Volume transform
-        var position = volume.GetPosition();
-        var rotation = volume.GetRotation();
-        var scale = volume.GetScale();
+        var position = LightVolume.GetPosition();
+        var rotation = LightVolume.GetRotation();
+        var scale = LightVolume.GetScale();
 
         // Axis colors
         Color colorX = Handles.xAxisColor;
@@ -209,7 +211,7 @@ public class LightVolumeEditor : Editor {
                 modifiedScale[axisIndex] += delta;
                 transform.position += worldDirection * delta / 2;
                 LVUtils.SetLossyScale(transform, modifiedScale);
-                volume.Recalculate();
+                LightVolume.Recalculate();
             }
         }
 
@@ -217,8 +219,7 @@ public class LightVolumeEditor : Editor {
 
     // Bring back tools
     void OnDisable() {
-        LightVolume volume = (LightVolume)target;
-        volume.PreviewVoxels = false;
+        LightVolume.PreviewVoxels = false;
         Tools.hidden = false;
         if (_isEditMode) {
             // Went from edit mode

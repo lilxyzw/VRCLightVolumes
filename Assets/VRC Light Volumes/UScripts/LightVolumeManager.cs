@@ -108,10 +108,6 @@ public class LightVolumeManager : UdonSharpBehaviour {
         UpdateVolumes();
     }
 
-    private void OnValidate() {
-        UpdateVolumes();
-    }
-
     public void UpdateVolumes() {
 
 #if UNITY_EDITOR

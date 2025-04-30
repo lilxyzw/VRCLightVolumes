@@ -3,6 +3,7 @@ using Unity.Collections;
 using UnityEngine.Rendering;
 using UnityEditor;
 #if UNITY_EDITOR
+using System.IO;
 using UnityEngine.SceneManagement;
 #endif
 
@@ -42,10 +43,12 @@ public class LightVolume : MonoBehaviour {
 #if BAKERY_INCLUDED
     public BakeryVolume BakeryVolume;
 #endif
+
     public LightVolumeInstance LightVolumeInstance;
+    public LightVolumeSetup LightVolumeSetup;
 
     // Light probes world positions
-    private Vector3[] _probesPositions;
+    private Vector3[] _probesPositions = new Vector3[0];
 
     // To check if object was edited this frame
     private Vector3 _prevPos = Vector3.zero;
@@ -68,7 +71,8 @@ public class LightVolume : MonoBehaviour {
         return transform.lossyScale;
     }
     public Quaternion GetRotation() {
-        if (LightVolumeSetup.Instance.IsBakeryMode && !Application.isPlaying && Bake) {
+        SetupDependencies();
+        if (LightVolumeSetup.IsBakeryMode && !Application.isPlaying && Bake) {
 #if BAKERY_INCLUDED
             if(typeof(BakeryVolume).GetField("rotateAroundY") != null) { // Some Bakery versions does not support rotateAroundY, so we'll check it
                 return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
@@ -89,6 +93,21 @@ public class LightVolume : MonoBehaviour {
     // Returns volume voxel count
     public int GetVoxelCount() {
         return Resolution.x * Resolution.y * Resolution.z;
+    }
+
+    // Looks for LightVolumeSetup and LightVolumeInstance udon script and setups them if needed
+    public void SetupDependencies() {
+        if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
+            LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
+        }
+        if (LightVolumeSetup == null) {
+            LightVolumeSetup = FindObjectOfType<LightVolumeSetup>();
+            if (LightVolumeSetup == null) {
+                var go = new GameObject("Light Volume Manager");
+                LightVolumeSetup = go.AddComponent<LightVolumeSetup>();
+                LightVolumeSetup.SyncUdonScript();
+            }
+        }
     }
 
     // Sets Additional Probes to bake with Unity Lightmapper
@@ -142,6 +161,8 @@ public class LightVolume : MonoBehaviour {
 #if UNITY_EDITOR
     public void Save3DTextures(int id) {
 
+        SetupDependencies();
+
         // Atlas Sizes
         int w = Resolution.x;
         int h = Resolution.y;
@@ -189,7 +210,7 @@ public class LightVolume : MonoBehaviour {
             }
 
             // Denoising
-            if (LightVolumeSetup.Instance.Denoise) {
+            if (LightVolumeSetup.Denoise) {
                 L0 =  LVUtils.BilateralDenoise3D(L0, w, h, d, 1, 0.05f);
                 L1r = LVUtils.BilateralDenoise3D(L1r, w, h, d, 1, 0.05f);
                 L1g = LVUtils.BilateralDenoise3D(L1g, w, h, d, 1, 0.05f);
@@ -212,9 +233,10 @@ public class LightVolume : MonoBehaviour {
             LVUtils.Apply3DTextureData(tex2, c2);
 
             // Saving 3D Texture assets
-            LVUtils.SaveTexture3DAsAsset(tex0, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_{gameObject.name}_0.asset");
-            LVUtils.SaveTexture3DAsAsset(tex1, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_{gameObject.name}_1.asset");
-            LVUtils.SaveTexture3DAsAsset(tex2, $"Assets/VRC Light Volumes/Textures3D/{SceneManager.GetActiveScene().name}_{gameObject.name}_2.asset");
+            string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}";
+            LVUtils.SaveTexture3DAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
+            LVUtils.SaveTexture3DAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
+            LVUtils.SaveTexture3DAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
             
             // Applying textures to volume
             Texture0 = tex0;
@@ -226,14 +248,18 @@ public class LightVolume : MonoBehaviour {
     }
 #endif
     // Setups required game objects and components
-    public void SetupDependencies() {
+    public void SetupBakeryDependencies() {
+
 #if BAKERY_INCLUDED
+
+        SetupDependencies();
+
         // Create or destroy Bakery Volume
-        if (LightVolumeSetup.Instance.IsBakeryMode && Bake && BakeryVolume == null) {
+        if (LightVolumeSetup.IsBakeryMode && Bake && BakeryVolume == null) {
             GameObject obj = new GameObject($"Bakery Volume - {gameObject.name}");
             obj.transform.parent = transform;
             BakeryVolume = obj.AddComponent<BakeryVolume>();
-        } else if ((!LightVolumeSetup.Instance.IsBakeryMode || !Bake) && BakeryVolume != null) {
+        } else if ((!LightVolumeSetup.IsBakeryMode || !Bake) && BakeryVolume != null) {
             if (Application.isPlaying) {
                 Destroy(BakeryVolume.gameObject);
             } else {
@@ -242,7 +268,7 @@ public class LightVolume : MonoBehaviour {
             BakeryVolume = null;
         }
 
-        if (LightVolumeSetup.Instance.IsBakeryMode && BakeryVolume != null) {
+        if (LightVolumeSetup.IsBakeryMode && BakeryVolume != null) {
             // Sync bakery volume with light volume
             BakeryVolume.gameObject.name = $"Bakery Volume - {gameObject.name}";
             if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
@@ -250,7 +276,7 @@ public class LightVolume : MonoBehaviour {
             BakeryVolume.transform.localScale = Vector3.one;
             BakeryVolume.bounds = new Bounds(GetPosition(), GetScale());
             BakeryVolume.enableBaking = true;
-            BakeryVolume.denoise = LightVolumeSetup.Instance.Denoise;
+            BakeryVolume.denoise = LightVolumeSetup.Denoise;
             BakeryVolume.adaptiveRes = false;
             BakeryVolume.resolutionX = Resolution.x;
             BakeryVolume.resolutionY = Resolution.y;
@@ -262,18 +288,16 @@ public class LightVolume : MonoBehaviour {
             if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);
 
         }
-#endif
 
         SyncUdonScript();
+
+#endif
 
     }
 
     // Syncs udon LightVolumeInstance script with this script
     private void SyncUdonScript() {
-        // Creates LightVolumeInstance if needed
-        if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
-            LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
-        }
+        SetupDependencies();
         LightVolumeInstance.IsDynamic = Dynamic;
         LightVolumeInstance.IsAdditive = Additive;
         LightVolumeInstance.Color = Color;
@@ -284,28 +308,31 @@ public class LightVolume : MonoBehaviour {
 
     private void Update() {
 
+        SetupDependencies();
+
 #if BAKERY_INCLUDED
-        if (Bake && (Texture0 == null || Texture1 == null || Texture2 == null) && LightVolumeSetup.Instance.IsBakeryMode && BakeryVolume != null  && BakeryVolume.bakedTexture0 != null) {
+        if (Bake && (Texture0 == null || Texture1 == null || Texture2 == null) && LightVolumeSetup.IsBakeryMode && BakeryVolume != null && BakeryVolume.bakedTexture0 != null) {
             Texture0 = BakeryVolume.bakedTexture0;
             Texture1 = BakeryVolume.bakedTexture1;
             Texture2 = BakeryVolume.bakedTexture2;
         }
 #endif
 
-        if (Selection.activeGameObject != gameObject) return;
-
-        SetupDependencies();
-
         // Update udon Behaviour if Volume changed transform
         if (_prevPos != transform.position || _prevRot != transform.rotation || _prevScl != transform.localScale) {
-            LightVolumeSetup.Instance.SetupUdonBehaviour();
+            SetupBakeryDependencies();
+            Recalculate();
+            if (PreviewVoxels) ReleasePreviewBuffers();
             _prevPos = transform.position;
             _prevRot = transform.rotation;
             _prevScl = transform.localScale;
         }
 
-        // If Preview enabled
-        if (!PreviewVoxels || _probesPositions == null || _probesPositions.Length == 0) return;
+        SyncUdonScript();
+        LightVolumeSetup.SyncUdonScript();
+
+        // If voxels preview disabled
+        if (!PreviewVoxels || _probesPositions.Length == 0 || Selection.activeGameObject != gameObject) return;
 
         // Initialize Buffers
         if (_posBuf == null || _posBuf.count != _probesPositions.Length) {
@@ -346,42 +373,35 @@ public class LightVolume : MonoBehaviour {
         if (_argsBuf != null) { _argsBuf.Release(); _argsBuf = null; }
     }
 
-    private void OnValidate() {
-        Recalculate();
-        if (PreviewVoxels) ReleasePreviewBuffers();
-        SyncUdonScript();
-        LightVolumeSetup.Instance.SetupUdonBehaviour();
-    }
-
     private void OnEnable() {
-        if(LightVolumeInstance == null) {
-            LightVolumeInstance = GetComponent<LightVolumeInstance>();
-        }
-        LightVolumeSetup.Instance.UpdateVolumes();
+        SetupDependencies();
+        SetupBakeryDependencies();
+        LightVolumeSetup.SyncUdonScript();
     }
 
     private void OnDisable() {
-        LightVolumeSetup.Instance.UpdateVolumes();
+        if (LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
         if (PreviewVoxels)
             ReleasePreviewBuffers();
     }
 
     private void OnDestroy() {
-        LightVolumeSetup.Instance.UpdateVolumes();
+        if(LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
         if (PreviewVoxels)
             ReleasePreviewBuffers();
     }
+#endif
 
     // Delete self in play mode
     private void Start() {
         if (Application.isPlaying) {
-            if(BakeryVolume != null) {
+#if BAKERY_INCLUDED
+            if (BakeryVolume != null) {
                 Destroy(BakeryVolume.gameObject);
             }
+#endif
             Destroy(this);
         }
     }
-
-#endif
 
 }

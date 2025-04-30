@@ -235,9 +235,9 @@ MonoBehaviour:
   Additive: 0
   Color: {r: 1, g: 1, b: 1, a: 0}
   SmoothBlending: 0.25
-  Texture0: {fileID: 11700000, guid: dc432c54b501a9f4c82ff8a69f2f16ed, type: 2}
-  Texture1: {fileID: 11700000, guid: ad466b1807045044d9db333ef25b7ced, type: 2}
-  Texture2: {fileID: 11700000, guid: f719d54fdcf3b2241b3d84c39647d2af, type: 2}
+  Texture0: {fileID: 11700000, guid: 43b1fbaade8683c4babe0fb365e63154, type: 2}
+  Texture1: {fileID: 11700000, guid: a8e485ed1a1c26e498e81d8eed9bd284, type: 2}
+  Texture2: {fileID: 11700000, guid: a369d260abab805488711f74e787611a, type: 2}
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
@@ -245,6 +245,7 @@ MonoBehaviour:
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 213372465}
+  LightVolumeSetup: {fileID: 1907067027}
 --- !u!4 &213372467
 Transform:
   m_ObjectHideFlags: 0
@@ -387,9 +388,9 @@ MonoBehaviour:
   Additive: 0
   Color: {r: 1, g: 1, b: 1, a: 0}
   SmoothBlending: 0.1
-  Texture0: {fileID: 11700000, guid: 867f3103f272f5a45b6173c4988897c4, type: 2}
-  Texture1: {fileID: 11700000, guid: a1a771669ee4e764dbf40766ef85a32a, type: 2}
-  Texture2: {fileID: 11700000, guid: c1b6aca65edc74f4a877a0b214a0442d, type: 2}
+  Texture0: {fileID: 11700000, guid: 0cffea17025326545a4fef565a1f88cc, type: 2}
+  Texture1: {fileID: 11700000, guid: 91456440068e3d142b27df2789f9f97f, type: 2}
+  Texture2: {fileID: 11700000, guid: cb44f74aefdbcdf4d9d467e263a19fc7, type: 2}
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
@@ -397,6 +398,7 @@ MonoBehaviour:
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 255474702}
+  LightVolumeSetup: {fileID: 1907067027}
 --- !u!1 &353900461
 GameObject:
   m_ObjectHideFlags: 0
@@ -704,7 +706,7 @@ Transform:
   m_GameObject: {fileID: 453184137}
   serializedVersion: 2
   m_LocalRotation: {x: -0.70710707, y: -0.00000089472485, z: -0.0000009890297, w: 0.7071066}
-  m_LocalPosition: {x: -0.242, y: 1.49, z: -17.586}
+  m_LocalPosition: {x: -0.24, y: 1.49, z: 2.93}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1034,8 +1036,8 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 706948596}
-  Color: {r: 1, g: 1, b: 1, a: 0}
-  IsDynamic: 1
+  Color: {r: 1.4980392, g: 1.4980392, b: 1.4980392, a: 0}
+  IsDynamic: 0
   IsAdditive: 1
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.007751938, y: 0.016666668, z: 0.34126985, w: 0}
@@ -1076,20 +1078,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7cdafe690df4b545944c1a3d0c49e71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Dynamic: 1
+  Dynamic: 0
   Additive: 1
-  Color: {r: 1, g: 1, b: 1, a: 0}
+  Color: {r: 1.4980392, g: 1.4980392, b: 1.4980392, a: 0}
   SmoothBlending: 0.25
-  Texture0: {fileID: 11700000, guid: 55402601a9e290140ad6950497aab632, type: 2}
-  Texture1: {fileID: 11700000, guid: d86fd2b90c1e54e43afb54cfc6d44356, type: 2}
-  Texture2: {fileID: 11700000, guid: f2506df7f9b16594895b5a8c886ddddb, type: 2}
-  Bake: 0
+  Texture0: {fileID: 11700000, guid: aab4b344ac5f2304eb45282ce2ff9bc7, type: 2}
+  Texture1: {fileID: 11700000, guid: 7a36d6bfc4ba82a40bcf450f01104187, type: 2}
+  Texture2: {fileID: 11700000, guid: ce06686ebd941ce4ab80c1384bf4990b, type: 2}
+  Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 100, y: 40, z: 40}
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 706948597}
+  LightVolumeSetup: {fileID: 1907067027}
 --- !u!1 &800012501
 GameObject:
   m_ObjectHideFlags: 0
@@ -1600,9 +1603,9 @@ MonoBehaviour:
   Additive: 0
   Color: {r: 1, g: 1, b: 1, a: 0}
   SmoothBlending: 0.25
-  Texture0: {fileID: 11700000, guid: 65eb25de132b3df448fc2cb7cac55c32, type: 2}
-  Texture1: {fileID: 11700000, guid: c0e3da55876d79a47ac47b5de17154cb, type: 2}
-  Texture2: {fileID: 11700000, guid: ac898adfe891a7646af39773fc3cff75, type: 2}
+  Texture0: {fileID: 11700000, guid: e0d1a890cdcacc74a803af9af15eb1fa, type: 2}
+  Texture1: {fileID: 11700000, guid: c8e9f55f38631684aa07d85d53b327e1, type: 2}
+  Texture2: {fileID: 11700000, guid: 724541a7c9832b6408e3d0af1b6da74f, type: 2}
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
@@ -1610,6 +1613,7 @@ MonoBehaviour:
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1036930424}
+  LightVolumeSetup: {fileID: 1907067027}
 --- !u!1 &1259426528
 GameObject:
   m_ObjectHideFlags: 0
@@ -1737,9 +1741,9 @@ MonoBehaviour:
   Additive: 0
   Color: {r: 1, g: 1, b: 1, a: 0}
   SmoothBlending: 0.1
-  Texture0: {fileID: 11700000, guid: a34ccdafc14ce0849813704f1bd177a9, type: 2}
-  Texture1: {fileID: 11700000, guid: 466bff89f8fb6514195b34ac77e11284, type: 2}
-  Texture2: {fileID: 11700000, guid: 1253d69785cf2ff41b7bd1b327fefe6d, type: 2}
+  Texture0: {fileID: 11700000, guid: 25a662b7f769a5b40b06f1627f4750ad, type: 2}
+  Texture1: {fileID: 11700000, guid: b0d8f472267fa9c4f8f027b9048cbdad, type: 2}
+  Texture2: {fileID: 11700000, guid: a6aba71524997f34780ed4d5920ee525, type: 2}
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
@@ -1747,6 +1751,7 @@ MonoBehaviour:
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1259426531}
+  LightVolumeSetup: {fileID: 1907067027}
 --- !u!1001 &1385496707
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2084,9 +2089,9 @@ MonoBehaviour:
   Additive: 0
   Color: {r: 1, g: 1, b: 1, a: 0}
   SmoothBlending: 0.25
-  Texture0: {fileID: 11700000, guid: 7567dff6a5e22374384a98ef071bfb72, type: 2}
-  Texture1: {fileID: 11700000, guid: e5f9e95d9f126a740bf7d39593bed9d5, type: 2}
-  Texture2: {fileID: 11700000, guid: 7f4401e612e72a948ba07069b8f8b614, type: 2}
+  Texture0: {fileID: 11700000, guid: 9362021c2b6d8a7489b503b0801ee6e8, type: 2}
+  Texture1: {fileID: 11700000, guid: 8f2c2d9218419c448ab914ed0d46b5e6, type: 2}
+  Texture2: {fileID: 11700000, guid: a054541971b7d024a84e1fb54303dbe0, type: 2}
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
@@ -2094,6 +2099,7 @@ MonoBehaviour:
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1550145952}
+  LightVolumeSetup: {fileID: 1907067027}
 --- !u!1 &1814529184
 GameObject:
   m_ObjectHideFlags: 0
@@ -2304,9 +2310,9 @@ MonoBehaviour:
   Additive: 0
   Color: {r: 1, g: 1, b: 1, a: 0}
   SmoothBlending: 0.25
-  Texture0: {fileID: 11700000, guid: 58b12534e63f21b489f5814f0ef41b1f, type: 2}
-  Texture1: {fileID: 11700000, guid: c5b45956ad1226a48bd68da3b09c0e5b, type: 2}
-  Texture2: {fileID: 11700000, guid: 732a63a58ee8b7c468cc3fdf032660bb, type: 2}
+  Texture0: {fileID: 11700000, guid: 7620cdf11c125ff44b0ef611b08d3cd7, type: 2}
+  Texture1: {fileID: 11700000, guid: 22feedcb846fc664c9aa274666c80415, type: 2}
+  Texture2: {fileID: 11700000, guid: 652d59c5fcc16224db5a55dc08940b28, type: 2}
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 6
@@ -2314,6 +2320,7 @@ MonoBehaviour:
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1872405345}
+  LightVolumeSetup: {fileID: 1907067027}
 --- !u!1 &1878236309
 GameObject:
   m_ObjectHideFlags: 0
@@ -2484,7 +2491,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1907067025}
-  LightVolumeAtlas: {fileID: 11700000, guid: 34edf3832e6a9364db48c6994bdfd3bd, type: 2}
+  LightVolumeAtlas: {fileID: 11700000, guid: ab822e53e058c2746a5672b059adb021, type: 2}
   LightProbesBlending: 1
   SharpBounds: 1
   AutoUpdateVolumes: 1
@@ -2545,6 +2552,8 @@ MonoBehaviour:
     LightVolumeInstance: {fileID: 255474702}
   - Weight: 6
     LightVolumeInstance: {fileID: 706948597}
+  LightVolumeManager: {fileID: 1907067026}
+  _bakingModePrev: 0
 --- !u!1 &2136203876
 GameObject:
   m_ObjectHideFlags: 0
@@ -2782,6 +2791,16 @@ MonoBehaviour:
   - gameObject: {fileID: 706948594}
     ID: 22
     SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 0}
+    ID: 23
+    SerializedTypeNames:
+    - VRC.SDK3.Components.VRCPickup
+    - VRC.SDK3.Components.VRCObjectSync
+  - gameObject: {fileID: 0}
+    ID: 24
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
     - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
