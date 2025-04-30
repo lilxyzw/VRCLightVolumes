@@ -25,7 +25,7 @@ This is a free open-source asset, so if you like it, I would be very happy if yo
 Contact me in Discord if you want your shader to be added in this list.
 Discord: @RED_SIM
 
-## Installation through VRChat Creator Companion
+## Installation through VRChat Creator Companion (Will be available in future)
 1. Go to my VPM Listing web page: https://redsim.github.io/vpmlisting/
 2. Press "Add to VCC"
 3. Confirm adding in the popup dialogue window
