@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 425625846}
   - component: {fileID: 425625845}
   m_Layer: 0
-  m_Name: LightVolumeSetup
+  m_Name: Light Volume Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

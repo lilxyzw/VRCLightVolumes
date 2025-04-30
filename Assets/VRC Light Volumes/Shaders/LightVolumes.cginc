@@ -122,12 +122,12 @@ void LV_SampleVolume(int id, float3 localUVW, out float3 L0, out float3 L1r, out
                 
 }
 
-// Calculate Light Volume Color based on all SH components provided
+// Calculate Light Volume Color based on all SH components provided and the world normal
 float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
     return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
 }
 
-// Calculates SH components based on world position and world normal
+// Calculates SH components based on the world position
 void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
 
     // Initializing output variables
