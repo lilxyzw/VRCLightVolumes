@@ -190,18 +190,6 @@ public class LightVolumeSetup : MonoBehaviour {
         }
     }
 
-    // Syncs udon LightVolumeManager script with this script
-    public void SyncUdonScript() {
-        if (LightVolumeManager == null) return;
-        LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
-        LightVolumeManager.LightProbesBlending = LightProbesBlending;
-        LightVolumeManager.SharpBounds = SharpBounds;
-
-        if (LightVolumes.Length == 0) return;
-        LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
-        LightVolumeManager.UpdateVolumes();
-    }
-
     // Fixes light probes baked with Bakery L1
     private static void FixLightProbes() {
 
@@ -228,6 +216,18 @@ public class LightVolumeSetup : MonoBehaviour {
     }
 
 #endif
+
+    // Syncs udon LightVolumeManager script with this script
+    public void SyncUdonScript() {
+        if (LightVolumeManager == null) return;
+        LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
+        LightVolumeManager.LightProbesBlending = LightProbesBlending;
+        LightVolumeManager.SharpBounds = SharpBounds;
+
+        if (LightVolumes.Length == 0) return;
+        LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+        LightVolumeManager.UpdateVolumes();
+    }
 
     // Delete self in play mode
     private void Start() {
