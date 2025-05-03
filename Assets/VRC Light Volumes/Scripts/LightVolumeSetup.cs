@@ -42,7 +42,9 @@ public class LightVolumeSetup : MonoBehaviour {
 
 #if UNITY_EDITOR
 
+#if BAKERY_INCLUDED
     private bool _subscribedToBakery = false;
+#endif
     private bool _subscribedToUnityLightmapper = false;
 
 

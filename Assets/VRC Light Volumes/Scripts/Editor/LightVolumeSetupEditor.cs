@@ -216,6 +216,17 @@ public class LightVolumeSetupEditor : Editor {
             GUILayout.Space(10);
         }
 
+        int vCount = 0;
+        if(_lightVolumeSetup.LightVolumeManager != null && _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas != null) {
+            var tex = _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas;
+            vCount = tex.width * tex.height * tex.depth;
+        }
+
+        GUILayout.Label($"Atlas size in VRAM: {SizeInVRAM(vCount)} MB");
+        GUILayout.Label($"Atlas size in bundle: {SizeInBundle(vCount)} MB (Approximately)");
+
+        GUILayout.Space(10);
+
         reorderableList.DoLayoutList();
 
         List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev" };
@@ -233,6 +244,18 @@ public class LightVolumeSetupEditor : Editor {
 
         serializedObject.ApplyModifiedProperties();
 
+    }
+
+    // Real size in VRAM
+    string SizeInVRAM(int vCount) {
+        float mb = vCount * 8 / (float)(1024 * 1024);
+        return mb.ToString("0.00");
+    }
+
+    // Approximate size in Asset bundle
+    string SizeInBundle(int vCount) {
+        float mb = vCount * 8 * 0.63f / (float)(1024 * 1024);
+        return mb.ToString("0.00");
     }
 
 }

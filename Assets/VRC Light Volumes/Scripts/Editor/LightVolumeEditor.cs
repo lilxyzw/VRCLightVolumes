@@ -236,7 +236,7 @@ public class LightVolumeEditor : Editor {
 
     // Approximate size in Asset bundle
     string SizeInBundle(int vCount) {
-        float mb = vCount * 8 * 3 * 0.4f / (float)(1024 * 1024);
+        float mb = vCount * 8 * 3 * 0.63f / (float)(1024 * 1024);
         return mb.ToString("0.00");
     }
 
