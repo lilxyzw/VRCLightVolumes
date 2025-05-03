@@ -12,8 +12,8 @@ using UnityEngine.SceneManagement;
 [ExecuteAlways]
 public class LightVolumeSetup : MonoBehaviour {
 
-    public LightVolume[] LightVolumes = new LightVolume[0];
-    public float[] LightVolumesWeights = new float[0];
+    [SerializeField] public List<LightVolume> LightVolumes = new List<LightVolume>();
+    [SerializeField] public List<float> LightVolumesWeights = new List<float>();
     [Header("Baking")]
     [Tooltip("Bakery usually gives better results and works faster.")]
 #if BAKERY_INCLUDED
@@ -61,8 +61,36 @@ public class LightVolumeSetup : MonoBehaviour {
             Lightmapping.bakeStarted += OnUnityBakingStarted;
             _subscribedToUnityLightmapper = true;
         }
+
+        Selection.selectionChanged += OnSelectionChanged;
+
     }
     
+    private void OnSelectionChanged() {
+
+        if(Selection.activeObject == gameObject) {
+            // Searching for all volumes in scene
+            var volumes = FindObjectsOfType<LightVolume>(true);
+
+            for (int i = 0; i < volumes.Length; i++) {
+                if (!LightVolumes.Contains(volumes[i])) {
+                    LightVolumes.Add(volumes[i]);
+                    LightVolumesWeights.Add(0.0f);
+                }
+            }
+
+            // Removing volumes that no more exists
+            for (int i = 0; i < LightVolumes.Count; i++) {
+                if (LightVolumes[i] == null) {
+                    LightVolumes.RemoveAt(i);
+                    LightVolumesWeights.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
+
+    }
+
     // Unsubscribing from OnBaked events
     private void OnDisable() {
 #if BAKERY_INCLUDED
@@ -77,6 +105,9 @@ public class LightVolumeSetup : MonoBehaviour {
             _subscribedToUnityLightmapper = false;
             
         }
+
+        Selection.selectionChanged -= OnSelectionChanged;
+
     }
 
     // On Bakery baked
@@ -138,13 +169,13 @@ public class LightVolumeSetup : MonoBehaviour {
     // Generates atlas and setups udon script
     public void GenerateAtlas() {
 
-        if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Length == 0) return;
+        if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
 
         SetupDependencies();
 
-        Texture3D[] textures = new Texture3D[LightVolumes.Length * 3];
+        Texture3D[] textures = new Texture3D[LightVolumes.Count * 3];
 
-        for (int i = 0; i < LightVolumes.Length; i++) {
+        for (int i = 0; i < LightVolumes.Count; i++) {
             if (LightVolumes[i] == null) {
                 Debug.LogError("[LightVolumeSetup] One of the light volumes is not setuped!");
                 return;
@@ -164,7 +195,7 @@ public class LightVolumeSetup : MonoBehaviour {
 
         LightVolumeDataList.Clear();
 
-        for (int i = 0; i < LightVolumes.Length; i++) {
+        for (int i = 0; i < LightVolumes.Count; i++) {
 
             if (LightVolumes[i] == null || LightVolumes[i].LightVolumeInstance == null) continue;
 
@@ -176,7 +207,7 @@ public class LightVolumeSetup : MonoBehaviour {
             LightVolumes[i].LightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
             LightVolumes[i].LightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
 
-            LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Length ? LightVolumesWeights[i] : 0, LightVolumes[i].LightVolumeInstance));
+            LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, LightVolumes[i].LightVolumeInstance));
         }
 
         LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
@@ -226,7 +257,7 @@ public class LightVolumeSetup : MonoBehaviour {
         LightVolumeManager.LightProbesBlending = LightProbesBlending;
         LightVolumeManager.SharpBounds = SharpBounds;
 
-        if (LightVolumes.Length == 0) return;
+        if (LightVolumes.Count == 0) return;
         LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
         LightVolumeManager.UpdateVolumes();
     }

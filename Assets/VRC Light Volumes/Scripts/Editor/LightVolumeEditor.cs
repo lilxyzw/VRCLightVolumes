@@ -59,8 +59,8 @@ public class LightVolumeEditor : Editor {
         GUILayout.Label($"Size in VRAM: {SizeInVRAM(vCount)} MB");
         GUILayout.Label($"Size in bundle: {SizeInBundle(vCount)} MB (Approximately)");
 
-
 #if BAKERY_INCLUDED
+
         float3 rotEuler = LightVolume.transform.rotation.eulerAngles;
 
         if (typeof(BakeryVolume).GetField("rotateAroundY") != null) {

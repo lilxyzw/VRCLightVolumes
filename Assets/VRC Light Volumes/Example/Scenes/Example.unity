@@ -1803,6 +1803,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4776203039229302913, guid: f5925da828840f0428c5d22cb1712206, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5312235895142086157, guid: f5925da828840f0428c5d22cb1712206, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8096166845694996992, guid: f5925da828840f0428c5d22cb1712206, type: 3}
       propertyPath: m_Name
       value: Light Baking

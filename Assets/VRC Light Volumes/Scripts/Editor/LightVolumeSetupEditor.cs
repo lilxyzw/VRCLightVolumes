@@ -29,8 +29,8 @@ public class LightVolumeSetupEditor : Editor {
             volumesProp,      
             true, // draggable
             true, // displayHeader
-            true, // displayAddButton
-            true  // displayRemoveButton
+            false, // displayAddButton
+            false  // displayRemoveButton
         );
 
         // Drawing header
@@ -38,7 +38,7 @@ public class LightVolumeSetupEditor : Editor {
 
             float totalWidth = rect.width;
             float availableWidth = totalWidth - 15f - 4f;
-            float weightWidth = 60f;
+            float weightWidth = 42f;
             float space = 5f;
             float volumeWidth = availableWidth - weightWidth - space;
             float xOffset = rect.x + 15f;
@@ -58,14 +58,6 @@ public class LightVolumeSetupEditor : Editor {
             Rect fieldRect = new Rect(xOffset + 96, rect.y + 2, 32, rect.height);
 
             EditorGUI.LabelField(volumeHeaderRect, "Light Volumes");
-
-            EditorGUI.BeginChangeCheck();
-            int newSize = Mathf.Min(EditorGUI.DelayedIntField(fieldRect, reorderableList.serializedProperty.arraySize, headerCountStyle), 256);
-            if (EditorGUI.EndChangeCheck()) {
-                newSize = Mathf.Max(0, newSize);
-                reorderableList.serializedProperty.arraySize = newSize;
-                reorderableList.index = Mathf.Clamp(reorderableList.index, 0, newSize - 1);
-            }
             EditorGUI.LabelField(weightHeaderRect, "Weight");
 
             EventType eventType = Event.current.type;
@@ -103,40 +95,23 @@ public class LightVolumeSetupEditor : Editor {
 
             rect.y += 2; // Top padding
             float totalWidth = rect.width;
-            float weightWidth = 60f; // Weight width
+            float weightWidth = 45f; // Weight width
             float space = 5f;        // Spacing
 
-            Rect volumeRect = new Rect(rect.x, rect.y, totalWidth - weightWidth - space, EditorGUIUtility.singleLineHeight);
+            Rect iconRect = new Rect(rect.x, rect.y, totalWidth - weightWidth - space, EditorGUIUtility.singleLineHeight);
+            Rect volumeRect = new Rect(rect.x + 24, rect.y, totalWidth - weightWidth - space, EditorGUIUtility.singleLineHeight);
             Rect weightRect = new Rect(rect.x + totalWidth - weightWidth, rect.y, weightWidth, EditorGUIUtility.singleLineHeight);
-            EditorGUI.PropertyField(volumeRect, volumeElement, GUIContent.none);
+
+            if(volumeElement.objectReferenceValue != null && volumeElement.objectReferenceValue.GetType() == typeof(LightVolume)) {
+                var volume = (LightVolume)volumeElement.objectReferenceValue;
+                GUIContent icon = volume.Additive ? EditorGUIUtility.IconContent("d_Spotlight Icon") : EditorGUIUtility.IconContent("d_PreMatLight1@2x");
+                icon.tooltip = volume.Additive ? "Additive Volume" : "Regular Volume";
+                EditorGUI.LabelField(iconRect, icon);
+            }
+
+            EditorGUI.LabelField(volumeRect, volumeElement.objectReferenceValue != null ? volumeElement.objectReferenceValue.name : "None");
             EditorGUI.PropertyField(weightRect, weightElement, GUIContent.none);
-        };
 
-        // On Adding element
-        reorderableList.onAddCallback = (ReorderableList list) => {
-            int index = list.serializedProperty.arraySize;
-            if (index == 256) return;
-            list.serializedProperty.arraySize++;
-            weightsProp.arraySize = list.serializedProperty.arraySize;
-            list.serializedProperty.GetArrayElementAtIndex(index).objectReferenceValue = null;
-            weightsProp.GetArrayElementAtIndex(index).floatValue = 0;
-            list.index = index;
-            _lightVolumeSetup.SyncUdonScript();
-        };
-
-        // On Removing element
-        reorderableList.onRemoveCallback = (ReorderableList list) => {
-            int indexToRemove = list.index;
-            ReorderableList.defaultBehaviours.DoRemoveButton(list);
-            if (indexToRemove >= 0 && indexToRemove < weightsProp.arraySize) {
-                weightsProp.DeleteArrayElementAtIndex(indexToRemove);
-            } else if (weightsProp.arraySize > volumesProp.arraySize) {
-                weightsProp.DeleteArrayElementAtIndex(weightsProp.arraySize - 1);
-            }
-            if (list.index >= list.serializedProperty.arraySize - 1) {
-                list.index = list.serializedProperty.arraySize - 1;
-            }
-            _lightVolumeSetup.SyncUdonScript();
         };
 
         // On Moving element around
@@ -151,43 +126,11 @@ public class LightVolumeSetupEditor : Editor {
             _lightVolumeSetup.SyncUdonScript();
         };
 
-        // On Drag and Drop in element
-        reorderableList.drawElementBackgroundCallback = (Rect rect, int index, bool isActive, bool isFocused) => {
-            EventType eventType = Event.current.type;
-
-            if (eventType == EventType.Repaint) {
-                ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, true);
-            }
-
-            if (eventType == EventType.DragUpdated || eventType == EventType.DragPerform) {
-                if (!rect.Contains(Event.current.mousePosition)) return;
-                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                if (eventType == EventType.DragPerform) {
-                    DragAndDrop.AcceptDrag();
-                    if (DragAndDrop.objectReferences.Length > 0) {
-                        GameObject go = (GameObject)DragAndDrop.objectReferences[0];
-                        if(go.TryGetComponent(out LightVolume volume)) {
-                            if(index == -1) {
-                                for (int i = 0; i < DragAndDrop.objectReferences.Length; i++) {
-                                    GameObject obj = (GameObject)DragAndDrop.objectReferences[i];
-                                    if (obj.TryGetComponent(out LightVolume v)) {
-                                        int newIndex = volumesProp.arraySize;
-                                        if (newIndex == 256) break;
-                                        volumesProp.arraySize++;
-                                        weightsProp.arraySize = volumesProp.arraySize;
-                                        volumesProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = v;
-                                        weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 0;
-                                    }
-                                }
-                            } else {
-                                volumesProp.GetArrayElementAtIndex(index).objectReferenceValue = volume;
-                            }
-                        }
-                    }
-                    Event.current.Use();
-                }
-            }
-            _lightVolumeSetup.SyncUdonScript();
+        // On Click on element
+        reorderableList.onSelectCallback = (ReorderableList list) => {
+            SerializedProperty volumeElement = volumesProp.GetArrayElementAtIndex(list.index);
+            LightVolume volume = volumeElement.objectReferenceValue as LightVolume;
+            if (volume != null) EditorGUIUtility.PingObject(volume.gameObject);
         };
 
     }
@@ -228,6 +171,8 @@ public class LightVolumeSetupEditor : Editor {
         GUILayout.Space(10);
 
         reorderableList.DoLayoutList();
+
+        GUILayout.Space(-15);
 
         List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev" };
         if (_lightVolumeSetup.BakingMode != LightVolumeSetup.Baking.Bakery) {
