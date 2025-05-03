@@ -47,28 +47,9 @@ public class LightVolumeSetup : MonoBehaviour {
 #endif
     private bool _subscribedToUnityLightmapper = false;
 
-
-    // Subscribing to OnBaked events
-    private void OnEnable() {
-#if BAKERY_INCLUDED
-        if (!Application.isPlaying && !_subscribedToBakery) {
-            ftRenderLightmap.OnFinishedFullRender += OnBakeryFinishedRender;
-            _subscribedToBakery = true;
-        }
-#endif
-        if (!Application.isPlaying && !_subscribedToUnityLightmapper) {
-            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += OnAdditionalProbesCompleted;
-            Lightmapping.bakeStarted += OnUnityBakingStarted;
-            _subscribedToUnityLightmapper = true;
-        }
-
-        Selection.selectionChanged += OnSelectionChanged;
-
-    }
-    
     private void OnSelectionChanged() {
 
-        if(Selection.activeObject == gameObject) {
+        if (Selection.activeObject == gameObject) {
             // Searching for all volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);
 
@@ -91,11 +72,31 @@ public class LightVolumeSetup : MonoBehaviour {
 
     }
 
+    // Subscribing to OnBaked events
+    private void OnEnable() {
+#if BAKERY_INCLUDED
+        if (!Application.isPlaying && !_subscribedToBakery) {
+            ftRenderLightmap.OnFinishedFullRender += OnBakeryFinishedRender;
+            ftRenderLightmap.OnPreFullRender += OnBakeryStartedRender;
+            _subscribedToBakery = true;
+        }
+#endif
+        if (!Application.isPlaying && !_subscribedToUnityLightmapper) {
+            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += OnAdditionalProbesCompleted;
+            Lightmapping.bakeStarted += OnUnityBakingStarted;
+            _subscribedToUnityLightmapper = true;
+        }
+
+        Selection.selectionChanged += OnSelectionChanged;
+
+    }
+
     // Unsubscribing from OnBaked events
     private void OnDisable() {
 #if BAKERY_INCLUDED
         if (!Application.isPlaying && _subscribedToBakery) {
             ftRenderLightmap.OnFinishedFullRender -= OnBakeryFinishedRender;
+            ftRenderLightmap.OnPreFullRender -= OnBakeryStartedRender;
             _subscribedToBakery = false;
         }
 #endif
@@ -110,23 +111,44 @@ public class LightVolumeSetup : MonoBehaviour {
 
     }
 
-    // On Bakery baked
+
 #if BAKERY_INCLUDED
+
+    // On Bakery Started baking
+    private void OnBakeryStartedRender(object sender, EventArgs e) {
+        if (BakingMode != Baking.Bakery) {
+            BakingMode = Baking.Bakery;
+        }
+    }
+
+    // On Bakery Finished baking
     private void OnBakeryFinishedRender(object sender, EventArgs e) {
-        if (BakingMode != Baking.Bakery) return;
+        if (BakingMode != Baking.Bakery) {
+            BakingMode = Baking.Bakery;
+        }
         LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < volumes.Length; i++) {
             if (volumes[i].Bake && volumes[i].LightVolumeInstance != null) {
                 volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
+                if (IsBakeryMode && volumes[i].BakeryVolume != null) {
+                    volumes[i].Texture0 = volumes[i].BakeryVolume.bakedTexture0;
+                    volumes[i].Texture1 = volumes[i].BakeryVolume.bakedTexture1;
+                    volumes[i].Texture2 = volumes[i].BakeryVolume.bakedTexture2;
+                }
             }
         }
         if (FixLightProbesL1) FixLightProbes();
+        GenerateAtlas();
+        Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
     }
+
 #endif
 
     // On Unity Lightmapper started baking
     private void OnUnityBakingStarted() {
-        if (BakingMode != Baking.UnityLightmapper) return;
+        if (BakingMode != Baking.UnityLightmapper) {
+            BakingMode = Baking.UnityLightmapper;
+        }
         LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < volumes.Length; i++) {
             if (volumes[i].Bake) {
@@ -138,7 +160,9 @@ public class LightVolumeSetup : MonoBehaviour {
 
     // On Unity Lightmapper baked additional probes
     private void OnAdditionalProbesCompleted() {
-        if (BakingMode != Baking.UnityLightmapper) return;
+        if (BakingMode != Baking.UnityLightmapper) {
+            BakingMode = Baking.UnityLightmapper;
+        }
         LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < volumes.Length; i++) {
             if (volumes[i].Bake) {
