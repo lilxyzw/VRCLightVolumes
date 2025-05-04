@@ -10,6 +10,7 @@ public class LightVolumeEditor : Editor {
     private bool _isEditMode = false;
     private Tool _savedTool;
     private Tool _previousTool;
+    private LightProbePlacerWindow _previousProbePlacerWindow;
 
     LightVolume LightVolume;
 
@@ -127,6 +128,22 @@ public class LightVolumeEditor : Editor {
         }
 
         DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());
+
+        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+        buttonStyle.fixedHeight = 20;
+        buttonStyle.fixedWidth = 170;
+
+        GUILayout.Space(8);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Generate Light Probes", buttonStyle)) {
+            if(_previousProbePlacerWindow == null) {
+                _previousProbePlacerWindow = LightProbePlacerWindow.Show(LightVolume);
+            }
+        }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
 
         serializedObject.ApplyModifiedProperties();
 

@@ -39,6 +39,7 @@ public class LightVolume : MonoBehaviour {
     public float VoxelsPerUnit = 2;
     [Tooltip("Manual Light Volume resolution in voxel count.")]
     public Vector3Int Resolution = new Vector3Int(16, 16, 16);
+
     public bool PreviewVoxels;
 #if BAKERY_INCLUDED
     public BakeryVolume BakeryVolume;
@@ -341,7 +342,7 @@ public class LightVolume : MonoBehaviour {
         LightVolumeSetup.SyncUdonScript();
 
         // If voxels preview disabled
-        if (!PreviewVoxels || _probesPositions.Length == 0 || Selection.activeGameObject != gameObject) return;
+        if (!PreviewVoxels || _probesPositions.Length == 0 || Selection.activeGameObject != gameObject || _probesPositions.Length > 1000000) return;
 
         // Initialize Buffers
         if (_posBuf == null || _posBuf.count != _probesPositions.Length) {
@@ -398,6 +399,10 @@ public class LightVolume : MonoBehaviour {
         if(LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
         if (PreviewVoxels)
             ReleasePreviewBuffers();
+    }
+
+    private void OnValidate() {
+        Recalculate();
     }
 #endif
 
