@@ -63,6 +63,15 @@ public class LightVolume : MonoBehaviour {
     static readonly int _previewPosID = Shader.PropertyToID("_Positions");
     static readonly int _previewScaleID = Shader.PropertyToID("_Scale");
 
+    // Auto-initialize with a reflection probe bounds
+    public void Reset() {
+        if(transform.parent != null && transform.parent.gameObject.TryGetComponent(out ReflectionProbe probe)) {
+            transform.position = probe.bounds.center;
+            transform.rotation = Quaternion.identity;
+            LVUtils.SetLossyScale(transform, probe.bounds.size);
+        }
+    }
+
     // Position, Rotation and Scale of the final light volume, depending on the current setup
     public Vector3 GetPosition() {
         return transform.position;
