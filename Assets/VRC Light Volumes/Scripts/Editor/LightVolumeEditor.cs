@@ -47,7 +47,7 @@ public class LightVolumeEditor : Editor {
         if (newPreviewProbes != LightVolume.PreviewVoxels) {
             LightVolume.RecalculateProbesPositions();
             LightVolume.PreviewVoxels = newPreviewProbes;
-            SceneView.RepaintAll();
+            RepaintAll();
         }
 
         GUILayout.FlexibleSpace();
@@ -99,7 +99,7 @@ public class LightVolumeEditor : Editor {
 
             _isEditMode = newIsEditMode;
             Tools.hidden = false;
-            SceneView.RepaintAll();
+            RepaintAll();
         }
 
         // Clicking on a new tool
@@ -108,7 +108,7 @@ public class LightVolumeEditor : Editor {
             _previousTool = Tools.current;
             _isEditMode = false;
             Tools.hidden = false;
-            SceneView.RepaintAll();
+            RepaintAll();
         }
 
         List<string> hiddenFields = new List<string> { "m_Script", "PreviewVoxels", "LightVolumeInstance", "LightVolumeSetup" };
@@ -255,6 +255,16 @@ public class LightVolumeEditor : Editor {
     string SizeInBundle(int vCount) {
         float mb = vCount * 8 * 3 * 0.63f / (float)(1024 * 1024);
         return mb.ToString("0.00");
+    }
+
+    // Little hack to force repaint scene in some edge cases
+    private void RepaintAll() {
+        EditorApplication.update += ForceRepaintNextFrame; 
+    }
+    private static void ForceRepaintNextFrame() {
+        SceneView.RepaintAll();
+        EditorApplication.QueuePlayerLoopUpdate();
+        EditorApplication.update -= ForceRepaintNextFrame;
     }
 
 }

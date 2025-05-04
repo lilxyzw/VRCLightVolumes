@@ -206,8 +206,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5adcba82967531c4fb3c866ec8858572, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LightVolumes: []
-  LightVolumesWeights: []
+  LightVolumes:
+  - {fileID: 752404678}
+  LightVolumesWeights:
+  - 0
   BakingMode: 0
   Denoise: 1
   FixLightProbesL1: 1
