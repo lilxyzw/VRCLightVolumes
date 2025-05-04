@@ -29,8 +29,8 @@ public class LightProbePlacerWindow : EditorWindow {
         window._voxelsPerUnit = volume.VoxelsPerUnit / 4;
         window._adaptiveResolution = volume.AdaptiveResolution;
         window.titleContent = new GUIContent("Generate Light Probes");
-        window.position = new Rect(Screen.width / 2, Screen.height / 2, 220f, 130f);
-        window.minSize = new Vector2(220f, 130f);
+        window.position = new Rect(Screen.width / 2, Screen.height / 2, 220f, 150f);
+        window.minSize = new Vector2(220f, 150f);
         window.Show();
         return window;
     }
@@ -38,7 +38,7 @@ public class LightProbePlacerWindow : EditorWindow {
     private void OnEnable() {
 
         const float width = 220f;
-        const float height = 130f;
+        const float height = 150f;
 
         Vector2 center = new Vector2(
             Screen.currentResolution.width / 2f - width / 2f,
@@ -114,6 +114,8 @@ public class LightProbePlacerWindow : EditorWindow {
         Rect paddedRect = new Rect(padding, padding, position.width - padding * 2, position.height - padding * 2);
 
         GUILayout.BeginArea(paddedRect);
+
+        EditorGUILayout.LabelField(_lightVolume.gameObject.name, EditorStyles.boldLabel);
 
         _adaptiveResolution = EditorGUILayout.Toggle("Adaptive Resolution", _adaptiveResolution);
         if(_adaptiveResolution) {
