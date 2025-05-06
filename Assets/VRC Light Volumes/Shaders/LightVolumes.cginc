@@ -166,8 +166,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     [loop]
     for (; id < _UdonLightVolumeAdditiveCount && addVolumesCount < _UdonLightVolumeAdditiveMaxOverdraw; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
-        // Intersection test
-        if (LV_PointLocalAABB(localUVW)) {
+        if (LV_PointLocalAABB(localUVW)) { // Intersection test
             LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
             L0 += L0_;
             L1r += L1r_;
@@ -179,21 +178,25 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     
     id = _UdonLightVolumeAdditiveCount; // Resetting iterator
     
-    [loop]
+    [loop] // First, searching for volume A
     for (; id < _UdonLightVolumeCount; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
-        // Intersection test
-        if (LV_PointLocalAABB(localUVW)) {
-            if (isNoA) { // First, searching for volume A
-                volumeID_A = id;
-                localUVW_A = localUVW;
-                isNoA = false;
-            } else { // Next, searching for volume B if A found
-                volumeID_B = id;
-                localUVW_B = localUVW;
-                isNoB = false;
-                break;
-            }
+        if (LV_PointLocalAABB(localUVW)) { // Intersection test
+            volumeID_A = id;
+            localUVW_A = localUVW;
+            isNoA = false;
+            break;
+        }
+    }
+    
+    [loop] // Next, searching for volume B if A found
+    for (id++; id < _UdonLightVolumeCount; id++) {
+        localUVW = LV_LocalFromVolume(id, worldPos);
+        if (LV_PointLocalAABB(localUVW)) { // Intersection test
+            volumeID_B = id;
+            localUVW_B = localUVW;
+            isNoB = false;
+            break;
         }
     }
     
