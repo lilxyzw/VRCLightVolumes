@@ -26,12 +26,9 @@ public class LightVolumeManager : UdonSharpBehaviour {
     private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
     private Vector4[] _boundsUvwMin = new Vector4[0];
     private Vector4[] _boundsUvwMax = new Vector4[0];
-    private float[] _isAdditive = new float[0];
     private float[] _isRotated = new float[0];
     private Vector4[] _relativeRotations = new Vector4[0];
     private Vector4[] _colors = new Vector4[0];
-
-    // Current count of additive volumes
     private int _additiveCount = 0;
 
     // Initializing gloabal shader arrays if needed 
@@ -43,7 +40,6 @@ public class LightVolumeManager : UdonSharpBehaviour {
         VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeIsRotated"), new float[256]);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMin"), new Vector4[756]);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMax"), new Vector4[756]);
-        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeAdditive"), new float[256]);
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeColor"), new Vector4[256]);
         _isInitialized = true;
     }
@@ -75,7 +71,6 @@ public class LightVolumeManager : UdonSharpBehaviour {
         // Initializing required arrays
         _invLocalEdgeSmooth = new Vector4[_enabledCount];
         _invWorldMatrix     = new Matrix4x4[_enabledCount];
-        _isAdditive         = new float[_enabledCount];
         _isRotated          = new float[_enabledCount];
         _colors             = new Vector4[_enabledCount];
         _relativeRotations  = new Vector4[_enabledCount];
@@ -92,7 +87,6 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
             _invLocalEdgeSmooth[i] = LightVolumeInstances[enabledId].InvLocalEdgeSmoothing;
             _invWorldMatrix[i]     = LightVolumeInstances[enabledId].InvWorldMatrix;
-            _isAdditive[i]         = LightVolumeInstances[enabledId].IsAdditive ? 1 : 0;
             _isRotated[i]          = LightVolumeInstances[enabledId].IsRotated ? 1 : 0;
             _relativeRotations[i]  = LightVolumeInstances[enabledId].RelativeRotation;
             _colors[i]             = LightVolumeInstances[enabledId].Color;
@@ -134,7 +128,6 @@ public class LightVolumeManager : UdonSharpBehaviour {
         // Defines if Light Probes Blending enabled in scene
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeProbesBlend"), LightProbesBlending ? 1 : 0);
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeSharpBounds"), SharpBounds ? 1 : 0);
-        VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeAdditive"), _isAdditive);
 
         // All light volumes Extra Data
         VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), _invLocalEdgeSmooth);
@@ -146,6 +139,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
         // All light volumes count
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeCount"), _enabledCount);
+        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount"), _additiveCount);
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw"), Mathf.Min(Mathf.Max(AdditiveMaxOverdraw, 0), _additiveCount));
 
         // Defines if Light Volumes enabled in scene

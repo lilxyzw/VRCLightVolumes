@@ -8,6 +8,9 @@ uniform float _UdonLightVolumeCount;
 // Additive volumes max overdraw count
 uniform float _UdonLightVolumeAdditiveMaxOverdraw;
 
+// Additive volumes count
+uniform float _UdonLightVolumeAdditiveCount;
+
 // Should volumes be blended with lightprobes?
 uniform float _UdonLightVolumeProbesBlend;
 
@@ -25,9 +28,6 @@ uniform float4 _UdonLightVolumeRotation[256];
 
 // If we actually need to rotate L1 components at all
 uniform float _UdonLightVolumeIsRotated[256];
-
-// Is this light volume in additive mode?
-uniform float _UdonLightVolumeAdditive[256];
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[256];
@@ -160,20 +160,31 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     int addVolumesCount = 0;
     float3 L0_, L1r_, L1g_, L1b_;
     
+    int id = 0; // Loop iterator
+    
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     [loop]
-    for (int id = 0; id < _UdonLightVolumeCount; id++) {
+    for (; id < _UdonLightVolumeAdditiveCount && addVolumesCount < _UdonLightVolumeAdditiveMaxOverdraw; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
-        //Intersection test
+        // Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != _UdonLightVolumeAdditiveMaxOverdraw) { //Sampling additive light volumes
-                LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
-                L0 += L0_;
-                L1r += L1r_;
-                L1g += L1g_;
-                L1b += L1b_;
-                addVolumesCount++;
-            } else if (isNoA) { // First, searching for volume A
+            LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
+            L0 += L0_;
+            L1r += L1r_;
+            L1g += L1g_;
+            L1b += L1b_;
+            addVolumesCount++;
+        }
+    }
+    
+    id = _UdonLightVolumeAdditiveCount; // Resetting iterator
+    
+    [loop]
+    for (; id < _UdonLightVolumeCount; id++) {
+        localUVW = LV_LocalFromVolume(id, worldPos);
+        // Intersection test
+        if (LV_PointLocalAABB(localUVW)) {
+            if (isNoA) { // First, searching for volume A
                 volumeID_A = id;
                 localUVW_A = localUVW;
                 isNoA = false;
@@ -245,7 +256,6 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     L1r += lerp(L1r_B, L1r_A, mask);
     L1g += lerp(L1g_B, L1g_A, mask);
     L1b += lerp(L1b_B, L1b_A, mask);
-    return;
 
 }
 
@@ -257,7 +267,7 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     L1g = float3(0, 0, 0);
     L1b = float3(0, 0, 0);
     
-    if (!_UdonLightVolumeEnabled || _UdonLightVolumeCount == 0) return;
+    if (!_UdonLightVolumeEnabled || _UdonLightVolumeAdditiveCount == 0) return;
     
     // Additive volumes variables
     float3 localUVW = float3(0, 0, 0);
@@ -266,18 +276,16 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     [loop]
-    for (int id = 0; id < _UdonLightVolumeCount; id++) {
+    for (int id = 0; id < _UdonLightVolumeAdditiveCount && addVolumesCount < _UdonLightVolumeAdditiveMaxOverdraw; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != _UdonLightVolumeAdditiveMaxOverdraw) { //Sampling additive light volumes
-                LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
-                L0 += L0_;
-                L1r += L1r_;
-                L1g += L1g_;
-                L1b += L1b_;
-                addVolumesCount++;
-            }
+            LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
+            L0 += L0_;
+            L1r += L1r_;
+            L1g += L1g_;
+            L1b += L1b_;
+            addVolumesCount++;
         }
     }
 

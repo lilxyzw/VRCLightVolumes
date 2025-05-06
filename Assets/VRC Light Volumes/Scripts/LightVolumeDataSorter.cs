@@ -5,7 +5,8 @@ public static class LightVolumeDataSorter {
 
     public static List<LightVolumeData> SortData(List<LightVolumeData> lightVolumeDataList) {
         lightVolumeDataList.RemoveAll(item => item.LightVolumeInstance == null);
-        return lightVolumeDataList.OrderByDescending(item => item.Weight).ToList();
+        var sorted = lightVolumeDataList.OrderByDescending(item => item.LightVolumeInstance.IsAdditive).ThenByDescending(item => item.Weight).ToList();
+        return sorted;
     }
 
     public static LightVolumeInstance[] GetData(List<LightVolumeData> sortedData) {
