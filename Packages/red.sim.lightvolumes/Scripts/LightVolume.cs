@@ -7,82 +7,83 @@ using System.IO;
 using UnityEngine.SceneManagement;
 #endif
 
-[ExecuteAlways]
-public class LightVolume : MonoBehaviour {
+namespace VRCLightVolumes {
+    [ExecuteAlways]
+    public class LightVolume : MonoBehaviour {
 
-    [Header("Volume Setup")]
-    [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance.")]
-    public bool Dynamic;
-    [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
-    public bool Additive;
-    [Tooltip("Multiplies the volume’s color by this value.")]
-    [ColorUsage(showAlpha: false, hdr: true)]
-    public Color Color = Color.white;
-    [Tooltip("Size in meters of this Light Volume's overlapping regions for smooth blending with other volumes.")]
-    [Range(0, 1)]public float SmoothBlending= 0.25f;
+        [Header("Volume Setup")]
+        [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance.")]
+        public bool Dynamic;
+        [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
+        public bool Additive;
+        [Tooltip("Multiplies the volume’s color by this value.")]
+        [ColorUsage(showAlpha: false, hdr: true)]
+        public Color Color = Color.white;
+        [Tooltip("Size in meters of this Light Volume's overlapping regions for smooth blending with other volumes.")]
+        [Range(0, 1)] public float SmoothBlending = 0.25f;
 
-    [Header("Baked Data")]
-    [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L0r, L0g, L0b, L1r.z)")]
-    public Texture3D Texture0;
-    [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.x, L1g.x, L1b.x, L1g.z)")]
-    public Texture3D Texture1;
-    [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
-    public Texture3D Texture2;
-    
+        [Header("Baked Data")]
+        [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L0r, L0g, L0b, L1r.z)")]
+        public Texture3D Texture0;
+        [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.x, L1g.x, L1b.x, L1g.z)")]
+        public Texture3D Texture1;
+        [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
+        public Texture3D Texture2;
 
-    [Header("Baking Setup")]
-    [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
-    public bool Bake = true;
-    [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
-    public bool AdaptiveResolution = true;
-    [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
-    public float VoxelsPerUnit = 2;
-    [Tooltip("Manual Light Volume resolution in voxel count.")]
-    public Vector3Int Resolution = new Vector3Int(16, 16, 16);
 
-    public bool PreviewVoxels;
+        [Header("Baking Setup")]
+        [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
+        public bool Bake = true;
+        [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
+        public bool AdaptiveResolution = true;
+        [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
+        public float VoxelsPerUnit = 2;
+        [Tooltip("Manual Light Volume resolution in voxel count.")]
+        public Vector3Int Resolution = new Vector3Int(16, 16, 16);
+
+        public bool PreviewVoxels;
 #if BAKERY_INCLUDED
     public BakeryVolume BakeryVolume;
 #endif
 
-    public LightVolumeInstance LightVolumeInstance;
-    public LightVolumeSetup LightVolumeSetup;
+        public LightVolumeInstance LightVolumeInstance;
+        public LightVolumeSetup LightVolumeSetup;
 
-    // Light probes world positions
-    private Vector3[] _probesPositions = new Vector3[0];
+        // Light probes world positions
+        private Vector3[] _probesPositions = new Vector3[0];
 
-    // To check if object was edited this frame
-    private Vector3 _prevPos = Vector3.zero;
-    private Quaternion _prevRot = Quaternion.identity;
-    private Vector3 _prevScl = Vector3.one;
+        // To check if object was edited this frame
+        private Vector3 _prevPos = Vector3.zero;
+        private Quaternion _prevRot = Quaternion.identity;
+        private Vector3 _prevScl = Vector3.one;
 
-    // Preview
-    private Material _previewMaterial;
-    private Mesh _previewMesh;
-    private ComputeBuffer _posBuf;
-    private ComputeBuffer _argsBuf;
-    static readonly int _previewPosID = Shader.PropertyToID("_Positions");
-    static readonly int _previewScaleID = Shader.PropertyToID("_Scale");
+        // Preview
+        private Material _previewMaterial;
+        private Mesh _previewMesh;
+        private ComputeBuffer _posBuf;
+        private ComputeBuffer _argsBuf;
+        static readonly int _previewPosID = Shader.PropertyToID("_Positions");
+        static readonly int _previewScaleID = Shader.PropertyToID("_Scale");
 
-    // Auto-initialize with a reflection probe bounds
-    public void Reset() {
-        if(transform.parent != null && transform.parent.gameObject.TryGetComponent(out ReflectionProbe probe)) {
-            transform.position = probe.bounds.center;
-            transform.rotation = Quaternion.identity;
-            LVUtils.SetLossyScale(transform, probe.bounds.size);
+        // Auto-initialize with a reflection probe bounds
+        public void Reset() {
+            if (transform.parent != null && transform.parent.gameObject.TryGetComponent(out ReflectionProbe probe)) {
+                transform.position = probe.bounds.center;
+                transform.rotation = Quaternion.identity;
+                LVUtils.SetLossyScale(transform, probe.bounds.size);
+            }
         }
-    }
 
-    // Position, Rotation and Scale of the final light volume, depending on the current setup
-    public Vector3 GetPosition() {
-        return transform.position;
-    }
-    public Vector3 GetScale() {
-        return transform.lossyScale;
-    }
-    public Quaternion GetRotation() {
-        SetupDependencies();
-        if (LightVolumeSetup.IsBakeryMode && !Application.isPlaying && Bake) {
+        // Position, Rotation and Scale of the final light volume, depending on the current setup
+        public Vector3 GetPosition() {
+            return transform.position;
+        }
+        public Vector3 GetScale() {
+            return transform.lossyScale;
+        }
+        public Quaternion GetRotation() {
+            SetupDependencies();
+            if (LightVolumeSetup.IsBakeryMode && !Application.isPlaying && Bake) {
 #if BAKERY_INCLUDED
             if(typeof(BakeryVolume).GetField("rotateAroundY") != null) { // Some Bakery versions does not support rotateAroundY, so we'll check it
                 return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
@@ -90,37 +91,37 @@ public class LightVolume : MonoBehaviour {
                 return Quaternion.identity;
             }
 #else
-            return Quaternion.identity;
+                return Quaternion.identity;
 #endif
-        } else {
-            return transform.rotation;
-        }
-    }
-    public Matrix4x4 GetMatrixTRS() {
-        return Matrix4x4.TRS(GetPosition(), GetRotation(), GetScale());
-    }
-
-    // Returns volume voxel count
-    public int GetVoxelCount() {
-        return Resolution.x * Resolution.y * Resolution.z;
-    }
-
-    // Looks for LightVolumeSetup and LightVolumeInstance udon script and setups them if needed
-    public void SetupDependencies() {
-        if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
-            LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
-        }
-        if (LightVolumeSetup == null) {
-            LightVolumeSetup = FindObjectOfType<LightVolumeSetup>();
-            if (LightVolumeSetup == null) {
-                var go = new GameObject("Light Volume Manager");
-                LightVolumeSetup = go.AddComponent<LightVolumeSetup>();
-                LightVolumeSetup.SyncUdonScript();
+            } else {
+                return transform.rotation;
             }
         }
-    }
+        public Matrix4x4 GetMatrixTRS() {
+            return Matrix4x4.TRS(GetPosition(), GetRotation(), GetScale());
+        }
 
-    // Sets Additional Probes to bake with Unity Lightmapper
+        // Returns volume voxel count
+        public int GetVoxelCount() {
+            return Resolution.x * Resolution.y * Resolution.z;
+        }
+
+        // Looks for LightVolumeSetup and LightVolumeInstance udon script and setups them if needed
+        public void SetupDependencies() {
+            if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
+                LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
+            }
+            if (LightVolumeSetup == null) {
+                LightVolumeSetup = FindObjectOfType<LightVolumeSetup>();
+                if (LightVolumeSetup == null) {
+                    var go = new GameObject("Light Volume Manager");
+                    LightVolumeSetup = go.AddComponent<LightVolumeSetup>();
+                    LightVolumeSetup.SyncUdonScript();
+                }
+            }
+        }
+
+        // Sets Additional Probes to bake with Unity Lightmapper
 #if UNITY_EDITOR
     public void SetAdditionalProbes(int id) {
         RecalculateProbesPositions();
@@ -132,42 +133,42 @@ public class LightVolume : MonoBehaviour {
     }
 #endif
 
-    // Recalculates probes world positions
-    public void RecalculateProbesPositions() {
-        _probesPositions = new Vector3[GetVoxelCount()];
-        Vector3 offset = new Vector3(0.5f, 0.5f, 0.5f);
-        var pos = GetPosition();
-        var rot = GetRotation();
-        var scl = GetScale();
-        int id = 0;
-        Vector3 localPos;
-        for (int z = 0; z < Resolution.z; z++) {
-            for (int y = 0; y < Resolution.y; y++) {
-                for (int x = 0; x < Resolution.x; x++) {
-                    localPos = new Vector3((float)(x + 0.5f) / Resolution.x, (float)(y + 0.5f) / Resolution.y, (float)(z + 0.5f) / Resolution.z) - offset;
-                    _probesPositions[id] = LVUtils.TransformPoint(localPos, pos, rot, scl);
-                    id++;
+        // Recalculates probes world positions
+        public void RecalculateProbesPositions() {
+            _probesPositions = new Vector3[GetVoxelCount()];
+            Vector3 offset = new Vector3(0.5f, 0.5f, 0.5f);
+            var pos = GetPosition();
+            var rot = GetRotation();
+            var scl = GetScale();
+            int id = 0;
+            Vector3 localPos;
+            for (int z = 0; z < Resolution.z; z++) {
+                for (int y = 0; y < Resolution.y; y++) {
+                    for (int x = 0; x < Resolution.x; x++) {
+                        localPos = new Vector3((float)(x + 0.5f) / Resolution.x, (float)(y + 0.5f) / Resolution.y, (float)(z + 0.5f) / Resolution.z) - offset;
+                        _probesPositions[id] = LVUtils.TransformPoint(localPos, pos, rot, scl);
+                        id++;
+                    }
                 }
             }
         }
-    }
 
-    // Recalculates resolution based on Adaptive Resolution
-    public void RecalculateAdaptiveResolution() {
-        Vector3 count = Vector3.Scale(Vector3.one, GetScale()) * VoxelsPerUnit;
-        int x = Mathf.Max((int)Mathf.Round(count.x), 1);
-        int y = Mathf.Max((int)Mathf.Round(count.y), 1);
-        int z = Mathf.Max((int)Mathf.Round(count.z), 1);
-        Resolution = new Vector3Int(x, y, z);
-    }
+        // Recalculates resolution based on Adaptive Resolution
+        public void RecalculateAdaptiveResolution() {
+            Vector3 count = Vector3.Scale(Vector3.one, GetScale()) * VoxelsPerUnit;
+            int x = Mathf.Max((int)Mathf.Round(count.x), 1);
+            int y = Mathf.Max((int)Mathf.Round(count.y), 1);
+            int z = Mathf.Max((int)Mathf.Round(count.z), 1);
+            Resolution = new Vector3Int(x, y, z);
+        }
 
-    // Recalculates adaptive resolution and local positions if required
-    public void Recalculate() {
-        if (AdaptiveResolution)
-            RecalculateAdaptiveResolution();
-        if (PreviewVoxels && Bake)
-            RecalculateProbesPositions();
-    }
+        // Recalculates adaptive resolution and local positions if required
+        public void Recalculate() {
+            if (AdaptiveResolution)
+                RecalculateAdaptiveResolution();
+            if (PreviewVoxels && Bake)
+                RecalculateProbesPositions();
+        }
 #if UNITY_EDITOR
     public void Save3DTextures(int id) {
 
@@ -257,8 +258,8 @@ public class LightVolume : MonoBehaviour {
 
     }
 #endif
-    // Setups required game objects and components
-    public void SetupBakeryDependencies() {
+        // Setups required game objects and components
+        public void SetupBakeryDependencies() {
 
 #if BAKERY_INCLUDED
 
@@ -303,16 +304,16 @@ public class LightVolume : MonoBehaviour {
 
 #endif
 
-    }
+        }
 
-    // Syncs udon LightVolumeInstance script with this script
-    private void SyncUdonScript() {
-        SetupDependencies();
-        LightVolumeInstance.IsDynamic = Dynamic;
-        LightVolumeInstance.IsAdditive = Additive;
-        LightVolumeInstance.Color = Color;
-        LightVolumeInstance.SetSmoothBlending(SmoothBlending);
-    }
+        // Syncs udon LightVolumeInstance script with this script
+        private void SyncUdonScript() {
+            SetupDependencies();
+            LightVolumeInstance.IsDynamic = Dynamic;
+            LightVolumeInstance.IsAdditive = Additive;
+            LightVolumeInstance.Color = Color;
+            LightVolumeInstance.SetSmoothBlending(SmoothBlending);
+        }
 
 #if UNITY_EDITOR
 
@@ -406,16 +407,17 @@ public class LightVolume : MonoBehaviour {
     }
 #endif
 
-    // Delete self in play mode
-    private void Start() {
-        if (Application.isPlaying) {
+        // Delete self in play mode
+        private void Start() {
+            if (Application.isPlaying) {
 #if BAKERY_INCLUDED
             if (BakeryVolume != null) {
                 Destroy(BakeryVolume.gameObject);
             }
 #endif
-            Destroy(this);
+                Destroy(this);
+            }
         }
-    }
 
+    }
 }

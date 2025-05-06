@@ -9,38 +9,39 @@ using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 #endif
 
-[ExecuteAlways]
-public class LightVolumeSetup : MonoBehaviour {
+namespace VRCLightVolumes {
+    [ExecuteAlways]
+    public class LightVolumeSetup : MonoBehaviour {
 
-    [SerializeField] public List<LightVolume> LightVolumes = new List<LightVolume>();
-    [SerializeField] public List<float> LightVolumesWeights = new List<float>();
-    [Header("Baking")]
-    [Tooltip("Bakery usually gives better results and works faster.")]
+        [SerializeField] public List<LightVolume> LightVolumes = new List<LightVolume>();
+        [SerializeField] public List<float> LightVolumesWeights = new List<float>();
+        [Header("Baking")]
+        [Tooltip("Bakery usually gives better results and works faster.")]
 #if BAKERY_INCLUDED
     public Baking BakingMode = Baking.Bakery;
 #else
-    public Baking BakingMode = Baking.UnityLightmapper;
+        public Baking BakingMode = Baking.UnityLightmapper;
 #endif
-    [Tooltip("Removes baked noise in Light Volumes but may slightly reduce sharpness. Recommended to keep it enabled.")]
-    public bool Denoise = true;
-    [Tooltip("Automatically fixes Bakery's \"burned\" light probes after a scene bake. But decreases their contrast slightly.")] 
-    public bool FixLightProbesL1 = true;
-    [Header("Visuals")]
-    [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
-    public bool LightProbesBlending = true;
-    [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
-    public bool SharpBounds = true;
-    [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
-    public bool AutoUpdateVolumes = false;
-    [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
-    public int AdditiveMaxOverdraw = 4;
+        [Tooltip("Removes baked noise in Light Volumes but may slightly reduce sharpness. Recommended to keep it enabled.")]
+        public bool Denoise = true;
+        [Tooltip("Automatically fixes Bakery's \"burned\" light probes after a scene bake. But decreases their contrast slightly.")]
+        public bool FixLightProbesL1 = true;
+        [Header("Visuals")]
+        [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
+        public bool LightProbesBlending = true;
+        [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
+        public bool SharpBounds = true;
+        [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
+        public bool AutoUpdateVolumes = false;
+        [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
+        public int AdditiveMaxOverdraw = 4;
 
-    [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
+        [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
-    public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
-    public LightVolumeManager LightVolumeManager;
+        public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
+        public LightVolumeManager LightVolumeManager;
 
-    public Baking _bakingModePrev;
+        public Baking _bakingModePrev;
 
 #if UNITY_EDITOR
 
@@ -276,29 +277,30 @@ public class LightVolumeSetup : MonoBehaviour {
 
 #endif
 
-    // Syncs udon LightVolumeManager script with this script
-    public void SyncUdonScript() {
-        if (LightVolumeManager == null) return;
-        LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
-        LightVolumeManager.LightProbesBlending = LightProbesBlending;
-        LightVolumeManager.SharpBounds = SharpBounds;
-        LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
+        // Syncs udon LightVolumeManager script with this script
+        public void SyncUdonScript() {
+            if (LightVolumeManager == null) return;
+            LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
+            LightVolumeManager.LightProbesBlending = LightProbesBlending;
+            LightVolumeManager.SharpBounds = SharpBounds;
+            LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
 
-        if (LightVolumes.Count == 0) return;
-        LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
-        LightVolumeManager.UpdateVolumes();
-    }
-
-    // Delete self in play mode
-    private void Start() {
-        if (Application.isPlaying) {
-            Destroy(this);
+            if (LightVolumes.Count == 0) return;
+            LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+            LightVolumeManager.UpdateVolumes();
         }
-    }
 
-    public enum Baking {
-        UnityLightmapper,
-        Bakery
-    }
+        // Delete self in play mode
+        private void Start() {
+            if (Application.isPlaying) {
+                Destroy(this);
+            }
+        }
 
+        public enum Baking {
+            UnityLightmapper,
+            Bakery
+        }
+
+    }
 }
