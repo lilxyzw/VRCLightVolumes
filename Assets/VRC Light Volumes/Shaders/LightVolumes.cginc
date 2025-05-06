@@ -176,10 +176,8 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         }
     }
     
-    id = _UdonLightVolumeAdditiveCount; // Resetting iterator
-    
     [loop] // First, searching for volume A
-    for (; id < _UdonLightVolumeCount; id++) {
+    for (id = _UdonLightVolumeAdditiveCount; id < _UdonLightVolumeCount; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
         if (LV_PointLocalAABB(localUVW)) { // Intersection test
             volumeID_A = id;
