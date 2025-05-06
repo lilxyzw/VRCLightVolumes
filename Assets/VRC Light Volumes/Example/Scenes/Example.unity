@@ -716,7 +716,6 @@ MonoBehaviour:
   - {fileID: 1964208428}
   - {fileID: 1665989578}
   - {fileID: 380379184}
-  - {fileID: 0}
   LightVolumesWeights:
   - 0
   - 1
@@ -725,13 +724,13 @@ MonoBehaviour:
   - 4
   - 5
   - 6
-  - 0
   BakingMode: 0
   Denoise: 1
   FixLightProbesL1: 1
   LightProbesBlending: 1
   SharpBounds: 1
   AutoUpdateVolumes: 1
+  AdditiveMaxOverdraw: 4
   LightVolumeDataList:
   - Weight: 0
     LightVolumeInstance: {fileID: 42751781}
@@ -775,6 +774,7 @@ MonoBehaviour:
   LightProbesBlending: 1
   SharpBounds: 1
   AutoUpdateVolumes: 1
+  AdditiveMaxOverdraw: 4
   LightVolumeInstances:
   - {fileID: 380379183}
   - {fileID: 1665989575}
@@ -949,7 +949,7 @@ Camera:
     height: 1
   near clip plane: 0.01
   far clip plane: 1000
-  field of view: 60
+  field of view: 13
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -975,13 +975,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 751639248}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.039853342, y: 0.960299, z: -0.20223239, w: -0.18798828}
-  m_LocalPosition: {x: 0.2904844, y: 2.6346612, z: -4.0641994}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: -0.00000035762784}
+  m_LocalPosition: {x: -0.0000032186506, y: 2.6346612, z: -8.564199}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &804013388
 GameObject:
   m_ObjectHideFlags: 0
@@ -1157,7 +1157,7 @@ Transform:
   m_GameObject: {fileID: 804013388}
   serializedVersion: 2
   m_LocalRotation: {x: -0.70710707, y: -0.00000089472485, z: -0.0000009890297, w: 0.7071066}
-  m_LocalPosition: {x: 0.0000013320156, y: 1.7099996, z: -17.93}
+  m_LocalPosition: {x: 0, y: 2, z: -17.921}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1482,6 +1482,10 @@ MonoBehaviour:
     - VRC.SDK3.Components.VRCObjectSync
   - gameObject: {fileID: 380379180}
     ID: 22
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 0}
+    ID: 23
     SerializedTypeNames:
     - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}

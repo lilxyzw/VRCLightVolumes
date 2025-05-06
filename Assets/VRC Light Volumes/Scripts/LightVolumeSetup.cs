@@ -32,6 +32,8 @@ public class LightVolumeSetup : MonoBehaviour {
     public bool SharpBounds = true;
     [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
     public bool AutoUpdateVolumes = false;
+    [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
+    public int AdditiveMaxOverdraw = 4;
 
     [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
@@ -280,6 +282,7 @@ public class LightVolumeSetup : MonoBehaviour {
         LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
         LightVolumeManager.LightProbesBlending = LightProbesBlending;
         LightVolumeManager.SharpBounds = SharpBounds;
+        LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
 
         if (LightVolumes.Count == 0) return;
         LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));

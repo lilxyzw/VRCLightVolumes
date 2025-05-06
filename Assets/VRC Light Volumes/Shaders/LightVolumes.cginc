@@ -5,6 +5,9 @@ uniform float _UdonLightVolumeEnabled;
 // All volumes count in scene
 uniform float _UdonLightVolumeCount;
 
+// Additive volumes max overdraw count
+uniform float _UdonLightVolumeAdditiveMaxOverdraw;
+
 // Should volumes be blended with lightprobes?
 uniform float _UdonLightVolumeProbesBlend;
 
@@ -163,7 +166,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != 4) { //Sampling additive light volumes
+            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != _UdonLightVolumeAdditiveMaxOverdraw) { //Sampling additive light volumes
                 LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
                 L0 += L0_;
                 L1r += L1r_;
@@ -267,7 +270,7 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != 4) { //Sampling additive light volumes
+            if (_UdonLightVolumeAdditive[id] != 0 && addVolumesCount != _UdonLightVolumeAdditiveMaxOverdraw) { //Sampling additive light volumes
                 LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
                 L0 += L0_;
                 L1r += L1r_;

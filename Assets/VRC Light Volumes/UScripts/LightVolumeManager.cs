@@ -13,9 +13,10 @@ public class LightVolumeManager : UdonSharpBehaviour {
     public bool SharpBounds = true;
     [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
     public bool AutoUpdateVolumes = false;
+    [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
+    public int AdditiveMaxOverdraw = 4;
     [Tooltip("All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance.")]
     public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
-
     private bool _isInitialized = false;
 
     // Actually enabled Volumes
@@ -29,6 +30,9 @@ public class LightVolumeManager : UdonSharpBehaviour {
     private float[] _isRotated = new float[0];
     private Vector4[] _relativeRotations = new Vector4[0];
     private Vector4[] _colors = new Vector4[0];
+
+    // Current count of additive volumes
+    private int _additiveCount = 0;
 
     // Initializing gloabal shader arrays if needed 
     private void TryInitialize() {
@@ -54,6 +58,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
         // Searching for enabled volumes
         _enabledCount = 0;
+        _additiveCount = 0;
         for (int i = 0; i < LightVolumeInstances.Length; i++) {
             if (LightVolumeInstances[i] != null && LightVolumeInstances[i].gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
@@ -61,6 +66,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
 #else
                 if (LightVolumeInstances[i].IsDynamic) LightVolumeInstances[i].UpdateRotation();
 #endif
+                if (LightVolumeInstances[i].IsAdditive) _additiveCount++;
                 _enabledIDs[_enabledCount] = i;
                 _enabledCount++;
             }
@@ -140,6 +146,7 @@ public class LightVolumeManager : UdonSharpBehaviour {
 
         // All light volumes count
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeCount"), _enabledCount);
+        VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw"), Mathf.Min(Mathf.Max(AdditiveMaxOverdraw, 0), _additiveCount));
 
         // Defines if Light Volumes enabled in scene
         VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 1);
