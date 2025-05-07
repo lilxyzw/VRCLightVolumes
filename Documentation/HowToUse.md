@@ -1,13 +1,14 @@
 [VRC Light Volumes](/README.md) | **How to Use** | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | [Compatible Shaders](/Documentation/CompatibleShaders.md)
-# How to use
-1. Click RMB in your hierarchy window and choose "Light Volume"
-2. Name your Light Volume game object related to the zone you want to apply it to. (Light volumes names must be different)
-3. In your Light Volume component press "Edit Bounds" and match the  colume size with the zone in your scene, you want to apply a volume to. Very similar to a Reflection Probe setup.
-4. With the "Adaptive Resolution" mode enabled in this component, change the "Voxels Per Unit" value to change the volume's voxel density. You can preview your voxels and even see the approximate file size it will have after baking.
-5. Setup all the volumes you need for your scene. You can change the resolution depending on the lighting conditions or the volume size. Note that increasing resolution for a 3D volume, increases the file size cubically, so be aware of a big value!
-6. Look for a game object called "Light Volume Manager" on your scene. It automatically appears in your scene if you use any Light Volumes, because volumes depends on it. It will show every Light Volume, that is currently on your scene.
-7. Set weight for every volume. Higher the weight - more priority this volume will have.
-8. Select "Baking Mode" depending on the Lightmapper you gonna use.
-9. Bake your scene.
-10. Now it should work! To test it, use any mesh with a shader that supports VRC Light Volumes. There are few shaders provided with this asset in a shader category called "Light Volume Samples".
-11. You can always check the example scene in the "Example" folder to look how it works.
+# How to Use
+
+1. Right-click in the Hierarchy and select **Light Volume**.  
+2. Rename the new Light Volume to match the zone you’re covering (each volume must have a unique name).  
+3. In the Light Volume component, click **Edit Bounds** and resize the box to fit your target area—much like setting up a Reflection Probe.  
+4. Enable **Adaptive Resolution**, then adjust **Voxels Per Unit** to control voxel density. A live preview shows voxel placement and estimated bake size.  
+5. Repeat for each volume in your scene. Remember that doubling the resolution of a 3D volume roughly octuples its file size, so balance detail with memory cost.  
+6. Locate the **Light Volume Manager** in your scene (it’s added automatically when you use Light Volumes). It lists every active volume.  
+7. Assign a **Weight** to each volume—the higher the weight, the greater its priority when volumes overlap.  
+8. Choose your **Baking Mode** based on the lightmapper you’re using.  
+9. Bake the scene.  
+10. Add a mesh with any shader that supports VRC Light Volumes.  
+11. For reference, open the **Example** scene in the **Example** folder to see a working setup.  
