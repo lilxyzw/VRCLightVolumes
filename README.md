@@ -19,8 +19,9 @@ This is a free open-source asset, so if you like it, I would be very happy if yo
 - It just looks beautiful!
 
 ## Shaders that are already support Light Volumes
+- [Orels Unity Shaders (Toon and PBR)](https://github.com/orels1/orels-Unity-Shaders) (To access it you will need to enable "Show Pre-Release Packages" in VCC Settings)
 
-*Yet to be added*
+*More shaders yet to be added*
 
 Contact me in Discord if you want your shader to be added in this list.
 Discord: @RED_SIM
