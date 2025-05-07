@@ -5,6 +5,8 @@ VRC Light Volumes is a nextgen voxel based light probes replacement for VRChat.
 This is a free open-source asset, so if you like it, I would be very happy if you **[Support me on Patreon](https://www.patreon.com/red_sim/ "Support me on Patreon")**.
 There is a bunch of other cool assets you will get there!
 
+![](/Documentation/Preview_0.png)
+
 ## Main Features
 - Baked per-pixel voxel based lighting
 - Affects avatars and dynamic props (shader integration required)
