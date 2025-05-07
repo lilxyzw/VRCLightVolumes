@@ -1,4 +1,4 @@
-[VRC Light Volumes](/README.md) | [How to Use](/Documentation/HowToUse.md) | [Best Practices](/Documentation/BestPractices.md) | [Optimizations](/Documentation/Optimizations.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | [Compatible Shaders](/Documentation/CompatibleShaders.md)
+[VRC Light Volumes](/README.md) | **How to Use** | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | [Compatible Shaders](/Documentation/CompatibleShaders.md)
 # How to use
 1. Click RMB in your hierarchy window and choose "Light Volume"
 2. Name your Light Volume game object related to the zone you want to apply it to. (Light volumes names must be different)

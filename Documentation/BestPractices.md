@@ -1,4 +1,4 @@
-[VRC Light Volumes](/README.md) | [How to Use](/Documentation/HowToUse.md) | **Best Practices** | [Optimizations](/Documentation/Optimizations.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | [Compatible Shaders](/Documentation/CompatibleShaders.md)
+[VRC Light Volumes](/README.md) | [How to Use](/Documentation/HowToUse.md) | **Best Practices** | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | [Compatible Shaders](/Documentation/CompatibleShaders.md)
 # Best Practices
 
 This article covers some non-intuitive features of VRC Light Volumes.
