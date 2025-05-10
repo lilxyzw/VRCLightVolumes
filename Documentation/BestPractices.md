@@ -3,6 +3,17 @@
 
 This article covers some non-intuitive features of VRC Light Volumes.
 
+## Use Cases
+
+Light Volumes are a modern solution for lighting dynamic meshes, including avatars, props, and more!
+
+- Use them with small static props that usually require very high lightmap resolution to avoid visible seams. Light Volumes produce no seams at all, as they are voxel-based.
+- Dynamic batching support: if you have tons of low-poly dynamic props across your scene using the same material, and their Mesh Renderers have Light Probes and Reflection Probes disabled, they can be dynamically batched at runtime, potentially improving performance.
+- Combine Light Volumes with particles to create stunning volumetric fog effects.
+- Switch between two Light Volumes at runtime to create toggleable lighting for rooms or other areas in your scene.
+- Create dynamic disco balls or projectors for clubs and music worlds — move, rotate, and even animate their colors in real time.
+- And much more!
+
 ## Quick Volume Setup
 
 If you already have Reflection Probes in your scene, you'll probably want your Light Volumes to match their bounds. To do this, right-click the Reflection Probe in the Hierarchy and create **Light Volume** as a child. Any volume created under any probe will automatically use its bounds.

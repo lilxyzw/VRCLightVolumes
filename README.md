@@ -7,6 +7,12 @@ There is a bunch of other cool assets you will get there!
 
 Check how it works in the demo VRChat world: **[Japanese Alley - VRC Light Volumes Test](https://vrchat.com/home/launch?worldId=wrld_af756ca8-30ee-41a4-b304-2207ebf79db9)**
 
+## Use Cases
+- Baked partial avatars and dynamic props lighting
+- Baked seamless lightmaps for small static objects
+- Baked dynamic light sources
+- Any Volumetric light effects
+
 ![](/Documentation/Preview_0.png)
 
 ## Main Features
@@ -19,6 +25,19 @@ Check how it works in the demo VRChat world: **[Japanese Alley - VRC Light Volum
 - Works with Bakery or the default Unity Lightmapper
 - Very easy and fast to setup
 - It just looks beautiful!
+
+## Attribution
+
+It would be greatly appreciated if you include a small note in your VRChat world mentioning that VRC Light Volumes are supported there. This helps users know they can use avatars with Light Volumes compatible shaders and also learn more about the system.
+
+For example, you can include a message like this:
+
+```
+This world supports VRC Light Volumes. Use avatar shaders with VRC Light Volumes support for an enhanced visual experience.
+VRC Light Volumes by RED_SIM — GitHub: https://github.com/REDSIM/VRCLightVolumes/
+```
+
+You're not required to include this message — it's entirely optional. But if you do, it helps spread the word and supports the growth of this asset in the VRChat community.
 
 ## Installation through VRChat Creator Companion
 1. Go to my VPM Listing web page: https://redsim.github.io/vpmlisting/
