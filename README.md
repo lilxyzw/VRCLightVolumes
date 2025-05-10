@@ -7,13 +7,13 @@ There is a bunch of other cool assets you will get there!
 
 Check how it works in the demo VRChat world: **[Japanese Alley - VRC Light Volumes Test](https://vrchat.com/home/launch?worldId=wrld_af756ca8-30ee-41a4-b304-2207ebf79db9)**
 
+![](/Documentation/Preview_0.png)
+
 ## Use Cases
 - Baked partial avatars and dynamic props lighting
 - Baked seamless lightmaps for small static objects
 - Baked dynamic light sources
 - Any Volumetric light effects
-
-![](/Documentation/Preview_0.png)
 
 ## Main Features
 - Baked per-pixel voxel based lighting
