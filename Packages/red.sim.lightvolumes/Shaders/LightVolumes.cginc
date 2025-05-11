@@ -125,6 +125,22 @@ void LV_SampleVolume(int id, float3 localUVW, out float3 L0, out float3 L1r, out
                 
 }
 
+// Calculates speculars based on SH components
+float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 worldPosition, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+    float3 invLightLength = rsqrt(float3(dot(L1r, L1r), dot(L1g, L1g), dot(L1b, L1b)));
+    float3 worldDir = normalize(_WorldSpaceCameraPos.xyz - worldPosition);
+    float fresnel = 1 - saturate(dot(worldNormal, worldDir));
+    float3 specColor = max(float3(dot(reflect(-L1r * invLightLength.x, worldNormal), worldDir), dot(reflect(-L1g * invLightLength.y, worldNormal), worldDir), dot(reflect(-L1b * invLightLength.z, worldNormal), worldDir)), 0);
+    float smooth2 = smoothness * smoothness;
+    float smoothExp = smooth2 * smooth2 * smoothness;
+    float3 specMask = pow(max(specColor.x, max(specColor.y, specColor.z)), lerp(1, 200, smoothExp));
+    float3 specs = ((1 / (invLightLength * 0.003f)) * specColor + L0) * specMask;
+    float fresnel2 = fresnel * fresnel;
+    float fresnelExp = fresnel2 * fresnel2 * fresnel;
+    float f0 = lerp(0.04f, albedo, metallic);
+    return lerp(specs * 0.003f, specs, smoothExp) * ((1 - f0) * fresnelExp + f0);
+}
+
 // Calculate Light Volume Color based on all SH components provided and the world normal
 float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
     return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));

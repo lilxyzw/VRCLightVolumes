@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: dc867ffc74922af46bf171d92ae67b80, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _SPECULARS_ON
   m_InvalidKeywords:
   - _EMISSION
   m_LightmapFlags: 0
@@ -49,12 +50,14 @@ Material:
     - _Highlight: 0.67
     - _Keyword0: 0
     - _LengthFactor0: 0.001
-    - _Metalness: 0.409
+    - _LightVolumesSpeculars: 0
+    - _Metalness: 0
     - _Middle: 0.74
     - _MonoLerp: 0
     - _NormalPower: 1
     - _Shadow: 0.92
-    - _Smoothness: 0.755
+    - _Smoothness: 0
+    - _Speculars: 1
     - __dirty: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
