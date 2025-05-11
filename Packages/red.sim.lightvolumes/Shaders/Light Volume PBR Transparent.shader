@@ -159,9 +159,9 @@ Shader "Light Volume Samples/Light Volume PBR Transparent"
 			float temp_output_3_0_g219 = Smoothness109;
 			float temp_output_134_0_g219 = ( temp_output_3_0_g219 * temp_output_3_0_g219 );
 			float SqrSmoothness120_g219 = ( ( temp_output_134_0_g219 * temp_output_134_0_g219 ) * temp_output_3_0_g219 );
-			float lerpResult30_g219 = lerp( 1.0 , 256.0 , SqrSmoothness120_g219);
-			float3 temp_output_80_0_g219 = ( ( L098 + ( ( float3( 1,1,1 ) / ( 0.002 * temp_output_102_0_g219 ) ) * temp_output_129_0_g219 ) ) * pow( max( max( break74_g219.x , break74_g219.y ) , break74_g219.z ) , lerpResult30_g219 ) );
-			float3 lerpResult130_g219 = lerp( ( 0.002 * temp_output_80_0_g219 ) , temp_output_80_0_g219 , SqrSmoothness120_g219);
+			float lerpResult30_g219 = lerp( 1.0 , 200.0 , SqrSmoothness120_g219);
+			float3 temp_output_80_0_g219 = ( ( L098 + ( ( float3( 1,1,1 ) / ( 0.003 * temp_output_102_0_g219 ) ) * temp_output_129_0_g219 ) ) * pow( max( max( break74_g219.x , break74_g219.y ) , break74_g219.z ) , lerpResult30_g219 ) );
+			float3 lerpResult130_g219 = lerp( ( 0.003 * temp_output_80_0_g219 ) , temp_output_80_0_g219 , SqrSmoothness120_g219);
 			float3 temp_cast_0 = (0.04).xxx;
 			float3 lerpResult139_g219 = lerp( temp_cast_0 , Albedo337 , Metallic334);
 			float dotResult145_g219 = dot( temp_output_2_0_g219 , normalizeResult13_g219 );
@@ -407,4 +407,4 @@ WireConnection;72;4;110;0
 WireConnection;72;5;358;0
 WireConnection;72;9;362;0
 ASEEND*/
-//CHKSM=9630D4C334FB489BCDB5366A6044E95EC65DF2DF
+//CHKSM=0BE9354AD7F425E02CF8C599DC41DA4E1EE4067C

@@ -127,45 +127,45 @@ Shader "Light Volume Samples/Light Volume PBR"
 			#else
 				float3 staticSwitch77 = ( Albedo337 * temp_output_350_0 * temp_output_80_0 );
 			#endif
-			float3 L1r108_g219 = L1r99;
-			float dotResult99_g219 = dot( L1r108_g219 , L1r108_g219 );
-			float3 L1g109_g219 = L1g100;
-			float dotResult100_g219 = dot( L1g109_g219 , L1g109_g219 );
-			float3 L1b110_g219 = L1b101;
-			float dotResult101_g219 = dot( L1b110_g219 , L1b110_g219 );
-			float3 appendResult93_g219 = (float3(dotResult99_g219 , dotResult100_g219 , dotResult101_g219));
-			float3 temp_output_102_0_g219 = rsqrt( appendResult93_g219 );
-			float3 break118_g219 = temp_output_102_0_g219;
-			float3 temp_output_2_0_g219 = World_Normal112;
-			float3 normalizeResult13_g219 = normalize( ( _WorldSpaceCameraPos - ase_positionWS ) );
-			float dotResult14_g219 = dot( reflect( -( break118_g219.x * L1r108_g219 ) , temp_output_2_0_g219 ) , normalizeResult13_g219 );
-			float dotResult58_g219 = dot( reflect( -( break118_g219.y * L1g109_g219 ) , temp_output_2_0_g219 ) , normalizeResult13_g219 );
-			float dotResult59_g219 = dot( reflect( -( break118_g219.z * L1b110_g219 ) , temp_output_2_0_g219 ) , normalizeResult13_g219 );
-			float3 appendResult71_g219 = (float3(dotResult14_g219 , dotResult58_g219 , dotResult59_g219));
-			float3 temp_output_129_0_g219 = max( float3( 0,0,0 ) , appendResult71_g219 );
-			float3 break74_g219 = temp_output_129_0_g219;
+			float3 L1r108_g220 = L1r99;
+			float dotResult99_g220 = dot( L1r108_g220 , L1r108_g220 );
+			float3 L1g109_g220 = L1g100;
+			float dotResult100_g220 = dot( L1g109_g220 , L1g109_g220 );
+			float3 L1b110_g220 = L1b101;
+			float dotResult101_g220 = dot( L1b110_g220 , L1b110_g220 );
+			float3 appendResult93_g220 = (float3(dotResult99_g220 , dotResult100_g220 , dotResult101_g220));
+			float3 temp_output_102_0_g220 = rsqrt( appendResult93_g220 );
+			float3 break118_g220 = temp_output_102_0_g220;
+			float3 temp_output_2_0_g220 = World_Normal112;
+			float3 normalizeResult13_g220 = normalize( ( _WorldSpaceCameraPos - ase_positionWS ) );
+			float dotResult14_g220 = dot( reflect( -( break118_g220.x * L1r108_g220 ) , temp_output_2_0_g220 ) , normalizeResult13_g220 );
+			float dotResult58_g220 = dot( reflect( -( break118_g220.y * L1g109_g220 ) , temp_output_2_0_g220 ) , normalizeResult13_g220 );
+			float dotResult59_g220 = dot( reflect( -( break118_g220.z * L1b110_g220 ) , temp_output_2_0_g220 ) , normalizeResult13_g220 );
+			float3 appendResult71_g220 = (float3(dotResult14_g220 , dotResult58_g220 , dotResult59_g220));
+			float3 temp_output_129_0_g220 = max( float3( 0,0,0 ) , appendResult71_g220 );
+			float3 break74_g220 = temp_output_129_0_g220;
 			float Smoothness109 = ( tex2DNode50.a * _Smoothness );
-			float temp_output_3_0_g219 = Smoothness109;
-			float temp_output_134_0_g219 = ( temp_output_3_0_g219 * temp_output_3_0_g219 );
-			float SqrSmoothness120_g219 = ( ( temp_output_134_0_g219 * temp_output_134_0_g219 ) * temp_output_3_0_g219 );
-			float lerpResult30_g219 = lerp( 1.0 , 256.0 , SqrSmoothness120_g219);
-			float3 temp_output_80_0_g219 = ( ( L098 + ( ( float3( 1,1,1 ) / ( 0.002 * temp_output_102_0_g219 ) ) * temp_output_129_0_g219 ) ) * pow( max( max( break74_g219.x , break74_g219.y ) , break74_g219.z ) , lerpResult30_g219 ) );
-			float3 lerpResult130_g219 = lerp( ( 0.002 * temp_output_80_0_g219 ) , temp_output_80_0_g219 , SqrSmoothness120_g219);
+			float temp_output_3_0_g220 = Smoothness109;
+			float temp_output_134_0_g220 = ( temp_output_3_0_g220 * temp_output_3_0_g220 );
+			float SqrSmoothness120_g220 = ( ( temp_output_134_0_g220 * temp_output_134_0_g220 ) * temp_output_3_0_g220 );
+			float lerpResult30_g220 = lerp( 1.0 , 200.0 , SqrSmoothness120_g220);
+			float3 temp_output_80_0_g220 = ( ( L098 + ( ( float3( 1,1,1 ) / ( 0.003 * temp_output_102_0_g220 ) ) * temp_output_129_0_g220 ) ) * pow( max( max( break74_g220.x , break74_g220.y ) , break74_g220.z ) , lerpResult30_g220 ) );
+			float3 lerpResult130_g220 = lerp( ( 0.003 * temp_output_80_0_g220 ) , temp_output_80_0_g220 , SqrSmoothness120_g220);
 			float3 temp_cast_0 = (0.04).xxx;
-			float3 lerpResult139_g219 = lerp( temp_cast_0 , Albedo337 , Metallic334);
-			float dotResult145_g219 = dot( temp_output_2_0_g219 , normalizeResult13_g219 );
-			float Fresnel146_g219 = saturate( dotResult145_g219 );
-			float temp_output_148_0_g219 = ( 1.0 - Fresnel146_g219 );
-			float temp_output_149_0_g219 = ( temp_output_148_0_g219 * temp_output_148_0_g219 );
+			float3 lerpResult139_g220 = lerp( temp_cast_0 , Albedo337 , Metallic334);
+			float dotResult145_g220 = dot( temp_output_2_0_g220 , normalizeResult13_g220 );
+			float Fresnel146_g220 = saturate( dotResult145_g220 );
+			float temp_output_148_0_g220 = ( 1.0 - Fresnel146_g220 );
+			float temp_output_149_0_g220 = ( temp_output_148_0_g220 * temp_output_148_0_g220 );
 			#ifdef _KEYWORD0_ON
-				float3 staticSwitch154_g219 = ( lerpResult139_g219 + ( ( 1.0 - lerpResult139_g219 ) * ( ( temp_output_149_0_g219 * temp_output_149_0_g219 ) * temp_output_148_0_g219 ) ) );
+				float3 staticSwitch154_g220 = ( lerpResult139_g220 + ( ( 1.0 - lerpResult139_g220 ) * ( ( temp_output_149_0_g220 * temp_output_149_0_g220 ) * temp_output_148_0_g220 ) ) );
 			#else
-				float3 staticSwitch154_g219 = lerpResult139_g219;
+				float3 staticSwitch154_g220 = lerpResult139_g220;
 			#endif
 			float lerpResult57 = lerp( 1.0 , tex2DNode50.g , _AmbientOcclusion);
 			float AO357 = lerpResult57;
 			#ifdef _SPECULARS_ON
-				float3 staticSwitch361 = ( staticSwitch77 + ( ( lerpResult130_g219 * staticSwitch154_g219 ) * AO357 ) );
+				float3 staticSwitch361 = ( staticSwitch77 + ( ( lerpResult130_g220 * staticSwitch154_g220 ) * AO357 ) );
 			#else
 				float3 staticSwitch361 = staticSwitch77;
 			#endif
@@ -310,7 +310,7 @@ Node;AmplifyShaderEditor.GetLocalVarNode;339;-480,1040;Inherit;False;337;Albedo;
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;16;-32,16;Inherit;False;3;3;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT;0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.SaturateNode;86;128,144;Inherit;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.GetLocalVarNode;359;-144,1440;Inherit;False;357;AO;1;0;OBJECT;;False;1;FLOAT;0
-Node;AmplifyShaderEditor.FunctionNode;356;-208,1168;Inherit;False;LightVolumeSpecular;1;;219;a5ec4a1f240e00f47a5deb132f113431;0;9;138;FLOAT3;1,1,1;False;3;FLOAT;0;False;137;FLOAT;0;False;1;FLOAT3;0,0,0;False;36;FLOAT3;0,0,0;False;37;FLOAT3;0,0,0;False;65;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;9;FLOAT3;0,0,0;False;1;FLOAT3;0
+Node;AmplifyShaderEditor.FunctionNode;362;-208,1168;Inherit;False;LightVolumeSpecular;1;;220;a5ec4a1f240e00f47a5deb132f113431;0;9;138;FLOAT3;1,1,1;False;3;FLOAT;0;False;137;FLOAT;0;False;1;FLOAT3;0,0,0;False;36;FLOAT3;0,0,0;False;37;FLOAT3;0,0,0;False;65;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;9;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;360;80,1296;Inherit;False;2;2;0;FLOAT3;0,0,0;False;1;FLOAT;0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.StaticSwitch;77;304,16;Inherit;False;Property;_AdditiveOnly;Additive Only;10;0;Create;True;0;0;0;False;0;False;0;0;0;True;;Toggle;2;Key0;Key1;Create;True;True;All;9;1;FLOAT3;0,0,0;False;0;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT3;0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT3;0,0,0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.SimpleAddOpNode;124;576,128;Inherit;False;2;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;1;FLOAT3;0
@@ -359,15 +359,15 @@ WireConnection;16;0;338;0
 WireConnection;16;1;350;0
 WireConnection;16;2;80;0
 WireConnection;86;0;82;0
-WireConnection;356;138;339;0
-WireConnection;356;3;111;0
-WireConnection;356;137;340;0
-WireConnection;356;1;108;0
-WireConnection;356;36;122;0
-WireConnection;356;37;123;0
-WireConnection;356;65;115;0
-WireConnection;356;2;114;0
-WireConnection;360;0;356;0
+WireConnection;362;138;339;0
+WireConnection;362;3;111;0
+WireConnection;362;137;340;0
+WireConnection;362;1;108;0
+WireConnection;362;36;122;0
+WireConnection;362;37;123;0
+WireConnection;362;65;115;0
+WireConnection;362;2;114;0
+WireConnection;360;0;362;0
 WireConnection;360;1;359;0
 WireConnection;77;1;16;0
 WireConnection;77;0;86;0
@@ -385,4 +385,4 @@ WireConnection;72;3;335;0
 WireConnection;72;4;110;0
 WireConnection;72;5;358;0
 ASEEND*/
-//CHKSM=D6A4542DB7654709EECA28F53646AC539BD7F24D
+//CHKSM=8055FB5009AE7343574D65CC3C38DEE09075DC27

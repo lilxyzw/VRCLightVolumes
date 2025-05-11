@@ -153,9 +153,9 @@ Shader "Light Volume Samples/Light Volume PBR Cutout"
 			float temp_output_3_0_g219 = Smoothness109;
 			float temp_output_134_0_g219 = ( temp_output_3_0_g219 * temp_output_3_0_g219 );
 			float SqrSmoothness120_g219 = ( ( temp_output_134_0_g219 * temp_output_134_0_g219 ) * temp_output_3_0_g219 );
-			float lerpResult30_g219 = lerp( 1.0 , 256.0 , SqrSmoothness120_g219);
-			float3 temp_output_80_0_g219 = ( ( L098 + ( ( float3( 1,1,1 ) / ( 0.002 * temp_output_102_0_g219 ) ) * temp_output_129_0_g219 ) ) * pow( max( max( break74_g219.x , break74_g219.y ) , break74_g219.z ) , lerpResult30_g219 ) );
-			float3 lerpResult130_g219 = lerp( ( 0.002 * temp_output_80_0_g219 ) , temp_output_80_0_g219 , SqrSmoothness120_g219);
+			float lerpResult30_g219 = lerp( 1.0 , 200.0 , SqrSmoothness120_g219);
+			float3 temp_output_80_0_g219 = ( ( L098 + ( ( float3( 1,1,1 ) / ( 0.003 * temp_output_102_0_g219 ) ) * temp_output_129_0_g219 ) ) * pow( max( max( break74_g219.x , break74_g219.y ) , break74_g219.z ) , lerpResult30_g219 ) );
+			float3 lerpResult130_g219 = lerp( ( 0.003 * temp_output_80_0_g219 ) , temp_output_80_0_g219 , SqrSmoothness120_g219);
 			float3 temp_cast_0 = (0.04).xxx;
 			float3 lerpResult139_g219 = lerp( temp_cast_0 , Albedo337 , Metallic334);
 			float dotResult145_g219 = dot( temp_output_2_0_g219 , normalizeResult13_g219 );
@@ -327,7 +327,7 @@ Node;AmplifyShaderEditor.WireNode;335;416,496;Inherit;False;1;0;FLOAT;0;False;1;
 Node;AmplifyShaderEditor.WireNode;358;416,688;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.StaticSwitch;361;704,16;Inherit;False;Property;_Speculars;Speculars;12;0;Create;True;0;0;0;False;0;False;0;1;1;True;;Toggle;2;Key0;Key1;Create;True;True;All;9;1;FLOAT3;0,0,0;False;0;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT3;0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT3;0,0,0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.WireNode;362;800,-176;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.StandardSurfaceOutputNode;72;1136,-208;Float;False;True;-1;7;AmplifyShaderEditor.MaterialInspector;0;0;Standard;Light Volume Samples/Light Volume PBR Cutout;False;False;False;False;True;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;Off;0;False;;0;False;;False;0;False;;0;False;;False;0;Custom;0.5;True;True;0;False;TransparentCutout;;AlphaTest;ForwardOnly;12;all;True;True;True;True;0;False;;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;2;15;10;25;False;0.5;True;0;0;False;;0;False;;0;0;False;;0;False;;0;False;;0;False;;0;False;0;0,0,0,0;VertexOffset;True;False;Cylindrical;False;True;Relative;0;;0;-1;-1;-1;0;False;0;0;False;;-1;0;False;;0;0;0;False;0.1;False;;0;False;;False;17;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT;0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0;False;9;FLOAT;0;False;10;FLOAT;0;False;13;FLOAT3;0,0,0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;16;FLOAT4;0,0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
+Node;AmplifyShaderEditor.StandardSurfaceOutputNode;72;1136,-208;Float;False;True;-1;7;AmplifyShaderEditor.MaterialInspector;0;0;Standard;Light Volume Samples/Light Volume PBR Cutout;False;False;False;False;True;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;Off;0;False;;0;False;;False;0;False;;0;False;;False;0;Custom;0.5;True;True;0;True;TransparentCutout;;AlphaTest;ForwardOnly;12;all;True;True;True;True;0;False;;False;0;False;;255;False;;255;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;0;False;;False;2;15;10;25;False;0.5;True;0;0;False;;0;False;;0;0;False;;0;False;;0;False;;0;False;;0;False;0;0,0,0,0;VertexOffset;True;False;Cylindrical;False;True;Relative;0;;0;-1;-1;-1;0;False;0;0;False;;-1;0;False;;0;0;0;False;0.1;False;;0;False;;False;17;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT;0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0;False;9;FLOAT;0;False;10;FLOAT;0;False;13;FLOAT3;0,0,0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;16;FLOAT4;0,0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
 WireConnection;5;5;6;0
 WireConnection;364;0;5;0
 WireConnection;363;0;5;0
@@ -399,4 +399,4 @@ WireConnection;72;4;110;0
 WireConnection;72;5;358;0
 WireConnection;72;10;362;0
 ASEEND*/
-//CHKSM=8E02F83657FBF7639F9809F43B132E9B5AC34C54
+//CHKSM=2B3DFE6A3B9E8AC881960578F13B8A7A8A52EF27
