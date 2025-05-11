@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Test
-  m_Shader: {fileID: 4800000, guid: 3e5ff83cff451744c897b2a88e911ef3, type: 3}
+  m_Shader: {fileID: 4800000, guid: dc867ffc74922af46bf171d92ae67b80, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -84,6 +84,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 1
     - _Highlight: 0.67
+    - _Keyword0: 0
     - _Metallic: 0
     - _Metalness: 0
     - _Middle: 0.74
@@ -96,6 +97,7 @@ Material:
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _Speculars: 0
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 0
