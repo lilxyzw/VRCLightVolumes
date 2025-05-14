@@ -25,9 +25,7 @@ namespace VRCLightVolumes {
         private int[] _enabledIDs = new int[256];
         private Vector4[] _invLocalEdgeSmooth = new Vector4[0];
         private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
-        private Vector4[] _boundsUvwMin = new Vector4[0];
-        private Vector4[] _boundsUvwMax = new Vector4[0];
-        private float[] _isRotated = new float[0];
+        private Vector4[] _boundsUvw = new Vector4[0];
         private Vector4[] _relativeRotations = new Vector4[0];
         private Vector4[] _colors = new Vector4[0];
         private int _additiveCount = 0;
@@ -37,10 +35,8 @@ namespace VRCLightVolumes {
             if (_isInitialized) return;
             VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), new Vector4[256]);
             VRCShader.SetGlobalMatrixArray(VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix"), new Matrix4x4[256]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), new Vector4[256]);
-            VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeIsRotated"), new float[256]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMin"), new Vector4[756]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMax"), new Vector4[756]);
+            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), new Vector4[512]);
+            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvw"), new Vector4[1536]);
             VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeColor"), new Vector4[256]);
             _isInitialized = true;
         }
@@ -72,33 +68,32 @@ namespace VRCLightVolumes {
             // Initializing required arrays
             _invLocalEdgeSmooth = new Vector4[_enabledCount];
             _invWorldMatrix = new Matrix4x4[_enabledCount];
-            _isRotated = new float[_enabledCount];
             _colors = new Vector4[_enabledCount];
-            _relativeRotations = new Vector4[_enabledCount];
-            _boundsUvwMin = new Vector4[_enabledCount * 3];
-            _boundsUvwMax = new Vector4[_enabledCount * 3];
+            _relativeRotations = new Vector4[_enabledCount * 2];
+            _boundsUvw = new Vector4[_enabledCount * 6];
 
             // Filling arrays with enabled volumes
             for (int i = 0; i < _enabledCount; i++) {
 
                 int enabledId = _enabledIDs[i];
-                int i3 = i * 3;
-                int i31 = i3 + 1;
-                int i32 = i3 + 2;
+                int i6 = i * 6;
 
                 _invLocalEdgeSmooth[i] = LightVolumeInstances[enabledId].InvLocalEdgeSmoothing;
                 _invWorldMatrix[i] = LightVolumeInstances[enabledId].InvWorldMatrix;
-                _isRotated[i] = LightVolumeInstances[enabledId].IsRotated ? 1 : 0;
-                _relativeRotations[i] = LightVolumeInstances[enabledId].RelativeRotation;
-                _colors[i] = LightVolumeInstances[enabledId].Color;
 
-                _boundsUvwMin[i3] = LightVolumeInstances[enabledId].BoundsUvwMin0;
-                _boundsUvwMin[i31] = LightVolumeInstances[enabledId].BoundsUvwMin1;
-                _boundsUvwMin[i32] = LightVolumeInstances[enabledId].BoundsUvwMin2;
+                Vector4 c = LightVolumeInstances[enabledId].Color;
+                c.w = LightVolumeInstances[enabledId].IsRotated ? 1 : 0; // Color alpha stores if volume rotated or not
+                _colors[i] = c;
 
-                _boundsUvwMax[i3] = LightVolumeInstances[enabledId].BoundsUvwMax0;
-                _boundsUvwMax[i31] = LightVolumeInstances[enabledId].BoundsUvwMax1;
-                _boundsUvwMax[i32] = LightVolumeInstances[enabledId].BoundsUvwMax2;
+                _relativeRotations[i * 2] = LightVolumeInstances[enabledId].RelativeRotationRow0;
+                _relativeRotations[i * 2 + 1] = LightVolumeInstances[enabledId].RelativeRotationRow1;
+
+                _boundsUvw[i6    ] = LightVolumeInstances[enabledId].BoundsUvwMin0;
+                _boundsUvw[i6 + 1] = LightVolumeInstances[enabledId].BoundsUvwMax0;
+                _boundsUvw[i6 + 2] = LightVolumeInstances[enabledId].BoundsUvwMin1;
+                _boundsUvw[i6 + 3] = LightVolumeInstances[enabledId].BoundsUvwMax1;
+                _boundsUvw[i6 + 4] = LightVolumeInstances[enabledId].BoundsUvwMin2;
+                _boundsUvw[i6 + 5] = LightVolumeInstances[enabledId].BoundsUvwMax2;
 
             }
 
@@ -135,8 +130,7 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalMatrixArray(VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix"), _invWorldMatrix);
 
             // All light volumes UVW
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMin"), _boundsUvwMin);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvwMax"), _boundsUvwMax);
+            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvw"), _boundsUvw);
 
             // All light volumes count
             VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeCount"), _enabledCount);
@@ -148,7 +142,6 @@ namespace VRCLightVolumes {
 
             // Volume's relative rotation
             VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), _relativeRotations);
-            VRCShader.SetGlobalFloatArray(VRCShader.PropertyToID("_UdonLightVolumeIsRotated"), _isRotated);
 
             // Volume's color correction
             VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeColor"), _colors);
