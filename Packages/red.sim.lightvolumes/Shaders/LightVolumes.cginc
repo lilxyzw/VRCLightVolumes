@@ -21,19 +21,19 @@ uniform float _UdonLightVolumeSharpBounds;
 uniform sampler3D _UdonLightVolume;
 
 // World to Local (-0.5, 0.5) UVW Matrix
-uniform float4x4 _UdonLightVolumeInvWorldMatrix[64];
+uniform float4x4 _UdonLightVolumeInvWorldMatrix[32];
 
 // L1 SH components rotation (relative to baked rotataion)
-uniform float3 _UdonLightVolumeRotation[128];
+uniform float3 _UdonLightVolumeRotation[64];
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
-uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[128];
+uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[32];
 
 // AABB Bounds of islands on the 3D Texture atlas
-uniform float3 _UdonLightVolumeUvw[384];
+uniform float3 _UdonLightVolumeUvw[192];
 
 // Color multiplier (RGB) | If we actually need to rotate L1 components at all (A)
-uniform float4 _UdonLightVolumeColor[64];
+uniform float4 _UdonLightVolumeColor[32];
 
 // Rotates vector by Matrix 2x3
 float3 LV_MultiplyVectorByMatrix2x3(float3 v, float3 r0, float3 r1) {
