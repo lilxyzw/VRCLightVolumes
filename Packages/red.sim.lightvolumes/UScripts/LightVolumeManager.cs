@@ -52,10 +52,11 @@ namespace VRCLightVolumes {
             // Searching for enabled volumes
             _enabledCount = 0;
             _additiveCount = 0;
-            for (int i = 0; i < LightVolumeInstances.Length; i++) {
+            int maxLength = Mathf.Min(LightVolumeInstances.Length, 32);
+            for (int i = 0; i < maxLength; i++) {
                 if (LightVolumeInstances[i] != null && LightVolumeInstances[i].gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
-                LightVolumeInstances[i].UpdateRotation();
+                    LightVolumeInstances[i].UpdateRotation();
 #else
                     if (LightVolumeInstances[i].IsDynamic) LightVolumeInstances[i].UpdateRotation();
 #endif
