@@ -22,7 +22,7 @@ namespace VRCLightVolumes {
 
         // Actually enabled Volumes
         private int _enabledCount = 0;
-        private int[] _enabledIDs = new int[256];
+        private int[] _enabledIDs = new int[64];
         private Vector4[] _invLocalEdgeSmooth = new Vector4[0];
         private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
         private Vector4[] _boundsUvw = new Vector4[0];
@@ -33,11 +33,11 @@ namespace VRCLightVolumes {
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
             if (_isInitialized) return;
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), new Vector4[256]);
-            VRCShader.SetGlobalMatrixArray(VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix"), new Matrix4x4[256]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), new Vector4[512]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvw"), new Vector4[1536]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeColor"), new Vector4[256]);
+            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), new Vector4[64]);
+            VRCShader.SetGlobalMatrixArray(VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix"), new Matrix4x4[64]);
+            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), new Vector4[128]);
+            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvw"), new Vector4[384]);
+            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeColor"), new Vector4[64]);
             _isInitialized = true;
         }
 
