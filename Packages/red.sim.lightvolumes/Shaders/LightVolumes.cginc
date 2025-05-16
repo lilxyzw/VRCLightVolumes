@@ -177,11 +177,11 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     [loop]
-    for (uint id = 0; id < _UdonLightVolumeCount; id++) {
+    for (uint id = 0; id < (uint) _UdonLightVolumeCount; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
         if (LV_PointLocalAABB(localUVW)) { // Intersection test
-            if (id < _UdonLightVolumeAdditiveCount) { // Sampling additive volumes
-                if (addVolumesCount < _UdonLightVolumeAdditiveMaxOverdraw) {
+            if (id < (uint) _UdonLightVolumeAdditiveCount) { // Sampling additive volumes
+                if (addVolumesCount < (uint) _UdonLightVolumeAdditiveMaxOverdraw) {
                     LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_);
                     L0 += L0_;
                     L1r += L1r_;
@@ -281,7 +281,7 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     [loop]
-    for (uint id = 0; id < _UdonLightVolumeAdditiveCount && addVolumesCount < _UdonLightVolumeAdditiveMaxOverdraw; id++) {
+    for (uint id = 0; id < (uint) _UdonLightVolumeAdditiveCount && addVolumesCount < (uint) _UdonLightVolumeAdditiveMaxOverdraw; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
