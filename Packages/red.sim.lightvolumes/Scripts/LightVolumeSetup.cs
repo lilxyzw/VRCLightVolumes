@@ -57,6 +57,7 @@ namespace VRCLightVolumes {
             var volumes = FindObjectsOfType<LightVolume>(true);
 
             for (int i = 0; i < volumes.Length; i++) {
+                if (volumes[i].CompareTag("EditorOnly")) continue;
                 if (!LightVolumes.Contains(volumes[i])) {
                     LightVolumes.Add(volumes[i]);
                     LightVolumesWeights.Add(0.0f);
@@ -65,7 +66,7 @@ namespace VRCLightVolumes {
 
             // Removing volumes that no more exists
             for (int i = 0; i < LightVolumes.Count; i++) {
-                if (LightVolumes[i] == null) {
+                if (LightVolumes[i] == null || LightVolumes[i].CompareTag("EditorOnly")) {
                     LightVolumes.RemoveAt(i);
                     LightVolumesWeights.RemoveAt(i);
                     i--;
