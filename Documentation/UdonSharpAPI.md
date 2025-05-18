@@ -48,10 +48,12 @@ Stores all the volume configuration including 3D UVs, world transform, color, et
 
 `Matrix4x4 InvWorldMatrix` - Inversed TRS matrix of this volume that transforms it into the 1x1x1 cube. Recalculates via the **UpdateRotation()** method.
 
-`Vector4 RelativeRotation` - Current volume's rotation relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the **UpdateRotation()** method.
+`Vector3 RelativeRotationRow0` - Current volume's rotation matrix row 0 relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method.
+
+`Vector3 RelativeRotationRow1` - Current volume's rotation matrix row 1 relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method.
 
 `bool IsRotated` - True if there is any relative rotation. No relative rotation improves performance. Recalculated via the **UpdateRotation()** method.
 
 `void SetSmoothBlending(float radius)` - Calculates **InvLocalEdgeSmoothing** value. Execute it if you want to control edge smoothing in runtime. You can even control every direction independent if it's needed.
 
-`void UpdateRotation()` - Recalculates **InvWorldMatrix** and **RelativeRotation**. Executes automatically from **LightVolumeManager.UpdateDynamicVolumes()** or while **LightVolumeManager.AutoUpdateVolumes** enabled. Usually don't need to be executed manually.
+`void UpdateRotation()` - Recalculates **InvWorldMatrix**, **RelativeRotationRow0** and **RelativeRotationRow1**. Executes automatically from **LightVolumeManager.UpdateDynamicVolumes()** or while **LightVolumeManager.AutoUpdateVolumes** enabled. Usually don't need to be executed manually.
