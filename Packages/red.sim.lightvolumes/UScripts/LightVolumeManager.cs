@@ -54,7 +54,10 @@ namespace VRCLightVolumes {
 
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
+
+#if !UNITY_EDITOR
             if (_isInitialized) return;
+#endif
 
             lightVolumeInvLocalEdgeSmoothID = VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth");
             lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
@@ -68,6 +71,10 @@ namespace VRCLightVolumes {
             lightVolumeProbesBlendID = VRCShader.PropertyToID("_UdonLightVolumeProbesBlend");
             lightVolumeSharpBoundsID = VRCShader.PropertyToID("_UdonLightVolumeSharpBounds");
             lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
+
+#if UNITY_EDITOR
+            if (_isInitialized) return;
+#endif
 
             VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, new Vector4[32]);
             VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, new Matrix4x4[32]);
@@ -137,16 +144,13 @@ namespace VRCLightVolumes {
         }
 
         private void Start() {
-            TryInitialize();
+            _isInitialized = false;
             UpdateVolumes();
         }
 
         public void UpdateVolumes() {
 
-#if UNITY_EDITOR
-            // Only need to check initialization here in editor
             TryInitialize();
-#endif
 
             UpdateDynamicVolumes(); // Update dynamic volumes
 
