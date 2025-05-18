@@ -138,15 +138,11 @@ float3 LV_Normalize(float3 v) {
 // Calculates speculars for light volumes or any SH L1 data
 float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
     
-    float3 nL1r = LV_Normalize(L1r);
-    float3 nL1g = LV_Normalize(L1g);
-    float3 nL1b = LV_Normalize(L1b);
+    float3 specColor = max(float3(dot(reflect(-L1r, worldNormal), viewDir), dot(reflect(-L1g, worldNormal), viewDir), dot(reflect(-L1b, worldNormal), viewDir)), 0);
     
-    float3 specColor = max(float3(dot(reflect(-nL1r, worldNormal), viewDir), dot(reflect(-nL1g, worldNormal), viewDir), dot(reflect(-nL1b, worldNormal), viewDir)), 0);
-    
-    float3 rDir = LV_Normalize(nL1r + viewDir);
-    float3 gDir = LV_Normalize(nL1g + viewDir);
-    float3 bDir = LV_Normalize(nL1b + viewDir);
+    float3 rDir = LV_Normalize(LV_Normalize(L1r) + viewDir);
+    float3 gDir = LV_Normalize(LV_Normalize(L1g) + viewDir);
+    float3 bDir = LV_Normalize(LV_Normalize(L1b) + viewDir);
     
     float rNh = saturate(dot(worldNormal, rDir));
     float gNh = saturate(dot(worldNormal, gDir));
@@ -159,7 +155,7 @@ float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, floa
     float gSpec = LV_DistributionGGX(gNh, roughExp);
     float bSpec = LV_DistributionGGX(bNh, roughExp);
     
-    return max((rSpec + gSpec + bSpec) * (specColor + L0) * lerp(0.04f, albedo, metallic), 0.0) / 6;
+    return max((rSpec + gSpec + bSpec) * (specColor + L0) * lerp(0.04f, albedo, metallic), 0.0) / 3;
     
 }
 
