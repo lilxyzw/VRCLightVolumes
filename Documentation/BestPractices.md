@@ -55,3 +55,7 @@ Bake additive volumes separately from your main scene so they include only their
 ## Fixing Bakery Light Probes
 
 Bakery optimizes L1 probes for "Geometrics SH Evaluation", which can cause overexposure and underexposure issues. Enable **Fix Light Probes L1** in Light Volume Setup to correct the probes after each bake. This may reduce overall contrast slightly but prevents over or underexposure.
+
+## Color Correcting Volumes 
+
+Color correction is a feature that changes light balance of a baked volume. It can NOT be changed in runtime and only applies when you press "Pack Light Volumes" in Light Volume Setup component, or rebake the scene. Very useful when you bake additive lights in your scene and some undesirable dim light bakes into the volume. "Exposure" makes everything brighter or darker. "Dark Lights" and "Bright Lights" shifts the darkest or brightest volume values to cut out the undesirable light.
