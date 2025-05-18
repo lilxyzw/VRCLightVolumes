@@ -1,6 +1,35 @@
 [VRC Light Volumes](/README.md) | [How to Use](/Documentation/HowToUse.md) | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | **For Shader Developers** | [Compatible Shaders](/Documentation/CompatibleShaders.md)
 # For shader developers
-If you are a shader developer, it should be easy to integrate Light Volumes support into your shader. First of all, you need to include the "LightVolumes.cginc" file provided with this asset, into your shader:  `#include "LightVolumes.cginc"`. 
+
+If you are a shader developer, it should be easy to integrate Light Volumes support into your shader.
+
+Both shader code way with a .cginc file and Amplify Shader Editor way with special nodes are available!
+
+## Integrating Light Volumes with Amplify Shader Editor (ASE)
+
+There are few ASE nodes available for you for an easy integration. Look into `Packages/VRC Light Volumes/Shaders/ASE Shaders` folder to check the integration examples.
+
+### LightVolume
+
+Required to get the Spherical Harmonics components. Using the output values you get from it, you can calculate the speculars for your custom lighting setup.
+
+`AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. 
+
+### LightVolumeEvaluate
+
+Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
+
+You should usually multiply it by your "Albedo" and add to the final color, as an emission.
+
+### LightVolumeSpecular
+
+Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You sould NOT multiply this by albedo color!
+
+`Dominant Direction` flag specifies if you want to use a simplier and lighter way of generating speculars. Generates one color specular for the dominant light direction instead of three color speculars in a regular method.
+
+## Light Volume integration through shader code
+
+First of all, you need to include the "LightVolumes.cginc" file provided with this asset, into your shader:  `#include "LightVolumes.cginc"`. 
 Also be sure that you included the "UnityCG.cginc" file **BEFORE** to support the fallback to unity's light probes:  `#include "UnityCG.cginc"`
 
 There are only a few functions that are really required for the integration: 
