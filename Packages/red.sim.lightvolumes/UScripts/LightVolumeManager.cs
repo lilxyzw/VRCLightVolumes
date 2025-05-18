@@ -1,10 +1,19 @@
-﻿using UdonSharp;
-using UnityEngine;
+﻿using UnityEngine;
+#if UDONSHARP
 using VRC.SDKBase;
+using UdonSharp;
+#else
+using VRCShader = UnityEngine.Shader;
+#endif
 
 namespace VRCLightVolumes {
+#if UDONSHARP
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
-    public class LightVolumeManager : UdonSharpBehaviour {
+    public class LightVolumeManager : UdonSharpBehaviour
+#else
+    public class LightVolumeManager : MonoBehaviour
+#endif
+    {
 
         [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
         public Texture3D LightVolumeAtlas;
@@ -30,14 +39,41 @@ namespace VRCLightVolumes {
         private Vector4[] _colors = new Vector4[0];
         private int _additiveCount = 0;
 
+        private int lightVolumeInvLocalEdgeSmoothID;
+        private int lightVolumeInvWorldMatrixID;
+        private int lightVolumeUvwID;
+        private int lightVolumeColorID;
+        private int lightVolumeRotationID;
+        private int lightVolumeCountID;
+        private int lightVolumeAdditiveCountID;
+        private int lightVolumeAdditiveMaxOverdrawID;
+        private int lightVolumeEnabledID;
+        private int lightVolumeProbesBlendID;
+        private int lightVolumeSharpBoundsID;
+        private int lightVolumeID;
+
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
             if (_isInitialized) return;
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), new Vector4[32]);
-            VRCShader.SetGlobalMatrixArray(VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix"), new Matrix4x4[32]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), new Vector4[64]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvw"), new Vector4[192]);
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeColor"), new Vector4[32]);
+
+            lightVolumeInvLocalEdgeSmoothID = VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth");
+            lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
+            lightVolumeUvwID = VRCShader.PropertyToID("_UdonLightVolumeUvw");
+            lightVolumeColorID = VRCShader.PropertyToID("_UdonLightVolumeColor");
+            lightVolumeRotationID = VRCShader.PropertyToID("_UdonLightVolumeRotation");
+            lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
+            lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
+            lightVolumeAdditiveMaxOverdrawID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw");
+            lightVolumeEnabledID = VRCShader.PropertyToID("_UdonLightVolumeEnabled");
+            lightVolumeProbesBlendID = VRCShader.PropertyToID("_UdonLightVolumeProbesBlend");
+            lightVolumeSharpBoundsID = VRCShader.PropertyToID("_UdonLightVolumeSharpBounds");
+            lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
+
+            VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, new Vector4[32]);
+            VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, new Matrix4x4[32]);
+            VRCShader.SetGlobalVectorArray(lightVolumeUvwID, new Vector4[64]);
+            VRCShader.SetGlobalVectorArray(lightVolumeColorID, new Vector4[192]);
+            VRCShader.SetGlobalVectorArray(lightVolumeRotationID, new Vector4[32]);
             _isInitialized = true;
         }
 
@@ -108,44 +144,44 @@ namespace VRCLightVolumes {
         public void UpdateVolumes() {
 
 #if UNITY_EDITOR
-        // Only need to check initialization here in editor
-        TryInitialize();
+            // Only need to check initialization here in editor
+            TryInitialize();
 #endif
 
             UpdateDynamicVolumes(); // Update dynamic volumes
 
             if (LightVolumeAtlas == null || _enabledCount == 0) {
-                VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 0);
+                VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
                 return;
             }
 
             // 3D texture and it's parameters
-            VRCShader.SetGlobalTexture(VRCShader.PropertyToID("_UdonLightVolume"), LightVolumeAtlas);
+            VRCShader.SetGlobalTexture(lightVolumeID, LightVolumeAtlas);
 
             // Defines if Light Probes Blending enabled in scene
-            VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeProbesBlend"), LightProbesBlending ? 1 : 0);
-            VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeSharpBounds"), SharpBounds ? 1 : 0);
+            VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
+            VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
 
             // All light volumes Extra Data
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth"), _invLocalEdgeSmooth);
-            VRCShader.SetGlobalMatrixArray(VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix"), _invWorldMatrix);
+            VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
+            VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix);
 
             // All light volumes UVW
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeUvw"), _boundsUvw);
+            VRCShader.SetGlobalVectorArray(lightVolumeUvwID, _boundsUvw);
 
             // All light volumes count
-            VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeCount"), _enabledCount);
-            VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount"), _additiveCount);
-            VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw"), Mathf.Min(Mathf.Max(AdditiveMaxOverdraw, 0), _additiveCount));
+            VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
+            VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
+            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, Mathf.Min(Mathf.Max(AdditiveMaxOverdraw, 0), _additiveCount));
 
             // Defines if Light Volumes enabled in scene
-            VRCShader.SetGlobalFloat(VRCShader.PropertyToID("_UdonLightVolumeEnabled"), 1);
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 1);
 
             // Volume's relative rotation
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeRotation"), _relativeRotations);
+            VRCShader.SetGlobalVectorArray(lightVolumeRotationID, _relativeRotations);
 
             // Volume's color correction
-            VRCShader.SetGlobalVectorArray(VRCShader.PropertyToID("_UdonLightVolumeColor"), _colors);
+            VRCShader.SetGlobalVectorArray(lightVolumeColorID, _colors);
 
         }
     }

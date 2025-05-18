@@ -1,12 +1,16 @@
-﻿
+﻿using UnityEngine;
+#if UDONSHARP
 using UdonSharp;
-using UnityEngine;
-using VRC.SDKBase;
-using VRC.Udon;
+#endif
 
 namespace VRCLightVolumes {
+#if UDONSHARP
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
-    public class LightVolumeInstance : UdonSharpBehaviour {
+    public class LightVolumeInstance : UdonSharpBehaviour
+#else
+    public class LightVolumeInstance : MonoBehaviour
+#endif
+    {
 
         [Tooltip("Changing the color is useful for animating Additive volumes. You can even control the R, G, B channels separately this way.")]
         [ColorUsage(showAlpha: false, hdr: true)]
