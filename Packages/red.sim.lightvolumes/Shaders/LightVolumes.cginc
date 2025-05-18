@@ -155,13 +155,20 @@ float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, floa
     float gSpec = LV_DistributionGGX(gNh, roughExp);
     float bSpec = LV_DistributionGGX(bNh, roughExp);
     
-    return max((rSpec + gSpec + bSpec) * (specColor + L0) * lerp(0.04f, albedo, metallic), 0.0) / 3;
+    float3 f0 = lerp(0.04f, albedo, metallic);
+    float specs = (rSpec + gSpec + bSpec) * f0;
+    float3 coloredSpecs = specs * specColor;
+    
+    float3 a = coloredSpecs + specs * L0;
+    float3 b = coloredSpecs * 4;
+    
+    return max(lerp(a, b, smoothness), 0.0);
     
 }
 
 // Calculates speculars for light volumes or any SH L1 data, but simplified, with only one dominant direction
 float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
-
+    
     float3 dominantDir = L1r + L1g + L1b;
     float3 dir = LV_Normalize(LV_Normalize(dominantDir) + viewDir);
     float nh = saturate(dot(worldNormal, dir));
@@ -171,7 +178,7 @@ float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metall
     
     float spec = LV_DistributionGGX(nh, roughExp);
     
-    return max(spec * L0 * lerp(0.04f, albedo, metallic), 0.0);
+    return max(spec * L0 * lerp(0.04f, albedo, metallic), 0.0) * 2;
     
 }
 
