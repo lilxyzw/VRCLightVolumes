@@ -5,8 +5,6 @@ VRC Light Volumes is a nextgen voxel based light probes replacement for VRChat.
 This is a free open-source asset, so if you like it, I would be very happy if you **[Support me on Patreon](https://www.patreon.com/red_sim/ "Support me on Patreon")**.
 There is a bunch of other cool assets you will get there!
 
-Check how it works in the demo VRChat world: **[Japanese Alley - VRC Light Volumes Test](https://vrchat.com/home/launch?worldId=wrld_af756ca8-30ee-41a4-b304-2207ebf79db9)**
-
 ![](/Documentation/Preview_0.png)
 
 ## Use Cases
@@ -23,8 +21,14 @@ Check how it works in the demo VRChat world: **[Japanese Alley - VRC Light Volum
 - Can create cheap dynamic light sources that can be moved in runtime
 - Works with dynamic batching, which potentially increases performance
 - Works with Bakery or the default Unity Lightmapper
+- Works with AudioLink and TV screens
 - Very easy and fast to setup
 - It just looks beautiful!
+
+## VRChat Worlds to test it
+- **[Japanese Alley - VRC Light Volumes Test](https://vrchat.com/home/launch?worldId=wrld_af756ca8-30ee-41a4-b304-2207ebf79db9)**
+- **[Light Volumes x AudioLink Test](https://vrchat.com/home/launch?worldId=wrld_ba751467-ca25-4734-91b3-7e503fc171f3)**
+- **[2000s Classroom](https://vrchat.com/home/launch?worldId=wrld_f6445b27-037d-4926-b51f-d79ada716b31)**
 
 ## Attribution
 
