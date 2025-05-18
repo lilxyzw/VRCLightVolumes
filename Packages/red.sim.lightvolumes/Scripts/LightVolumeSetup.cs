@@ -201,23 +201,8 @@ namespace VRCLightVolumes {
 
         SetupDependencies();
 
-        Texture3D[] textures = new Texture3D[LightVolumes.Count * 3];
-
-        for (int i = 0; i < LightVolumes.Count; i++) {
-            if (LightVolumes[i] == null) {
-                Debug.LogError("[LightVolumeSetup] One of the light volumes is not setuped!");
-                return;
-            }
-            if (LightVolumes[i].Texture0 == null || LightVolumes[i].Texture1 == null || LightVolumes[i].Texture2 == null) {
-                Debug.LogError($"[LightVolumeSetup] Light volume \"{LightVolumes[i].gameObject.name}\" is not baked!");
-                return;
-            }
-            textures[i * 3] = LightVolumes[i].Texture0;
-            textures[i * 3 + 1] = LightVolumes[i].Texture1;
-            textures[i * 3 + 2] = LightVolumes[i].Texture2;
-        }
-
-        var atlas = Texture3DAtlasGenerator.CreateAtlas(textures);
+        var atlas = Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray());
+        if(atlas.Texture == null) return; // Return if atlas packing failed
 
         LightVolumeManager.LightVolumeAtlas = atlas.Texture;
 

@@ -254,6 +254,9 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 9362021c2b6d8a7489b503b0801ee6e8, type: 2}
   Texture1: {fileID: 11700000, guid: 8f2c2d9218419c448ab914ed0d46b5e6, type: 2}
   Texture2: {fileID: 11700000, guid: a054541971b7d024a84e1fb54303dbe0, type: 2}
+  Exposure: 0
+  DarkLights: 0
+  BrightLights: 0
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
@@ -393,6 +396,9 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: e0d1a890cdcacc74a803af9af15eb1fa, type: 2}
   Texture1: {fileID: 11700000, guid: c8e9f55f38631684aa07d85d53b327e1, type: 2}
   Texture2: {fileID: 11700000, guid: 724541a7c9832b6408e3d0af1b6da74f, type: 2}
+  Exposure: 0
+  DarkLights: 0
+  BrightLights: 0
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
@@ -716,7 +722,7 @@ Transform:
   m_GameObject: {fileID: 377396392}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.427, y: 1.74, z: -17.971}
+  m_LocalPosition: {x: 0, y: 2, z: -18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -853,6 +859,9 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: aab4b344ac5f2304eb45282ce2ff9bc7, type: 2}
   Texture1: {fileID: 11700000, guid: 7a36d6bfc4ba82a40bcf450f01104187, type: 2}
   Texture2: {fileID: 11700000, guid: ce06686ebd941ce4ab80c1384bf4990b, type: 2}
+  Exposure: 0
+  DarkLights: 0
+  BrightLights: 1
   Bake: 0
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
@@ -900,9 +909,6 @@ MonoBehaviour:
   - {fileID: 1964208428}
   - {fileID: 1665989578}
   - {fileID: 380379184}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   LightVolumesWeights:
   - 0
   - 1
@@ -911,9 +917,6 @@ MonoBehaviour:
   - 4
   - 5
   - 6
-  - 0
-  - 0
-  - 0
   BakingMode: 0
   Denoise: 1
   FixLightProbesL1: 1
@@ -2086,6 +2089,9 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 0cffea17025326545a4fef565a1f88cc, type: 2}
   Texture1: {fileID: 11700000, guid: 91456440068e3d142b27df2789f9f97f, type: 2}
   Texture2: {fileID: 11700000, guid: cb44f74aefdbcdf4d9d467e263a19fc7, type: 2}
+  Exposure: 0
+  DarkLights: 0
+  BrightLights: 0
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
@@ -2285,7 +2291,7 @@ MonoBehaviour:
   renderSettingsHackEmissiveBoost: 1
   renderSettingsHackIndirectBoost: 1
   renderSettingsTempPath: 
-  renderSettingsOutPath: 
+  renderSettingsOutPath: BakeryLightmaps
   renderSettingsUseScenePath: 0
   renderSettingsHackAOIntensity: 0
   renderSettingsHackAOSamples: 16
@@ -2543,6 +2549,9 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 7620cdf11c125ff44b0ef611b08d3cd7, type: 2}
   Texture1: {fileID: 11700000, guid: 22feedcb846fc664c9aa274666c80415, type: 2}
   Texture2: {fileID: 11700000, guid: 652d59c5fcc16224db5a55dc08940b28, type: 2}
+  Exposure: 0
+  DarkLights: 0
+  BrightLights: 0
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 6
@@ -2682,6 +2691,9 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 43b1fbaade8683c4babe0fb365e63154, type: 2}
   Texture1: {fileID: 11700000, guid: a8e485ed1a1c26e498e81d8eed9bd284, type: 2}
   Texture2: {fileID: 11700000, guid: a369d260abab805488711f74e787611a, type: 2}
+  Exposure: 0
+  DarkLights: 0
+  BrightLights: 0
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
@@ -2870,6 +2882,9 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 25a662b7f769a5b40b06f1627f4750ad, type: 2}
   Texture1: {fileID: 11700000, guid: b0d8f472267fa9c4f8f027b9048cbdad, type: 2}
   Texture2: {fileID: 11700000, guid: a6aba71524997f34780ed4d5920ee525, type: 2}
+  Exposure: 0
+  DarkLights: 0
+  BrightLights: 0
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10

@@ -30,6 +30,13 @@ namespace VRCLightVolumes {
         [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
         public Texture3D Texture2;
 
+        [Header("Color Correction")]
+        [Tooltip("Makes volume brighter or darker.\nUpdates volume color after atlas packing only!")]
+        public float Exposure = 0;
+        [Tooltip("Makes dark volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
+        [Range(-1, 1)] public float DarkLights = 0;
+        [Tooltip("Makes bright volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
+        [Range(-1, 1)]public float BrightLights = 0;
 
         [Header("Baking Setup")]
         [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
@@ -293,7 +300,7 @@ namespace VRCLightVolumes {
             BakeryVolume.resolutionY = Resolution.y;
             BakeryVolume.resolutionZ = Resolution.z;
             BakeryVolume.encoding = BakeryVolume.Encoding.Half4;
-
+                
             // Even some latest Bakery versions does not support Rotate Around Y
             var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
             if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);

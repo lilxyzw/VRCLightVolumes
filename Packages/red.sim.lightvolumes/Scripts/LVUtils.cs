@@ -62,6 +62,16 @@ namespace VRCLightVolumes {
             }
         }
 
+        // Remaps value
+        public static float Remap(float value, float MinOld, float MaxOld, float MinNew, float MaxNew) {
+            return MinNew + (value - MinOld) * (MaxNew - MinNew) / (MaxOld - MinOld);
+        }
+
+        // Remaps value to 01 range
+        public static float RemapTo01(float value, float MinOld, float MaxOld) {
+            return (value - MinOld) / (MaxOld - MinOld);
+        }
+
         // Saves 3D Texture to Assets
         public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
 #if UNITY_EDITOR

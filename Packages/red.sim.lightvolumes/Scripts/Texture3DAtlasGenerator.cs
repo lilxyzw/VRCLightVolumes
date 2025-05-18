@@ -10,13 +10,33 @@ namespace VRCLightVolumes {
     }
 
     public static class Texture3DAtlasGenerator {
-        public static Atlas3D CreateAtlas(Texture3D[] textures) {
+        public static Atlas3D CreateAtlas(LightVolume[] volumes) {
+
+            // Stacking textures into array
+            Texture3D[] textures = new Texture3D[volumes.Length * 3];
+            for (int i = 0; i < volumes.Length; i++) {
+                if (volumes[i] == null) {
+                    Debug.LogError("[LightVolumeSetup] One of the light volumes is not setuped!");
+                    return new Atlas3D();
+                }
+                if (volumes[i].Texture0 == null || volumes[i].Texture1 == null || volumes[i].Texture2 == null) {
+                    Debug.LogError($"[LightVolumeSetup] Light volume \"{volumes[i].gameObject.name}\" is not baked!");
+                    return new Atlas3D();
+                }
+                textures[i * 3] = volumes[i].Texture0;
+                textures[i * 3 + 1] = volumes[i].Texture1;
+                textures[i * 3 + 2] = volumes[i].Texture2;
+            }
 
             // Linearizing SH
             Texture3D[] texs = new Texture3D[textures.Length];
             for (int i = 0; i < textures.Length / 3; ++i) {
                 Texture3D[] bundle = { textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2] };
-                bundle = LinearizeSphericalHarmonics(bundle);
+
+                float dark = - volumes[i].DarkLights * 0.5f;
+                float bright = 1 - volumes[i].BrightLights * 0.5f;
+
+                bundle = PostProcessSphericalHarmonics(bundle, dark, bright, volumes[i].Exposure);
                 texs[i * 3] = bundle[0];
                 texs[i * 3 + 1] = bundle[1];
                 texs[i * 3 + 2] = bundle[2];
@@ -179,7 +199,11 @@ namespace VRCLightVolumes {
             return new Atlas3D { Texture = atlasTexture, BoundsUvwMin = boundsMin, BoundsUvwMax = boundsMax };
         }
 
-        private static Texture3D[] LinearizeSphericalHarmonics(Texture3D[] texs) {
+        private static Vector3 CorrectVector(Vector3 v, float dark, float bright, float expo) {
+            return v.normalized * Mathf.Max(LVUtils.RemapTo01(v.magnitude, dark, bright) * Mathf.Pow(2, expo), 0);
+        }
+
+        private static Texture3D[] PostProcessSphericalHarmonics(Texture3D[] texs, float dark = 0, float bright = 1, float expo = 0) {
 
             int x = texs[0].width;
             int y = texs[0].height;
@@ -213,6 +237,11 @@ namespace VRCLightVolumes {
                         L1r = LVUtils.LinearizeSingleSH(L0.x, L1r);
                         L1g = LVUtils.LinearizeSingleSH(L0.y, L1g);
                         L1b = LVUtils.LinearizeSingleSH(L0.z, L1b);
+
+                        L1r = CorrectVector(L1r, dark, bright, expo);
+                        L1g = CorrectVector(L1g, dark, bright, expo);
+                        L1b = CorrectVector(L1b, dark, bright, expo);
+                        L0 = CorrectVector(L0, dark, bright, expo);
 
                         colors0[index] = new Color(L0.x, L0.y, L0.z, L1r.z);
                         colors1[index] = new Color(L1r.x, L1g.x, L1b.x, L1g.z);
