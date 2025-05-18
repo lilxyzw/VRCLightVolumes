@@ -71,9 +71,9 @@ namespace VRCLightVolumes {
 
             VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, new Vector4[32]);
             VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, new Matrix4x4[32]);
-            VRCShader.SetGlobalVectorArray(lightVolumeUvwID, new Vector4[64]);
-            VRCShader.SetGlobalVectorArray(lightVolumeColorID, new Vector4[192]);
-            VRCShader.SetGlobalVectorArray(lightVolumeRotationID, new Vector4[32]);
+            VRCShader.SetGlobalVectorArray(lightVolumeRotationID, new Vector4[64]);
+            VRCShader.SetGlobalVectorArray(lightVolumeUvwID, new Vector4[192]);
+            VRCShader.SetGlobalVectorArray(lightVolumeColorID, new Vector4[32]);
             _isInitialized = true;
         }
 
