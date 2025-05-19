@@ -1,3 +1,5 @@
+#ifndef LIGHT_VOLUMES_INCLUDED
+#define LIGHT_VOLUMES_INCLUDED
 
 // Are Light Volumes enabled on scene?
 uniform float _UdonLightVolumeEnabled;
@@ -338,3 +340,5 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     }
 
 }
+
+#endif
