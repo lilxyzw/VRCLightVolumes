@@ -1,6 +1,6 @@
 **VRC Light Volumes** | [How to Use](/Documentation/HowToUse.md) | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | [Compatible Shaders](/Documentation/CompatibleShaders.md)
 
-![](/Documentation/LogoMain.png)
+<p align="center"> <img src="/Documentation/LogoMain.png" alt="My Logo" width="627" /></p>
 
 VRC Light Volumes is a nextgen voxel based light probes replacement for VRChat.
 
