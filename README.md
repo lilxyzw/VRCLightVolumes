@@ -1,5 +1,7 @@
 **VRC Light Volumes** | [How to Use](/Documentation/HowToUse.md) | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | [Compatible Shaders](/Documentation/CompatibleShaders.md)
-# VRC Light Volumes
+
+![](/Documentation/LogoMain.png)
+
 VRC Light Volumes is a nextgen voxel based light probes replacement for VRChat.
 
 This is a free open-source asset, so if you like it, I would be very happy if you **[Support me on Patreon](https://www.patreon.com/red_sim/ "Support me on Patreon")**.
