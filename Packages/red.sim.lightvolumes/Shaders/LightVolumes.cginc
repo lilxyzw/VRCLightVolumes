@@ -156,7 +156,7 @@ float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, floa
     float bSpec = LV_DistributionGGX(bNh, roughExp);
     
     float3 f0 = lerp(0.04f, albedo, metallic);
-    float specs = (rSpec + gSpec + bSpec) * f0;
+    float3 specs = (rSpec + gSpec + bSpec) * f0;
     float3 coloredSpecs = specs * specColor;
     
     float3 a = coloredSpecs + specs * L0;
