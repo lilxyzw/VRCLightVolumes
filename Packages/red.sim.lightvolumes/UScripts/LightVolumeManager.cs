@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System;
+
 #if UDONSHARP
 using VRC.SDKBase;
 using UdonSharp;

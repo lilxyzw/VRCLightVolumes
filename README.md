@@ -50,7 +50,7 @@ This world supports VRC Light Volumes. Use avatar shaders with VRC Light Volumes
 VRC Light Volumes by RED_SIM — GitHub: https://github.com/REDSIM/VRCLightVolumes/
 ```
 
-You're not required to include this prefabo or a message — it's entirely optional. But if you do, it helps spread the word and supports the growth of this asset in the VRChat community.
+You're not required to include this prefab or a message — it's entirely optional. But if you do, it helps spread the word and supports the growth of this asset in the VRChat community.
 
 ## Installation through VRChat Creator Companion
 1. Go to my VPM Listing web page: https://redsim.github.io/vpmlisting/
