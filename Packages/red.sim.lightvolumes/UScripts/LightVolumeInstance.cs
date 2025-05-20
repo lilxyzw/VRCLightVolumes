@@ -61,8 +61,12 @@ namespace VRCLightVolumes {
 
             Matrix4x4 m = Matrix4x4.Rotate(rot);
 
-            RelativeRotationRow0 = new Vector4(m.m00, m.m01, m.m02, 0f);
-            RelativeRotationRow1 = new Vector4(m.m10, m.m11, m.m12, 0f);
+            Vector4 row0 = m.GetRow(0);
+            row0.w = 0;
+            RelativeRotationRow0 = row0;
+            Vector4 row1 = m.GetRow(1);
+            row1.w = 0;
+            RelativeRotationRow1 = row1;
 
         }
 
