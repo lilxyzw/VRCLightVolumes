@@ -97,13 +97,14 @@ namespace VRCLightVolumes {
             _additiveCount = 0;
             int maxLength = Mathf.Min(LightVolumeInstances.Length, 32);
             for (int i = 0; i < maxLength; i++) {
-                if (LightVolumeInstances[i] != null && LightVolumeInstances[i].gameObject.activeInHierarchy) {
+                LightVolumeInstance instance = LightVolumeInstances[i];
+                if (instance != null && instance.gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
-                    LightVolumeInstances[i].UpdateRotation();
+                    instance.UpdateRotation();
 #else
-                    if (LightVolumeInstances[i].IsDynamic) LightVolumeInstances[i].UpdateRotation();
+                    if (instance.IsDynamic) instance.UpdateRotation();
 #endif
-                    if (LightVolumeInstances[i].IsAdditive) _additiveCount++;
+                    if (instance.IsAdditive) _additiveCount++;
                     _enabledIDs[_enabledCount] = i;
                     _enabledCount++;
                 }
@@ -120,24 +121,27 @@ namespace VRCLightVolumes {
             for (int i = 0; i < _enabledCount; i++) {
 
                 int enabledId = _enabledIDs[i];
+                int i2 = i * 2;
                 int i6 = i * 6;
 
-                _invLocalEdgeSmooth[i] = LightVolumeInstances[enabledId].InvLocalEdgeSmoothing;
-                _invWorldMatrix[i] = LightVolumeInstances[enabledId].InvWorldMatrix;
+                LightVolumeInstance instance = LightVolumeInstances[enabledId];
 
-                Vector4 c = LightVolumeInstances[enabledId].Color;
-                c.w = LightVolumeInstances[enabledId].IsRotated ? 1 : 0; // Color alpha stores if volume rotated or not
+                _invLocalEdgeSmooth[i] = instance.InvLocalEdgeSmoothing;
+                _invWorldMatrix[i] = instance.InvWorldMatrix;
+
+                Vector4 c = instance.Color;
+                c.w = instance.IsRotated ? 1 : 0; // Color alpha stores if volume rotated or not
                 _colors[i] = c;
 
-                _relativeRotations[i * 2] = LightVolumeInstances[enabledId].RelativeRotationRow0;
-                _relativeRotations[i * 2 + 1] = LightVolumeInstances[enabledId].RelativeRotationRow1;
+                _relativeRotations[i2] = instance.RelativeRotationRow0;
+                _relativeRotations[i2 + 1] = instance.RelativeRotationRow1;
 
-                _boundsUvw[i6    ] = LightVolumeInstances[enabledId].BoundsUvwMin0;
-                _boundsUvw[i6 + 1] = LightVolumeInstances[enabledId].BoundsUvwMax0;
-                _boundsUvw[i6 + 2] = LightVolumeInstances[enabledId].BoundsUvwMin1;
-                _boundsUvw[i6 + 3] = LightVolumeInstances[enabledId].BoundsUvwMax1;
-                _boundsUvw[i6 + 4] = LightVolumeInstances[enabledId].BoundsUvwMin2;
-                _boundsUvw[i6 + 5] = LightVolumeInstances[enabledId].BoundsUvwMax2;
+                _boundsUvw[i6    ] = instance.BoundsUvwMin0;
+                _boundsUvw[i6 + 1] = instance.BoundsUvwMax0;
+                _boundsUvw[i6 + 2] = instance.BoundsUvwMin1;
+                _boundsUvw[i6 + 3] = instance.BoundsUvwMax1;
+                _boundsUvw[i6 + 4] = instance.BoundsUvwMin2;
+                _boundsUvw[i6 + 5] = instance.BoundsUvwMax2;
 
             }
 
