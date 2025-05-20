@@ -16,7 +16,7 @@ namespace VRCLightVolumes {
         public bool Dynamic;
         [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
         public bool Additive;
-        [Tooltip("Multiplies the volume’s color by this value.")]
+        [Tooltip("Multiplies the volumeâ€™s color by this value.")]
         [ColorUsage(showAlpha: false, hdr: true)]
         public Color Color = Color.white;
         [Tooltip("Size in meters of this Light Volume's overlapping regions for smooth blending with other volumes.")]
@@ -275,6 +275,7 @@ namespace VRCLightVolumes {
         // Create or destroy Bakery Volume
         if (LightVolumeSetup.IsBakeryMode && Bake && BakeryVolume == null) {
             GameObject obj = new GameObject($"Bakery Volume - {gameObject.name}");
+            obj.tag = "EditorOnly";
             obj.transform.parent = transform;
             BakeryVolume = obj.AddComponent<BakeryVolume>();
         } else if ((!LightVolumeSetup.IsBakeryMode || !Bake) && BakeryVolume != null) {
@@ -289,6 +290,7 @@ namespace VRCLightVolumes {
         if (LightVolumeSetup.IsBakeryMode && BakeryVolume != null) {
             // Sync bakery volume with light volume
             BakeryVolume.gameObject.name = $"Bakery Volume - {gameObject.name}";
+            BakeryVolume.gameObject.tag = "EditorOnly";
             if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
             BakeryVolume.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             BakeryVolume.transform.localScale = Vector3.one;
