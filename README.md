@@ -13,7 +13,7 @@ There is a bunch of other cool assets you will get there!
 - Baked partial avatars and dynamic props lighting
 - Baked seamless lightmaps for small static objects
 - Baked dynamic light sources
-- Any Volumetric light effects
+- Any volumetric light effects
 
 ## Main Features
 - Baked per-pixel voxel based lighting
