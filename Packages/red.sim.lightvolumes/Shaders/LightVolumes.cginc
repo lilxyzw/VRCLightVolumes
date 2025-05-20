@@ -1,5 +1,5 @@
-#ifndef LIGHT_VOLUMES_INCLUDED
-#define LIGHT_VOLUMES_INCLUDED
+#ifndef VRC_LIGHT_VOLUMES_INCLUDED
+#define VRC_LIGHT_VOLUMES_INCLUDED
 
 // Are Light Volumes enabled on scene?
 uniform float _UdonLightVolumeEnabled;
