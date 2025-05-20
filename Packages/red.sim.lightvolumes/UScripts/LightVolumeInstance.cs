@@ -50,19 +50,24 @@ namespace VRCLightVolumes {
         // Calculates and sets invLocalEdgeBlending
         public void SetSmoothBlending(float radius) {
             Vector3 scl = transform.lossyScale;
-            InvLocalEdgeSmoothing = new Vector4(scl.x, scl.y, scl.z, 0) / Mathf.Max(radius, 0.00001f);
+            InvLocalEdgeSmoothing = scl / Mathf.Max(radius, 0.00001f);
         }
 
         // Recalculates inv TRS matrix and Relative L1 rotation
         public void UpdateRotation() {
-            InvWorldMatrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale).inverse;
-            Quaternion rot = transform.rotation * InvBakedRotation;
+            Quaternion transformRot = transform.rotation;
+            InvWorldMatrix = Matrix4x4.TRS(transform.position, transformRot, transform.lossyScale).inverse;
+            Quaternion rot = transformRot * InvBakedRotation;
             IsRotated = Quaternion.Dot(rot, Quaternion.identity) < 0.999999f;
 
             Matrix4x4 m = Matrix4x4.Rotate(rot);
 
-            RelativeRotationRow0 = new Vector4(m.m00, m.m01, m.m02, 0f);
-            RelativeRotationRow1 = new Vector4(m.m10, m.m11, m.m12, 0f);
+            Vector4 row0 = m.GetRow(0);
+            row0.w = 0;
+            RelativeRotationRow0 = row0;
+            Vector4 row1 = m.GetRow(1);
+            row1.w = 0;
+            RelativeRotationRow1 = row1;
 
         }
 
