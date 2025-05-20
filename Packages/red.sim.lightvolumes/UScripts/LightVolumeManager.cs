@@ -38,6 +38,7 @@ namespace VRCLightVolumes {
         private Vector4[] _relativeRotations = new Vector4[0];
         private Vector4[] _colors = new Vector4[0];
         private int _additiveCount = 0;
+        private Vector4[] _bounds = new Vector4[6];
 
         private int lightVolumeInvLocalEdgeSmoothID;
         private int lightVolumeInvWorldMatrixID;
@@ -136,13 +137,14 @@ namespace VRCLightVolumes {
                 _relativeRotations[i2] = instance.RelativeRotationRow0;
                 _relativeRotations[i2 + 1] = instance.RelativeRotationRow1;
 
-                _boundsUvw[i6    ] = instance.BoundsUvwMin0;
-                _boundsUvw[i6 + 1] = instance.BoundsUvwMax0;
-                _boundsUvw[i6 + 2] = instance.BoundsUvwMin1;
-                _boundsUvw[i6 + 3] = instance.BoundsUvwMax1;
-                _boundsUvw[i6 + 4] = instance.BoundsUvwMin2;
-                _boundsUvw[i6 + 5] = instance.BoundsUvwMax2;
+                _bounds[0] = instance.BoundsUvwMin0;
+                _bounds[1] = instance.BoundsUvwMax0;
+                _bounds[2] = instance.BoundsUvwMin1;
+                _bounds[3] = instance.BoundsUvwMax1;
+                _bounds[4] = instance.BoundsUvwMin2;
+                _bounds[5] = instance.BoundsUvwMax2;
 
+                Array.Copy(_bounds, 0, _boundsUvw, i6, 6);
             }
 
         }
