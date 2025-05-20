@@ -50,7 +50,7 @@ namespace VRCLightVolumes {
         // Calculates and sets invLocalEdgeBlending
         public void SetSmoothBlending(float radius) {
             Vector3 scl = transform.lossyScale;
-            InvLocalEdgeSmoothing = new Vector4(scl.x, scl.y, scl.z, 0) / Mathf.Max(radius, 0.00001f);
+            InvLocalEdgeSmoothing = scl / Mathf.Max(radius, 0.00001f);
         }
 
         // Recalculates inv TRS matrix and Relative L1 rotation
