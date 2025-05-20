@@ -23,9 +23,9 @@ You should usually multiply it by your "Albedo" and add to the final color, as a
 
 ### LightVolumeSpecular
 
-Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You sould NOT multiply this by albedo color!
+Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
 
-`Dominant Direction` flag specifies if you want to use a simplier and lighter way of generating speculars. Generates one color specular for the dominant light direction instead of three color speculars in a regular method.
+`Dominant Direction` flag specifies if you want to use a simpler and lighter way of generating speculars. Generates one color specular for the dominant light direction instead of three color speculars in a regular method.
 
 ## Light Volume integration through shader code
 
@@ -46,7 +46,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
 
 `out float3 L0` - Outputs ambient color of the current fragment.
 
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that srores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
 
 ### float3 LightVolumeEvaluate()
 Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
@@ -74,10 +74,10 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
 
 `out float3 L0` - Outputs ambient color of the current fragment.
 
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that srores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
 
 ### float3 LightVolumeSpecular()
-Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You sould NOT multiply this by albedo color!
+Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
 
 Usually works much better for avatars, because can show several color speculars at the same time for each of R, G, B light directions. Slightly less performant than LightVolumeSpecularDominant()
 
@@ -97,10 +97,10 @@ float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, floa
 
 `out float3 L0` - Outputs ambient color of the current fragment.
 
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that srores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
 
 ### float3 LightVolumeSpecularDominant()
-Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You sould NOT multiply this by albedo color!
+Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
 
 Usually works better for static PBR surfaces, because can show a one color specular for the dominant light direction. Slightly more performant than LightVolumeSpecular()
 
@@ -120,9 +120,9 @@ float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metall
 
 `out float3 L0` - Outputs ambient color of the current fragment.
 
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that srores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
 
 ### float \_UdonLightVolumeEnabled
 A global float variable that is not defined and stores 0 if there are no light volumes support on the current scene, or stores 1 if light volumes system is provided.
 
-It's not mandatory to check the light volumes support by yourself, because LightVolumeSH() and LightVolumeAdditiveSH() functions are already doed it and fallbacks do Unity Light probes instead of using the light volumes.
+It's not mandatory to check the light volumes support by yourself, because LightVolumeSH() and LightVolumeAdditiveSH() functions already do it and fallback to Unity Light probes instead of using the light volumes.
