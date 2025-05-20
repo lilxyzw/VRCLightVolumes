@@ -55,8 +55,9 @@ namespace VRCLightVolumes {
 
         // Recalculates inv TRS matrix and Relative L1 rotation
         public void UpdateRotation() {
-            InvWorldMatrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale).inverse;
-            Quaternion rot = transform.rotation * InvBakedRotation;
+            Quaternion transformRot = transform.rotation;
+            InvWorldMatrix = Matrix4x4.TRS(transform.position, transformRot, transform.lossyScale).inverse;
+            Quaternion rot = transformRot * InvBakedRotation;
             IsRotated = Quaternion.Dot(rot, Quaternion.identity) < 0.999999f;
 
             Matrix4x4 m = Matrix4x4.Rotate(rot);
