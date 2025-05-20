@@ -125,4 +125,4 @@ float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metall
 ### float \_UdonLightVolumeEnabled
 A global float variable that is not defined and stores 0 if there are no light volumes support on the current scene, or stores 1 if light volumes system is provided.
 
-It's not mandatory to check the light volumes support by yourself, because LightVolumeSH() and LightVolumeAdditiveSH() functions are already do it and fallbacks to Unity Light probes instead of using the light volumes.
+It's not mandatory to check the light volumes support by yourself, because LightVolumeSH() and LightVolumeAdditiveSH() functions already do it and fallback to Unity Light probes instead of using the light volumes.
