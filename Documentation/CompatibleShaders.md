@@ -3,6 +3,7 @@
 - [lilToon Shader](https://github.com/lilxyzw/lilToon)
 - [Poiyomi Toon Shader](https://github.com/poiyomi/PoiyomiToonShader)
 - [Filamented by Silent](https://gitlab.com/s-ilent/filamented)
+- [Mochies-Unity-Shaders](https://github.com/MochiesCode/Mochies-Unity-Shaders)
 - [Graphlit Shaders and Shader Editor by z3y](https://github.com/z3y/Graphlit)
 - [Orels Unity Shaders (Toon and PBR)](https://github.com/orels1/orels-Unity-Shaders) (To access it you will need to enable "Show Pre-Release Packages" in VCC Settings)
 
