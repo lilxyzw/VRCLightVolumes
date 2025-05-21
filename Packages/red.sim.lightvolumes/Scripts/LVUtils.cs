@@ -50,6 +50,15 @@ namespace VRCLightVolumes {
 #endif
         }
 
+        public static void MarkDirty(Object obj) {
+#if UNITY_EDITOR
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+            EditorUtility.SetDirty(obj);
+            if (PrefabUtility.IsPartOfPrefabInstance(obj))
+                PrefabUtility.RecordPrefabInstancePropertyModifications(obj);
+#endif
+        }
+
         // Apply voxels to a 3D Texture
         public static bool Apply3DTextureData(Texture3D texture, Color[] colors) {
             try {

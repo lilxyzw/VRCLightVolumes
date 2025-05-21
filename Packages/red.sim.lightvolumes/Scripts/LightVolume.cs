@@ -75,8 +75,7 @@ namespace VRCLightVolumes {
         // Auto-initialize with a reflection probe bounds
         public void Reset() {
             if (transform.parent != null && transform.parent.gameObject.TryGetComponent(out ReflectionProbe probe)) {
-                transform.position = probe.bounds.center;
-                transform.rotation = Quaternion.identity;
+                transform.SetPositionAndRotation(probe.bounds.center, Quaternion.identity);
                 LVUtils.SetLossyScale(transform, probe.bounds.size);
             }
         }
@@ -263,6 +262,7 @@ namespace VRCLightVolumes {
 
         }
 
+        LVUtils.MarkDirty(this);
     }
 #endif
         // Setups required game objects and components
@@ -278,13 +278,20 @@ namespace VRCLightVolumes {
             obj.tag = "EditorOnly";
             obj.transform.parent = transform;
             BakeryVolume = obj.AddComponent<BakeryVolume>();
+            LVUtils.MarkDirty(this);
         } else if ((!LightVolumeSetup.IsBakeryMode || !Bake) && BakeryVolume != null) {
             if (Application.isPlaying) {
                 Destroy(BakeryVolume.gameObject);
             } else {
+#if UNITY_EDITOR
+                // Do not destroy game object if it is part of prefab instance since it may disconnects/breaks the prefab
+                DestroyImmediate(PrefabUtility.IsPartOfPrefabInstance(BakeryVolume.gameObject) ? BakeryVolume : BakeryVolume.gameObject);
+#else
                 DestroyImmediate(BakeryVolume.gameObject);
+#endif
             }
             BakeryVolume = null;
+            LVUtils.MarkDirty(this);
         }
 
         if (LightVolumeSetup.IsBakeryMode && BakeryVolume != null) {
@@ -307,6 +314,7 @@ namespace VRCLightVolumes {
             var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
             if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);
 
+            LVUtils.MarkDirty(BakeryVolume);
         }
 
         SyncUdonScript();
@@ -322,6 +330,7 @@ namespace VRCLightVolumes {
             LightVolumeInstance.IsAdditive = Additive;
             LightVolumeInstance.Color = Color;
             LightVolumeInstance.SetSmoothBlending(SmoothBlending);
+            LVUtils.MarkDirty(LightVolumeInstance);
         }
 
 #if UNITY_EDITOR
@@ -335,6 +344,7 @@ namespace VRCLightVolumes {
             Texture0 = BakeryVolume.bakedTexture0;
             Texture1 = BakeryVolume.bakedTexture1;
             Texture2 = BakeryVolume.bakedTexture2;
+            LVUtils.MarkDirty(this);
         }
 #endif
 
