@@ -42,7 +42,8 @@ Look for it here: `Packages/VRC Light Volumes/Attribution/`
 
 This will help users know they can use avatars with VRC Light Volumes compatible shaders and also learn more about the system.
 
-<p align="center"> <img src="/Packages/red.sim.lightvolumes/Attribution/LV_Logo_B.png" alt="My Logo" width="400" /></p>
+<p align="center"> <img src="/Packages/red.sim.lightvolumes/Attribution/LV_Logo_B.png#gh-dark-mode-only" alt="My Logo" width="400" /></p>
+<p align="center"> <img src="/Packages/red.sim.lightvolumes/Attribution/LV_Logo_A.png#gh-light-mode-only" alt="My Logo" width="400" /></p>
 
 Alternatively, you can include a message like this:
 
