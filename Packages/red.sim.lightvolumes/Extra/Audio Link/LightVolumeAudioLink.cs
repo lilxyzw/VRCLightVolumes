@@ -1,6 +1,4 @@
-﻿#if AUDIOLINK
-
-using UnityEngine;
+﻿using UnityEngine;
 
 #if UDONSHARP
 using UdonSharp;
@@ -18,8 +16,8 @@ namespace VRCLightVolumes {
     public class LightVolumeAudioLink : MonoBehaviour
 #endif
     {
-        
-        
+#if AUDIOLINK
+
         public AudioLink.AudioLink AudioLink;
         public AudioLinkBand AudioBand = AudioLinkBand.Bass;
         public float VolumeInrtensity = 1;
@@ -51,7 +49,7 @@ namespace VRCLightVolumes {
                 TargetMeshRenderers[i].SetPropertyBlock(_block);
             }
         }
-
+#endif
     }
 
     public enum AudioLinkBand {
@@ -62,5 +60,3 @@ namespace VRCLightVolumes {
     }
 
 }
-
-#endif
