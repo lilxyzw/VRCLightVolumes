@@ -103,19 +103,19 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: TargetLightVolume
+      Data: TargetLightVolumes
     - Name: $v
       Entry: 7
       Data: 5|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: TargetLightVolume
+      Data: TargetLightVolumes
     - Name: <UserType>k__BackingField
       Entry: 7
       Data: 6|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: VRCLightVolumes.LightVolumeInstance, red.sim.LightVolumesUdon
+      Data: VRCLightVolumes.LightVolumeInstance[], red.sim.LightVolumesUdon
     - Name: 
       Entry: 8
       Data: 
@@ -124,7 +124,7 @@ MonoBehaviour:
       Data: 7|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: VRC.Udon.UdonBehaviour, VRC.Udon
+      Data: UnityEngine.Component[], UnityEngine.CoreModule
     - Name: 
       Entry: 8
       Data: 

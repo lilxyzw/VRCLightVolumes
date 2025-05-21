@@ -19,22 +19,19 @@ namespace VRCLightVolumes {
 #endif
     {
         
-        public LightVolumeInstance TargetLightVolume;
+        
         public AudioLink.AudioLink AudioLink;
         public AudioLinkBand AudioBand = AudioLinkBand.Bass;
         public float VolumeInrtensity = 1;
         public float MaterialsInrtensity = 2;
-        public Renderer[] MeshRenderers;
+        public LightVolumeInstance[] TargetLightVolumes;
+        public Renderer[] TargetMeshRenderers;
 
         private int _emissionColorID;
         private MaterialPropertyBlock _block;
 
         private void InitIDs() {
             _emissionColorID = VRCShader.PropertyToID("_EmissionColor");
-        }
-
-        private void Reset() {
-            TargetLightVolume = GetComponent<LightVolumeInstance>();
         }
 
         private void Start() {
@@ -45,10 +42,13 @@ namespace VRCLightVolumes {
         private void Update() {
             int band = (int)AudioBand;
             Color color = Vector4.Scale(AudioLink.GetDataAtPixel(15, 28 + band), AudioLink.GetDataAtPixel(band, 23));
-            TargetLightVolume.Color = color * VolumeInrtensity;
+            Color volumeColor = color * VolumeInrtensity;
+            for (int i = 0; i < TargetLightVolumes.Length; i++) {
+                TargetLightVolumes[i].Color = volumeColor;
+            }
             _block.SetColor(_emissionColorID, color * MaterialsInrtensity);
-            for (int i = 0; i < MeshRenderers.Length; i++) {
-                MeshRenderers[i].SetPropertyBlock(_block);
+            for (int i = 0; i < TargetMeshRenderers.Length; i++) {
+                TargetMeshRenderers[i].SetPropertyBlock(_block);
             }
         }
 

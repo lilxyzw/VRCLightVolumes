@@ -15,13 +15,10 @@ namespace VRCLightVolumes {
 #endif
     {
         public Texture TargetRenderTexture;
-        public LightVolumeInstance TargetLightVolume;
+        public LightVolumeInstance[] TargetLightVolumes;
 
         private Color32[] _pixels;
 
-        private void Reset() {
-            TargetLightVolume = GetComponent<LightVolumeInstance>();
-        }
 
 #if UDONSHARP
         void Update() {
@@ -31,7 +28,9 @@ namespace VRCLightVolumes {
         public override void OnAsyncGpuReadbackComplete(VRCAsyncGPUReadbackRequest request) {
             _pixels = new Color32[1];
             if (request.TryGetData(_pixels)) {
-                TargetLightVolume.Color = _pixels[0];
+                for (int i = 0; i < TargetLightVolumes.Length; i++) {
+                    TargetLightVolumes[i].Color = _pixels[0];
+                }
             }
         }
 
@@ -42,7 +41,9 @@ namespace VRCLightVolumes {
 
         public void OnAsyncGpuReadbackComplete(UnityEngine.Rendering.AsyncGPUReadbackRequest request) {
             var data = request.GetData<Color32>();
-            TargetLightVolume.Color = data[0];
+            for (int i = 0; i < TargetLightVolumes.Length; i++) {
+                TargetLightVolumes[i].Color = _pixels[0];
+            }
             data.Dispose();
         }
 #endif
