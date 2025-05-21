@@ -210,17 +210,22 @@ namespace VRCLightVolumes {
 
         for (int i = 0; i < LightVolumes.Count; i++) {
 
-            if (LightVolumes[i] == null || LightVolumes[i].LightVolumeInstance == null) continue;
+            if (LightVolumes[i] == null) continue;
+            var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
 
-            LightVolumes[i].LightVolumeInstance.BoundsUvwMin0 = atlas.BoundsUvwMin[i * 3];
-            LightVolumes[i].LightVolumeInstance.BoundsUvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
-            LightVolumes[i].LightVolumeInstance.BoundsUvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
+            if (lightVolumeInstance == null) continue;
 
-            LightVolumes[i].LightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
-            LightVolumes[i].LightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
-            LightVolumes[i].LightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
+            lightVolumeInstance.BoundsUvwMin0 = atlas.BoundsUvwMin[i * 3];
+            lightVolumeInstance.BoundsUvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
+            lightVolumeInstance.BoundsUvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
 
-            LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, LightVolumes[i].LightVolumeInstance));
+            lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
+            lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
+            lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
+
+            LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
+
+            LVUtils.MarkDirty(lightVolumeInstance);
         }
 
         LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
