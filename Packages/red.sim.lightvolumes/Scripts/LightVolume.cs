@@ -44,7 +44,7 @@ namespace VRCLightVolumes {
         [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
         public bool AdaptiveResolution = true;
         [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
-        public float VoxelsPerUnit = 2;
+        public float VoxelsPerUnit = 3;
         [Tooltip("Manual Light Volume resolution in voxel count.")]
         public Vector3Int Resolution = new Vector3Int(16, 16, 16);
 

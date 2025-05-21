@@ -908,7 +908,6 @@ MonoBehaviour:
   - {fileID: 1900080572}
   - {fileID: 1964208428}
   - {fileID: 1665989578}
-  - {fileID: 380379184}
   LightVolumesWeights:
   - 0
   - 1
@@ -916,7 +915,6 @@ MonoBehaviour:
   - 3
   - 4
   - 5
-  - 6
   BakingMode: 0
   Denoise: 1
   FixLightProbesL1: 1
@@ -1389,14 +1387,17 @@ MonoBehaviour:
   useAssignedLayers: 0
   DynamicPrefabs: []
   DynamicMaterials:
-  - {fileID: 2100000, guid: 64028782a454b1f46ae8c6b415024546, type: 2}
-  - {fileID: 2100000, guid: 7cd8219b2223a14459b4fcc39e1e0edb, type: 2}
-  - {fileID: 2100000, guid: baede57ab42d19d4899dcbc2e280bd1c, type: 2}
-  - {fileID: 2100000, guid: 9ec09f8f5a313cc4c91bd7feaf546635, type: 2}
-  - {fileID: 2100000, guid: 269af33bf0eb06c49ae1e2bafde895bd, type: 2}
   - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
+  - {fileID: 2100000, guid: 9ec09f8f5a313cc4c91bd7feaf546635, type: 2}
   - {fileID: 2100000, guid: 39587cf21953c2a459a9f90d27b451ea, type: 2}
+  - {fileID: 2100000, guid: 64028782a454b1f46ae8c6b415024546, type: 2}
+  - {fileID: 2100000, guid: baede57ab42d19d4899dcbc2e280bd1c, type: 2}
+  - {fileID: 2100000, guid: d05590ed9a5a6d143a1fcee2fc90b71b, type: 2}
   - {fileID: 2100000, guid: 5628279d67a7cde43b8975e53bdac69f, type: 2}
+  - {fileID: 2100000, guid: 7cd8219b2223a14459b4fcc39e1e0edb, type: 2}
+  - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
+  - {fileID: 2100000, guid: 269af33bf0eb06c49ae1e2bafde895bd, type: 2}
+  - {fileID: 2100000, guid: d102c05e48d614a489538849889bb3bd, type: 2}
   LightMapsNear: []
   LightMapsFar: []
   LightMode: 0
@@ -1494,14 +1495,6 @@ MonoBehaviour:
     - VRC.SDK3.Components.VRCObjectSync
   - gameObject: {fileID: 380379180}
     ID: 22
-    SerializedTypeNames:
-    - VRC.Udon.UdonBehaviour
-  - gameObject: {fileID: 0}
-    ID: 25
-    SerializedTypeNames:
-    - VRC.Udon.UdonBehaviour
-  - gameObject: {fileID: 0}
-    ID: 24
     SerializedTypeNames:
     - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
