@@ -32,7 +32,54 @@ Calculates approximated speculars based on SH components. Can be used with Light
 First of all, you need to include the "LightVolumes.cginc" file provided with this asset, into your shader:  `#include "LightVolumes.cginc"`. 
 Also be sure that you included the "UnityCG.cginc" file **BEFORE** to support the fallback to unity's light probes:  `#include "UnityCG.cginc"`
 
+All the functions are recommended to use in the fragment shader. All the calculations are cheap enough.
+
+### 1. Basic Light Volumes Integration
+
+Start by replacing your light probe logic (usually where `ShadeSH9()` or `unity_SHAr` is used) with `LightVolumeSH()`
+
+Evaluate the returned SH data using `LightVolumeEvaluate()` But you can use your own method to get the lighting color.  
+
+Typically, the result color should be multiplied by the albedo and added to the final fragment color. You may also apply AO or other adjustments before combining it.
+
+> `LightVolumeSH()` automatically falls back to Unity’s built-in light probes if Light Volumes are not available. No need for a manual check.
+
+### 2. Additive Light Volumes for Lightmapped Geometry
+
+Additive light volumes are can cast light on your static lightmapped geometry. To make it work, you need to integrate a function into your lightmapped lighting section of the shader. It's probably somewhere where you use `unity_Lightmap` variable.
+
+Call a `LightVolumeAdditiveSH()` function there to get SH components. This function is even lighter because only samples additive light volumes if they are provided. It returns zeroes if no additive light volumes found or Light Volumes are available in scene.
+
+Then evaluate the color with `LightVolumeEvaluate()` and **add** the resulting color to your lightmap output.
+
+> You can also check `_UdonLightVolumeEnabled > 0` to skip evaluation entirely when not LightVolumes are not represented in the scene.
+
+### 3. Custom SH Evaluation Notes
+
+If you use a custom evaluation method instead of `LightVolumeEvaluate()`, make sure you use L1 components too.
+
+Using L0 only (ambient term) results in unrealistic shading and can make objects look translucent.
+You must consider L1 directions—or at least the dominant direction and its magnitude for proper shading.
+
+> Test your method with strong directional lighting baked into a volume. Incorrect evaluation may cause color artifacts or exposure issues.
+
+### 4. Specular Lighting (Optional but Recommended)
+
+You can enhance gloss and metal surfaces with speculars from SH data:
+
+Use `LightVolumeSpecular()` function for colored speculars. Ideal for avatars.
+Use `LightVolumeSpecularDominant()` for a single specular using dominant light direction. Better for hard surface PBR shaders.
+
+Add the result straight to your final fragment color.
+
+These functions already apply albedo internally **do not multiply again**. You can still apply your own specular occlusion/masking if needed.
+
+> For more advanced shading (e.g. anisotropic specular), implement your own model based on SH data.
+
+## Shader Functions
+
 There are only a few functions that are really required for the integration: 
+
 ### void LightVolumeSH()
 Required to get the Spherical Harmonics components. Using the output values you get from it, you can calculate the speculars for your custom lighting setup.
 
@@ -123,6 +170,6 @@ float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metall
 `out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
 
 ### float \_UdonLightVolumeEnabled
-A global float variable that is not defined and stores 0 if there are no light volumes support on the current scene, or stores 1 if light volumes system is provided.
+A global float variable that is not defined and stores `0` if there are no light volumes support on the current scene, or stores `1` if light volumes system is provided.
 
-It's not mandatory to check the light volumes support by yourself, because LightVolumeSH() and LightVolumeAdditiveSH() functions already do it and fallback to Unity Light probes instead of using the light volumes.
+It's not mandatory to check the light volumes support by yourself, because **LightVolumeSH()** and **LightVolumeAdditiveSH()** functions already do it and fallback to Unity Light probes instead of using the light volumes.
