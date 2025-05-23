@@ -36,7 +36,7 @@ namespace VRCLightVolumes {
         [Tooltip("Makes dark volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
         [Range(-1, 1)] public float DarkLights = 0;
         [Tooltip("Makes bright volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
-        [Range(-1, 1)]public float BrightLights = 0;
+        [Range(-1, 1)] public float BrightLights = 0;
 
         [Header("Baking Setup")]
         [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
@@ -50,7 +50,7 @@ namespace VRCLightVolumes {
 
         public bool PreviewVoxels;
 #if BAKERY_INCLUDED
-    public BakeryVolume BakeryVolume;
+        public BakeryVolume BakeryVolume;
 #endif
 
         public LightVolumeInstance LightVolumeInstance;
@@ -72,6 +72,9 @@ namespace VRCLightVolumes {
         static readonly int _previewPosID = Shader.PropertyToID("_Positions");
         static readonly int _previewScaleID = Shader.PropertyToID("_Scale");
 
+        // Was it changed on Validate?
+        private bool _isValidated = false;
+
         // Auto-initialize with a reflection probe bounds
         public void Reset() {
             if (transform.parent != null && transform.parent.gameObject.TryGetComponent(out ReflectionProbe probe)) {
@@ -91,11 +94,11 @@ namespace VRCLightVolumes {
             SetupDependencies();
             if (LightVolumeSetup.IsBakeryMode && !Application.isPlaying && Bake) {
 #if BAKERY_INCLUDED
-            if(typeof(BakeryVolume).GetField("rotateAroundY") != null) { // Some Bakery versions does not support rotateAroundY, so we'll check it
-                return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
-            } else {
-                return Quaternion.identity;
-            }
+                if (typeof(BakeryVolume).GetField("rotateAroundY") != null) { // Some Bakery versions does not support rotateAroundY, so we'll check it
+                    return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+                } else {
+                    return Quaternion.identity;
+                }
 #else
                 return Quaternion.identity;
 #endif
@@ -129,14 +132,14 @@ namespace VRCLightVolumes {
 
         // Sets Additional Probes to bake with Unity Lightmapper
 #if UNITY_EDITOR
-    public void SetAdditionalProbes(int id) {
-        RecalculateProbesPositions();
-        UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, _probesPositions);
-    }
+        public void SetAdditionalProbes(int id) {
+            RecalculateProbesPositions();
+            UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, _probesPositions);
+        }
 
-    public void RemoveAdditionalProbes(int id) {
-        UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, new Vector3[0]);
-    }
+        public void RemoveAdditionalProbes(int id) {
+            UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, new Vector3[0]);
+        }
 #endif
 
         // Recalculates probes world positions
@@ -176,148 +179,148 @@ namespace VRCLightVolumes {
                 RecalculateProbesPositions();
         }
 #if UNITY_EDITOR
-    public void Save3DTextures(int id) {
+        public void Save3DTextures(int id) {
 
-        SetupDependencies();
+            SetupDependencies();
 
-        // Atlas Sizes
-        int w = Resolution.x;
-        int h = Resolution.y;
-        int d = Resolution.z;
-        int vCount = GetVoxelCount();
+            // Atlas Sizes
+            int w = Resolution.x;
+            int h = Resolution.y;
+            int d = Resolution.z;
+            int vCount = GetVoxelCount();
 
-        // SH data output
-        using (NativeArray<SphericalHarmonicsL2> probes = new NativeArray<SphericalHarmonicsL2>(vCount, Allocator.Temp))
-        using (NativeArray<float> probesValidity = new NativeArray<float>(vCount, Allocator.Temp)) {
+            // SH data output
+            using (NativeArray<SphericalHarmonicsL2> probes = new NativeArray<SphericalHarmonicsL2>(vCount, Allocator.Temp))
+            using (NativeArray<float> probesValidity = new NativeArray<float>(vCount, Allocator.Temp)) {
 
-            // Checking data available
+                // Checking data available
 #pragma warning disable CS0618
-            if (!UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, probes, probesValidity)) {
-                Debug.LogError("[LightVolume] Can't grab light volume data. No additional baked probes found!");
-                return;
-            }
+                if (!UnityEditor.Experimental.Lightmapping.GetAdditionalBakedProbes(id, probes, probesValidity)) {
+                    Debug.LogError("[LightVolume] Can't grab light volume data. No additional baked probes found!");
+                    return;
+                }
 #pragma warning restore CS0618
 
-            // Creating Texture3D with specified format and dimensions
-            TextureFormat format = TextureFormat.RGBAHalf;
-            Texture3D tex0 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                // Creating Texture3D with specified format and dimensions
+                TextureFormat format = TextureFormat.RGBAHalf;
+                Texture3D tex0 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
 
-            // Quick shortcuts to SH L1 components
-            const int r = 0;
-            const int g = 1;
-            const int b = 2;
-            const int a = 0;
-            const int x = 3;
-            const int y = 1;
-            const int z = 2;
-            const float coeff = 1.65f; // To transform to bakery non-linear data format. Should be 1.7699115f actually
+                // Quick shortcuts to SH L1 components
+                const int r = 0;
+                const int g = 1;
+                const int b = 2;
+                const int a = 0;
+                const int x = 3;
+                const int y = 1;
+                const int z = 2;
+                const float coeff = 1.65f; // To transform to bakery non-linear data format. Should be 1.7699115f actually
 
-            // Separating data for denoising
-            Vector3[] L0 = new Vector3[vCount];
-            Vector3[] L1r = new Vector3[vCount];
-            Vector3[] L1g = new Vector3[vCount];
-            Vector3[] L1b = new Vector3[vCount];
-            for (int i = 0; i < vCount; i++) {
-                L0[i]  = new Vector3(probes[i][r, a], probes[i][g, a], probes[i][b, a]);
-                L1r[i] = new Vector3(probes[i][r, x], probes[i][r, y], probes[i][r, z]);
-                L1g[i] = new Vector3(probes[i][g, x], probes[i][g, y], probes[i][g, z]);
-                L1b[i] = new Vector3(probes[i][b, x], probes[i][b, y], probes[i][b, z]);
+                // Separating data for denoising
+                Vector3[] L0 = new Vector3[vCount];
+                Vector3[] L1r = new Vector3[vCount];
+                Vector3[] L1g = new Vector3[vCount];
+                Vector3[] L1b = new Vector3[vCount];
+                for (int i = 0; i < vCount; i++) {
+                    L0[i] = new Vector3(probes[i][r, a], probes[i][g, a], probes[i][b, a]);
+                    L1r[i] = new Vector3(probes[i][r, x], probes[i][r, y], probes[i][r, z]);
+                    L1g[i] = new Vector3(probes[i][g, x], probes[i][g, y], probes[i][g, z]);
+                    L1b[i] = new Vector3(probes[i][b, x], probes[i][b, y], probes[i][b, z]);
+                }
+
+                // Denoising
+                if (LightVolumeSetup.Denoise) {
+                    L0 = LVUtils.BilateralDenoise3D(L0, w, h, d, 1, 0.05f);
+                    L1r = LVUtils.BilateralDenoise3D(L1r, w, h, d, 1, 0.05f);
+                    L1g = LVUtils.BilateralDenoise3D(L1g, w, h, d, 1, 0.05f);
+                    L1b = LVUtils.BilateralDenoise3D(L1b, w, h, d, 1, 0.05f);
+                }
+
+                // Setting voxel data
+                Color[] c0 = new Color[vCount];
+                Color[] c1 = new Color[vCount];
+                Color[] c2 = new Color[vCount];
+                for (int i = 0; i < vCount; i++) {
+                    c0[i] = new Color(L0[i].x, L0[i].y, L0[i].z, L1r[i].z * coeff);
+                    c1[i] = new Color(L1r[i].x * coeff, L1g[i].x * coeff, L1b[i].x * coeff, L1g[i].z * coeff);
+                    c2[i] = new Color(L1r[i].y * coeff, L1g[i].y * coeff, L1b[i].y * coeff, L1b[i].z * coeff);
+                }
+
+                // Apply Pixel Data to Texture
+                LVUtils.Apply3DTextureData(tex0, c0);
+                LVUtils.Apply3DTextureData(tex1, c1);
+                LVUtils.Apply3DTextureData(tex2, c2);
+
+                // Saving 3D Texture assets
+                string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}";
+                LVUtils.SaveTexture3DAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
+                LVUtils.SaveTexture3DAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
+                LVUtils.SaveTexture3DAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
+
+                // Applying textures to volume
+                Texture0 = tex0;
+                Texture1 = tex1;
+                Texture2 = tex2;
+
             }
 
-            // Denoising
-            if (LightVolumeSetup.Denoise) {
-                L0 =  LVUtils.BilateralDenoise3D(L0, w, h, d, 1, 0.05f);
-                L1r = LVUtils.BilateralDenoise3D(L1r, w, h, d, 1, 0.05f);
-                L1g = LVUtils.BilateralDenoise3D(L1g, w, h, d, 1, 0.05f);
-                L1b = LVUtils.BilateralDenoise3D(L1b, w, h, d, 1, 0.05f);
-            }
-
-            // Setting voxel data
-            Color[] c0 = new Color[vCount];
-            Color[] c1 = new Color[vCount];
-            Color[] c2 = new Color[vCount];
-            for (int i = 0; i < vCount; i++) {
-                c0[i] = new Color(L0[i].x, L0[i].y, L0[i].z, L1r[i].z * coeff);
-                c1[i] = new Color(L1r[i].x * coeff, L1g[i].x * coeff, L1b[i].x * coeff, L1g[i].z * coeff);
-                c2[i] = new Color(L1r[i].y * coeff, L1g[i].y * coeff, L1b[i].y * coeff, L1b[i].z * coeff);
-            }
-
-            // Apply Pixel Data to Texture
-            LVUtils.Apply3DTextureData(tex0, c0);
-            LVUtils.Apply3DTextureData(tex1, c1);
-            LVUtils.Apply3DTextureData(tex2, c2);
-
-            // Saving 3D Texture assets
-            string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}";
-            LVUtils.SaveTexture3DAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
-            LVUtils.SaveTexture3DAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
-            LVUtils.SaveTexture3DAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
-            
-            // Applying textures to volume
-            Texture0 = tex0;
-            Texture1 = tex1;
-            Texture2 = tex2;
-
+            LVUtils.MarkDirty(this);
         }
-
-        LVUtils.MarkDirty(this);
-    }
 #endif
         // Setups required game objects and components
         public void SetupBakeryDependencies() {
 
 #if BAKERY_INCLUDED
 
-        SetupDependencies();
+            SetupDependencies();
 
-        // Create or destroy Bakery Volume
-        if (LightVolumeSetup.IsBakeryMode && Bake && BakeryVolume == null) {
-            GameObject obj = new GameObject($"Bakery Volume - {gameObject.name}");
-            obj.tag = "EditorOnly";
-            obj.transform.parent = transform;
-            BakeryVolume = obj.AddComponent<BakeryVolume>();
-            LVUtils.MarkDirty(this);
-        } else if ((!LightVolumeSetup.IsBakeryMode || !Bake) && BakeryVolume != null) {
-            if (Application.isPlaying) {
-                Destroy(BakeryVolume.gameObject);
-            } else {
+            // Create or destroy Bakery Volume
+            if (LightVolumeSetup.IsBakeryMode && Bake && BakeryVolume == null) {
+                GameObject obj = new GameObject($"Bakery Volume - {gameObject.name}");
+                obj.tag = "EditorOnly";
+                obj.transform.parent = transform;
+                BakeryVolume = obj.AddComponent<BakeryVolume>();
+                LVUtils.MarkDirty(this);
+            } else if ((!LightVolumeSetup.IsBakeryMode || !Bake) && BakeryVolume != null) {
+                if (Application.isPlaying) {
+                    Destroy(BakeryVolume.gameObject);
+                } else {
 #if UNITY_EDITOR
-                // Do not destroy game object if it is part of prefab instance since it may disconnects/breaks the prefab
-                DestroyImmediate(PrefabUtility.IsPartOfPrefabInstance(BakeryVolume.gameObject) ? BakeryVolume : BakeryVolume.gameObject);
+                    // Do not destroy game object if it is part of prefab instance since it may disconnects/breaks the prefab
+                    DestroyImmediate(PrefabUtility.IsPartOfPrefabInstance(BakeryVolume.gameObject) ? BakeryVolume : BakeryVolume.gameObject);
 #else
-                DestroyImmediate(BakeryVolume.gameObject);
+                    Destroy(BakeryVolume.gameObject);
 #endif
+                }
+                BakeryVolume = null;
+                LVUtils.MarkDirty(this);
             }
-            BakeryVolume = null;
-            LVUtils.MarkDirty(this);
-        }
 
-        if (LightVolumeSetup.IsBakeryMode && BakeryVolume != null) {
-            // Sync bakery volume with light volume
-            BakeryVolume.gameObject.name = $"Bakery Volume - {gameObject.name}";
-            BakeryVolume.gameObject.tag = "EditorOnly";
-            if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
-            BakeryVolume.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-            BakeryVolume.transform.localScale = Vector3.one;
-            BakeryVolume.bounds = new Bounds(GetPosition(), GetScale());
-            BakeryVolume.enableBaking = true;
-            BakeryVolume.denoise = LightVolumeSetup.Denoise;
-            BakeryVolume.adaptiveRes = false;
-            BakeryVolume.resolutionX = Resolution.x;
-            BakeryVolume.resolutionY = Resolution.y;
-            BakeryVolume.resolutionZ = Resolution.z;
-            BakeryVolume.encoding = BakeryVolume.Encoding.Half4;
-                
-            // Even some latest Bakery versions does not support Rotate Around Y
-            var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
-            if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);
+            if (LightVolumeSetup.IsBakeryMode && BakeryVolume != null) {
+                // Sync bakery volume with light volume
+                BakeryVolume.gameObject.name = $"Bakery Volume - {gameObject.name}";
+                BakeryVolume.gameObject.tag = "EditorOnly";
+                if (BakeryVolume.transform.parent != transform) BakeryVolume.transform.parent = transform;
+                BakeryVolume.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                BakeryVolume.transform.localScale = Vector3.one;
+                BakeryVolume.bounds = new Bounds(GetPosition(), GetScale());
+                BakeryVolume.enableBaking = true;
+                BakeryVolume.denoise = LightVolumeSetup.Denoise;
+                BakeryVolume.adaptiveRes = false;
+                BakeryVolume.resolutionX = Resolution.x;
+                BakeryVolume.resolutionY = Resolution.y;
+                BakeryVolume.resolutionZ = Resolution.z;
+                BakeryVolume.encoding = BakeryVolume.Encoding.Half4;
 
-            LVUtils.MarkDirty(BakeryVolume);
-        }
+                // Even some latest Bakery versions does not support Rotate Around Y
+                var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
+                if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);
 
-        SyncUdonScript();
+                LVUtils.MarkDirty(BakeryVolume);
+            }
+
+            SyncUdonScript();
 
 #endif
 
@@ -335,104 +338,106 @@ namespace VRCLightVolumes {
 
 #if UNITY_EDITOR
 
-    private void Update() {
+        private void Update() {
 
-        SetupDependencies();
+            SetupDependencies();
 
 #if BAKERY_INCLUDED
-        if (Bake && (Texture0 == null || Texture1 == null || Texture2 == null) && LightVolumeSetup.IsBakeryMode && BakeryVolume != null && BakeryVolume.bakedTexture0 != null) {
-            Texture0 = BakeryVolume.bakedTexture0;
-            Texture1 = BakeryVolume.bakedTexture1;
-            Texture2 = BakeryVolume.bakedTexture2;
-            LVUtils.MarkDirty(this);
-        }
+            if (Bake && (Texture0 == null || Texture1 == null || Texture2 == null) && LightVolumeSetup.IsBakeryMode && BakeryVolume != null && BakeryVolume.bakedTexture0 != null) {
+                Texture0 = BakeryVolume.bakedTexture0;
+                Texture1 = BakeryVolume.bakedTexture1;
+                Texture2 = BakeryVolume.bakedTexture2;
+                LVUtils.MarkDirty(this);
+            }
 #endif
 
-        // Update udon Behaviour if Volume changed transform
-        if (_prevPos != transform.position || _prevRot != transform.rotation || _prevScl != transform.localScale) {
+            // Update udon Behaviour if Volume changed transform
+            if (_prevPos != transform.position || _prevRot != transform.rotation || _prevScl != transform.localScale || _isValidated) {
+                SetupBakeryDependencies();
+                Recalculate();
+                if (PreviewVoxels) ReleasePreviewBuffers();
+                _prevPos = transform.position;
+                _prevRot = transform.rotation;
+                _prevScl = transform.localScale;
+                _isValidated = false;
+            }
+
+            SyncUdonScript();
+            LightVolumeSetup.SyncUdonScript();
+
+            // If voxels preview disabled
+            if (!PreviewVoxels || _probesPositions.Length == 0 || Selection.activeGameObject != gameObject || _probesPositions.Length > 1000000) return;
+
+            // Initialize Buffers
+            if (_posBuf == null || _posBuf.count != _probesPositions.Length) {
+                ReleasePreviewBuffers();
+                _posBuf = new ComputeBuffer(_probesPositions.Length, sizeof(float) * 3);
+                _argsBuf = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+            }
+
+            // Generate Sphere mesh
+            if (_previewMesh == null) {
+                _previewMesh = LVUtils.GenerateIcoSphere(0.5f, 0);
+            }
+
+            // Create Material
+            if (_previewMaterial == null) {
+                _previewMaterial = new Material(Shader.Find("Hidden/LightVolumesPreview"));
+            }
+
+            // Calculating radius
+            Vector3 scale = GetScale();
+            Vector3 res = Resolution;
+            float radius = Mathf.Min(scale.z / res.z, Mathf.Min(scale.x / res.x, scale.y / res.y)) / 3;
+
+            // Setting data to buffers
+            _posBuf.SetData(_probesPositions);
+            _previewMaterial.SetBuffer(_previewPosID, _posBuf);
+            _previewMaterial.SetFloat(_previewScaleID, radius);
+            _argsBuf.SetData(new uint[] { _previewMesh.GetIndexCount(0), (uint)_probesPositions.Length, _previewMesh.GetIndexStart(0), (uint)_previewMesh.GetBaseVertex(0), 0 });
+
+            Bounds bounds = LVUtils.BoundsFromTRS(GetMatrixTRS());
+            Graphics.DrawMeshInstancedIndirect(_previewMesh, 0, _previewMaterial, bounds, _argsBuf, 0, null, ShadowCastingMode.Off, false, gameObject.layer);
+
+        }
+
+        // Releases compute buffer
+        void ReleasePreviewBuffers() {
+            if (_posBuf != null) { _posBuf.Release(); _posBuf = null; }
+            if (_argsBuf != null) { _argsBuf.Release(); _argsBuf = null; }
+        }
+
+        private void OnEnable() {
+            SetupDependencies();
             SetupBakeryDependencies();
+            LightVolumeSetup.SyncUdonScript();
+        }
+
+        private void OnDisable() {
+            if (LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
+            if (PreviewVoxels)
+                ReleasePreviewBuffers();
+        }
+
+        private void OnDestroy() {
+            if (LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
+            if (PreviewVoxels)
+                ReleasePreviewBuffers();
+        }
+
+        private void OnValidate() {
+            _isValidated = true;
             Recalculate();
-            if (PreviewVoxels) ReleasePreviewBuffers();
-            _prevPos = transform.position;
-            _prevRot = transform.rotation;
-            _prevScl = transform.localScale;
         }
-
-        SyncUdonScript();
-        LightVolumeSetup.SyncUdonScript();
-
-        // If voxels preview disabled
-        if (!PreviewVoxels || _probesPositions.Length == 0 || Selection.activeGameObject != gameObject || _probesPositions.Length > 1000000) return;
-
-        // Initialize Buffers
-        if (_posBuf == null || _posBuf.count != _probesPositions.Length) {
-            ReleasePreviewBuffers();
-            _posBuf = new ComputeBuffer(_probesPositions.Length, sizeof(float) * 3);
-            _argsBuf = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
-        }
-
-        // Generate Sphere mesh
-        if (_previewMesh == null) {
-            _previewMesh = LVUtils.GenerateIcoSphere(0.5f, 0);
-        }
-
-        // Create Material
-        if (_previewMaterial == null) {
-            _previewMaterial = new Material(Shader.Find("Hidden/LightVolumesPreview"));
-        }
-
-        // Calculating radius
-        Vector3 scale = GetScale();
-        Vector3 res = Resolution;
-        float radius = Mathf.Min(scale.z / res.z, Mathf.Min(scale.x / res.x, scale.y / res.y)) / 3;
-
-        // Setting data to buffers
-        _posBuf.SetData(_probesPositions);
-        _previewMaterial.SetBuffer(_previewPosID, _posBuf);
-        _previewMaterial.SetFloat(_previewScaleID, radius);
-        _argsBuf.SetData(new uint[] { _previewMesh.GetIndexCount(0), (uint)_probesPositions.Length, _previewMesh.GetIndexStart(0), (uint)_previewMesh.GetBaseVertex(0), 0 });
-
-        Bounds bounds = LVUtils.BoundsFromTRS(GetMatrixTRS());
-        Graphics.DrawMeshInstancedIndirect(_previewMesh, 0, _previewMaterial, bounds, _argsBuf, 0, null, ShadowCastingMode.Off, false, gameObject.layer);
-
-    }
-
-    // Releases compute buffer
-    void ReleasePreviewBuffers() {
-        if (_posBuf != null) { _posBuf.Release(); _posBuf = null; }
-        if (_argsBuf != null) { _argsBuf.Release(); _argsBuf = null; }
-    }
-
-    private void OnEnable() {
-        SetupDependencies();
-        SetupBakeryDependencies();
-        LightVolumeSetup.SyncUdonScript();
-    }
-
-    private void OnDisable() {
-        if (LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
-        if (PreviewVoxels)
-            ReleasePreviewBuffers();
-    }
-
-    private void OnDestroy() {
-        if(LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
-        if (PreviewVoxels)
-            ReleasePreviewBuffers();
-    }
-
-    private void OnValidate() {
-        Recalculate();
-    }
 #endif
 
         // Delete self in play mode
         private void Start() {
             if (Application.isPlaying) {
 #if BAKERY_INCLUDED
-            if (BakeryVolume != null) {
-                Destroy(BakeryVolume.gameObject);
-            }
+                if (BakeryVolume != null) {
+                    Destroy(BakeryVolume.gameObject);
+                }
 #endif
                 Destroy(this);
             }
