@@ -54,7 +54,7 @@ namespace VRCLightVolumes {
         }
 
         // Recalculates inv TRS matrix and Relative L1 rotation
-        public void UpdateRotation() {
+        public void UpdateTransform() {
             Quaternion transformRot = transform.rotation;
             InvWorldMatrix = Matrix4x4.TRS(transform.position, transformRot, transform.lossyScale).inverse;
             Quaternion rot = transformRot * InvBakedRotation;

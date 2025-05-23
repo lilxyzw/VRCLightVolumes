@@ -23,12 +23,13 @@ namespace VRCLightVolumes {
         public bool LightProbesBlending = true;
         [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
         public bool SharpBounds = true;
-        [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
+        [Tooltip("Automatically updates any volumes data in runtime: Enabling/Disabling, Color, Edge Smoothing, all the global settings and more. Position, Rotation and Scale gets updated only for volumes that are marked dynamic.")]
         public bool AutoUpdateVolumes = false;
         [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         public int AdditiveMaxOverdraw = 4;
         [Tooltip("All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance.")]
         public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
+
         private bool _isInitialized = false;
 
         // Actually enabled Volumes
@@ -92,10 +93,16 @@ namespace VRCLightVolumes {
             UpdateVolumes();
         }
 
-        // Recalculates dynamic volumes
-        private void UpdateDynamicVolumes() {
+        private void Start() {
+            _isInitialized = false;
+            UpdateVolumes();
+        }
 
-            // Searching for enabled volumes
+        public void UpdateVolumes() {
+
+            TryInitialize();
+
+            // Searching for enabled volumes. Counting Additive volumes.
             _enabledCount = 0;
             _additiveCount = 0;
             int maxLength = Mathf.Min(LightVolumeInstances.Length, 32);
@@ -103,7 +110,7 @@ namespace VRCLightVolumes {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance != null && instance.gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
-                    instance.UpdateRotation();
+                    instance.UpdateTransform();
 #else
                     if (instance.IsDynamic) instance.UpdateRotation();
 #endif
@@ -129,39 +136,29 @@ namespace VRCLightVolumes {
 
                 LightVolumeInstance instance = LightVolumeInstances[enabledId];
 
-                _invLocalEdgeSmooth[i] = instance.InvLocalEdgeSmoothing;
-                _invWorldMatrix[i] = instance.InvWorldMatrix;
+                _invLocalEdgeSmooth[i] = instance.InvLocalEdgeSmoothing; // Setting volume edge smoothing
+                _invWorldMatrix[i] = instance.InvWorldMatrix; // Setting volume transform
 
-                Vector4 c = instance.Color;
+                Vector4 c = instance.Color; // Changing volume color
                 c.w = instance.IsRotated ? 1 : 0; // Color alpha stores if volume rotated or not
                 _colors[i] = c;
 
+                // Setting volume relative rotation as 3x2 matrix
                 _relativeRotations[i2] = instance.RelativeRotationRow0;
                 _relativeRotations[i2 + 1] = instance.RelativeRotationRow1;
 
+                // Setting volume UVW bounds
                 _bounds[0] = instance.BoundsUvwMin0;
                 _bounds[1] = instance.BoundsUvwMax0;
                 _bounds[2] = instance.BoundsUvwMin1;
                 _bounds[3] = instance.BoundsUvwMax1;
                 _bounds[4] = instance.BoundsUvwMin2;
                 _bounds[5] = instance.BoundsUvwMax2;
-
                 Array.Copy(_bounds, 0, _boundsUvw, i6, 6);
+
             }
 
-        }
-
-        private void Start() {
-            _isInitialized = false;
-            UpdateVolumes();
-        }
-
-        public void UpdateVolumes() {
-
-            TryInitialize();
-
-            UpdateDynamicVolumes(); // Update dynamic volumes
-
+            // Disabling light volumes system if no atlas or no volumes
             if (LightVolumeAtlas == null || _enabledCount == 0) {
                 VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
                 return;

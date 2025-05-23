@@ -908,6 +908,7 @@ MonoBehaviour:
   - {fileID: 1900080572}
   - {fileID: 1964208428}
   - {fileID: 1665989578}
+  - {fileID: 380379184}
   LightVolumesWeights:
   - 0
   - 1
@@ -915,6 +916,7 @@ MonoBehaviour:
   - 3
   - 4
   - 5
+  - 0
   BakingMode: 0
   Denoise: 1
   FixLightProbesL1: 1

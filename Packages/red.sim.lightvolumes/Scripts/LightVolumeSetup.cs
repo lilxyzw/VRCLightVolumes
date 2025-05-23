@@ -31,7 +31,7 @@ namespace VRCLightVolumes {
         public bool LightProbesBlending = true;
         [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
         public bool SharpBounds = true;
-        [Tooltip("Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.")]
+        [Tooltip("Automatically updates any volumes data in runtime: Enabling/Disabling, Color, Edge Smoothing, all the global settings and more. Position, Rotation and Scale gets updated only for volumes that are marked dynamic.")]
         public bool AutoUpdateVolumes = false;
         [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         public int AdditiveMaxOverdraw = 4;
@@ -123,6 +123,13 @@ namespace VRCLightVolumes {
         if (BakingMode != Baking.Bakery) {
             BakingMode = Baking.Bakery;
         }
+
+        // Attempt to fix a bakery bug
+        var volumes = FindObjectsOfType<LightVolume>(true);
+        for (int i = 0; i < volumes.Length; i++) {
+            volumes[i].SetupBakeryDependencies();
+        }
+
     }
 
     // On Bakery Finished baking
@@ -150,8 +157,8 @@ namespace VRCLightVolumes {
 
     // On Unity Lightmapper started baking
     private void OnUnityBakingStarted() {
-        if (BakingMode != Baking.UnityLightmapper) {
-            BakingMode = Baking.UnityLightmapper;
+        if (BakingMode != Baking.Progressive) {
+            BakingMode = Baking.Progressive;
         }
         LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < volumes.Length; i++) {
@@ -164,8 +171,9 @@ namespace VRCLightVolumes {
 
     // On Unity Lightmapper baked additional probes
     private void OnAdditionalProbesCompleted() {
-        if (BakingMode != Baking.UnityLightmapper) {
-            BakingMode = Baking.UnityLightmapper;
+
+        if (BakingMode != Baking.Progressive) {
+            BakingMode = Baking.Progressive;
         }
         LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < volumes.Length; i++) {
@@ -178,6 +186,7 @@ namespace VRCLightVolumes {
         Debug.Log($"[LightVolumeSetup] Additional probes baking finished! Generating 3D Atlas...");
         GenerateAtlas();
         Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
+
     }
 
     private void Update() {
@@ -289,7 +298,7 @@ namespace VRCLightVolumes {
         }
 
         public enum Baking {
-            UnityLightmapper,
+            Progressive,
             Bakery
         }
 

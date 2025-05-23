@@ -272,8 +272,9 @@ MonoBehaviour:
       Data: 15|UnityEngine.TooltipAttribute, UnityEngine.CoreModule
     - Name: tooltip
       Entry: 1
-      Data: Automatically updates a volume's position, rotation, and scale in Play
-        mode using an Udon script. Use only if you have movable volumes in your scene.
+      Data: 'Automatically updates any volumes data in runtime: Enabling/Disabling,
+        Color, Edge Smoothing, all the global settings and more. Position, Rotation
+        and Scale gets updated only for volumes that are marked dynamic.'
     - Name: 
       Entry: 8
       Data: 
