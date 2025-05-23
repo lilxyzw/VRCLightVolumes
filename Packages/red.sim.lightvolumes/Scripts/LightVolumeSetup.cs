@@ -20,7 +20,7 @@ namespace VRCLightVolumes {
 #if BAKERY_INCLUDED
     public Baking BakingMode = Baking.Bakery;
 #else
-        public Baking BakingMode = Baking.UnityLightmapper;
+        public Baking BakingMode = Baking.Progressive;
 #endif
         [Tooltip("Removes baked noise in Light Volumes but may slightly reduce sharpness. Recommended to keep it enabled.")]
         public bool Denoise = true;
