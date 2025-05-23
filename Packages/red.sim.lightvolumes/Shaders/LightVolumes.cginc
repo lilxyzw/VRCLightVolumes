@@ -60,7 +60,7 @@ float3 LV_LocalToIsland(uint volumeID, uint texID, float3 localUVW){
     float3 uvwMin = _UdonLightVolumeUvw[uvwID].xyz;
     float3 uvwMax = _UdonLightVolumeUvw[uvwID + 1].xyz;
     // Ramapping world bounds to UVW bounds
-    return clamp(lerp(uvwMin, uvwMax, localUVW + 0.5), uvwMin, uvwMax);
+    return lerp(uvwMin, uvwMax, saturate(localUVW + 0.5));
 }
 
 // Samples 3 SH textures and packing them into L1 channels
