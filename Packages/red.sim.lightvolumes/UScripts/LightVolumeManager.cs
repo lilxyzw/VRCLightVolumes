@@ -112,7 +112,7 @@ namespace VRCLightVolumes {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
-                    if (instance.IsDynamic) instance.UpdateRotation();
+                    if (instance.IsDynamic) instance.UpdateTransform();
 #endif
                     if (instance.IsAdditive) _additiveCount++;
                     _enabledIDs[_enabledCount] = i;
