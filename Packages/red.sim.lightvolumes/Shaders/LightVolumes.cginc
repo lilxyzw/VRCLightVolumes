@@ -53,16 +53,6 @@ float3 LV_LocalFromVolume(uint volumeID, float3 worldPos) {
     return mul(_UdonLightVolumeInvWorldMatrix[volumeID], float4(worldPos, 1.0)).xyz;
 }
 
-// Calculates Island UVW from local UVW
-float3 LV_LocalToIsland(uint volumeID, uint texID, float3 localUVW){
-    // UVW bounds
-    uint uvwID = volumeID * 6 + texID * 2;
-    float3 uvwMin = _UdonLightVolumeUvw[uvwID].xyz;
-    float3 uvwMax = _UdonLightVolumeUvw[uvwID + 1].xyz;
-    // Remapping world bounds to UVW bounds
-    return lerp(uvwMin, uvwMax, saturate(localUVW + 0.5));
-}
-
 // Samples 3 SH textures and packing them into L1 channels
 void LV_SampleLightVolumeTex(float3 uvw0, float3 uvw1, float3 uvw2, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     // Sampling 3D Atlas
@@ -92,6 +82,11 @@ void LV_SampleLightProbe(out float3 L0, out float3 L1r, out float3 L1g, out floa
     L1b = unity_SHAb.xyz;
 }
 
+// Default light probes L0 only
+float3 LV_SampleLightProbe_L0() {
+    return float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+}
+
 // Linear single SH L1 channel evaluation
 float LV_EvaluateSH(float L0, float3 L1, float3 n) {
     return L0 + dot(L1, n);
@@ -102,10 +97,11 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     
     // Additive UVW
     uint uvwID = id * 6;
-    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
-    float3 uvw0 = uvwScaled + _UdonLightVolumeUvw[uvwID].xyz;
-    float3 uvw1 = uvwScaled + _UdonLightVolumeUvw[uvwID + 2].xyz;
-    float3 uvw2 = uvwScaled + _UdonLightVolumeUvw[uvwID + 4].xyz;
+    float3 uvwMin0 = _UdonLightVolumeUvw[uvwID].xyz;
+    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - uvwMin0);
+    float3 uvw0 = uvwMin0 + uvwScaled;
+    float3 uvw1 = _UdonLightVolumeUvw[uvwID + 2].xyz + uvwScaled;
+    float3 uvw2 = _UdonLightVolumeUvw[uvwID + 4].xyz + uvwScaled;
                 
     // Sample additive
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
@@ -119,13 +115,22 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     
     // Rotate if needed
     if (color.a != 0) {
-        float3 r0 = _UdonLightVolumeRotation[id * 2];
-        float3 r1 = _UdonLightVolumeRotation[id * 2 + 1];
+        int id2 = id * 2;
+        float3 r0 = _UdonLightVolumeRotation[id2];
+        float3 r1 = _UdonLightVolumeRotation[id2 + 1];
         L1r = LV_MultiplyVectorByMatrix2x3(L1r, r0, r1);
         L1g = LV_MultiplyVectorByMatrix2x3(L1g, r0, r1);
         L1b = LV_MultiplyVectorByMatrix2x3(L1b, r0, r1);
     }
                 
+}
+
+// Samples a Volume with ID and Local UVW, but L0 component only
+float3 LV_SampleVolume_L0(uint id, float3 localUVW) {
+    uint uvwID = id * 6;
+    float3 uvwMin0 = _UdonLightVolumeUvw[uvwID].xyz;
+    float3 uvw0 = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - uvwMin0) + uvwMin0;
+    return tex3Dlod(_UdonLightVolume, float4(uvw0, 0)).rgb * _UdonLightVolumeColor[id].rgb;
 }
 
 // Forms specular based on roughness
@@ -323,12 +328,14 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     
     // Additive volumes variables
     float3 localUVW = float3(0, 0, 0);
-    uint addVolumesCount = 0;
     float3 L0_, L1r_, L1g_, L1b_;
+    
+    // Max additive volumes to sample
+    uint count = min((uint) _UdonLightVolumeAdditiveCount, (uint) _UdonLightVolumeAdditiveMaxOverdraw);
     
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     [loop]
-    for (uint id = 0; id < (uint) _UdonLightVolumeAdditiveCount && addVolumesCount < (uint) _UdonLightVolumeAdditiveMaxOverdraw; id++) {
+    for (uint id = 0; id < count; id++) {
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
@@ -337,10 +344,125 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
             L1r += L1r_;
             L1g += L1g_;
             L1b += L1b_;
-            addVolumesCount++;
         }
     }
 
+}
+
+// Calculates L0 components based on the world position
+float3 LightVolumeSH_L0(float3 worldPos) {
+
+    // Fallback to default light probes if Light Volume are not enabled
+    if (!_UdonLightVolumeEnabled || _UdonLightVolumeCount == 0) {
+        return LV_SampleLightProbe_L0();
+    }
+    
+    float3 L0 = float3(0, 0, 0);
+    
+    uint volumeID_A = -1; // Main, dominant volume ID
+    uint volumeID_B = -1; // Secondary volume ID to blend main with
+
+    float3 localUVW   = float3(0, 0, 0); // Last local UVW to use in disabled Light Probes mode
+    float3 localUVW_A = float3(0, 0, 0); // Main local UVW for Y Axis and Free rotations
+    float3 localUVW_B = float3(0, 0, 0); // Secondary local UVW
+    
+    // Are A and B volumes NOT found?
+    bool isNoA = true;
+    bool isNoB = true;
+    
+    // Additive volumes variables
+    uint addVolumesCount = 0;
+    
+    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
+    [loop]
+    for (uint id = 0; id < (uint) _UdonLightVolumeCount; id++) {
+        localUVW = LV_LocalFromVolume(id, worldPos);
+        if (LV_PointLocalAABB(localUVW)) { // Intersection test
+            if (id < (uint) _UdonLightVolumeAdditiveCount) { // Sampling additive volumes
+                if (addVolumesCount < (uint) _UdonLightVolumeAdditiveMaxOverdraw) {
+                    L0 += LV_SampleVolume_L0(id, localUVW);
+                    addVolumesCount++;
+                } 
+            } else if (isNoA) { // First, searching for volume A
+                volumeID_A = id;
+                localUVW_A = localUVW;
+                isNoA = false;
+            } else { // Next, searching for volume B if A found
+                volumeID_B = id;
+                localUVW_B = localUVW;
+                isNoB = false;
+                break;
+            }
+        }
+    }
+
+    // If no volumes found, using Light Probes as fallback
+    if (isNoA && _UdonLightVolumeProbesBlend) {
+        return L0 + LV_SampleLightProbe_L0();
+    }
+        
+    // Fallback to lowest weight light volume if outside of every volume
+    localUVW_A = isNoA ? localUVW : localUVW_A;
+    volumeID_A = isNoA ? _UdonLightVolumeCount - 1 : volumeID_A;
+
+    // Sampling Light Volume A
+    float3 L0_A = LV_SampleVolume_L0(volumeID_A, localUVW_A);
+    
+    float mask = LV_BoundsMask(localUVW_A, _UdonLightVolumeInvLocalEdgeSmooth[volumeID_A]);
+    if (mask == 1 || isNoA || (_UdonLightVolumeSharpBounds && isNoB)) { // Returning SH A result if it's the center of mask or out of bounds
+        return L0 + L0_A;
+    }
+    
+    // Volume B L0
+    float3 L0_B  = float3(1, 1, 1);
+
+    if (isNoB && _UdonLightVolumeProbesBlend) { // No Volume found and light volumes blending enabled
+
+        // Sample Light Probes B
+        L0_B = LV_SampleLightProbe_L0();
+
+    } else { // Blending Volume A and Volume B
+            
+        // If no volume b found, use last one found to fallback
+        localUVW_B = isNoB ? localUVW : localUVW_B;
+        volumeID_B = isNoB ? _UdonLightVolumeCount - 1 : volumeID_B;
+            
+        // Sampling Light Volume B
+        L0_B = LV_SampleVolume_L0(volumeID_B, localUVW_B);
+        
+    }
+        
+    // Lerping L0
+    return L0 + lerp(L0_B,  L0_A,  mask);
+
+}
+
+// Calculates L0 component based on the world position but for additive volumes only
+float3 LightVolumeAdditiveSH_L0(float3 worldPos) {
+
+    // Initializing output variables
+    float3 L0  = float3(0, 0, 0);
+    
+    if (!_UdonLightVolumeEnabled || _UdonLightVolumeAdditiveCount == 0) return L0;
+    
+    // Additive volumes variables
+    float3 localUVW = float3(0, 0, 0);
+    
+    // Max additive volumes to sample
+    uint count = min((uint) _UdonLightVolumeAdditiveCount, (uint) _UdonLightVolumeAdditiveMaxOverdraw);
+    
+    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
+    [loop]
+    for (uint id = 0; id < count; id++) {
+        localUVW = LV_LocalFromVolume(id, worldPos);
+        //Intersection test
+        if (LV_PointLocalAABB(localUVW)) {
+            L0 += LV_SampleVolume_L0(id, localUVW);
+        }
+    }
+
+    return L0;
+    
 }
 
 #endif
