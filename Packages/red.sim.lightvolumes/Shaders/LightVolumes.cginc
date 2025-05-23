@@ -25,7 +25,7 @@ uniform sampler3D _UdonLightVolume;
 // World to Local (-0.5, 0.5) UVW Matrix
 uniform float4x4 _UdonLightVolumeInvWorldMatrix[32];
 
-// L1 SH components rotation (relative to baked rotataion)
+// L1 SH components rotation (relative to baked rotation)
 uniform float3 _UdonLightVolumeRotation[64];
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
@@ -59,8 +59,8 @@ float3 LV_LocalToIsland(uint volumeID, uint texID, float3 localUVW){
     uint uvwID = volumeID * 6 + texID * 2;
     float3 uvwMin = _UdonLightVolumeUvw[uvwID].xyz;
     float3 uvwMax = _UdonLightVolumeUvw[uvwID + 1].xyz;
-    // Ramapping world bounds to UVW bounds
-    return clamp(lerp(uvwMin, uvwMax, localUVW + 0.5), uvwMin, uvwMax);
+    // Remapping world bounds to UVW bounds
+    return lerp(uvwMin, uvwMax, saturate(localUVW + 0.5));
 }
 
 // Samples 3 SH textures and packing them into L1 channels
@@ -101,9 +101,11 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
 void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     
     // Additive UVW
-    float3 uvw0 = LV_LocalToIsland(id, 0, localUVW);
-    float3 uvw1 = LV_LocalToIsland(id, 1, localUVW);
-    float3 uvw2 = LV_LocalToIsland(id, 2, localUVW);
+    uint uvwID = id * 6;
+    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
+    float3 uvw0 = uvwScaled + _UdonLightVolumeUvw[uvwID].xyz;
+    float3 uvw1 = uvwScaled + _UdonLightVolumeUvw[uvwID + 2].xyz;
+    float3 uvw2 = uvwScaled + _UdonLightVolumeUvw[uvwID + 4].xyz;
                 
     // Sample additive
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
@@ -262,7 +264,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         return;
     }
         
-    // Fallback to lowest weight light volume if oudside of every volume
+    // Fallback to lowest weight light volume if outside of every volume
     localUVW_A = isNoA ? localUVW : localUVW_A;
     volumeID_A = isNoA ? _UdonLightVolumeCount - 1 : volumeID_A;
 
