@@ -23,7 +23,7 @@ There is a bunch of other cool assets you will get there!
 - Can change color in runtime
 - Can create cheap dynamic light sources that can be moved in runtime
 - Works with dynamic batching, which potentially increases performance
-- Works with Bakery or the default Unity Lightmapper
+- Works with Bakery or Unity Progressive lightmapper
 - Works with AudioLink and TV screens
 - Very easy and fast to setup
 - It just looks beautiful!
