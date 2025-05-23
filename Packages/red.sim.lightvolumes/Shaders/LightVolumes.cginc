@@ -101,9 +101,11 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
 void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     
     // Additive UVW
-    float3 uvw0 = LV_LocalToIsland(id, 0, localUVW);
-    float3 uvw1 = LV_LocalToIsland(id, 1, localUVW);
-    float3 uvw2 = LV_LocalToIsland(id, 2, localUVW);
+    uint uvwID = id * 6;
+    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
+    float3 uvw0 = uvwScaled + _UdonLightVolumeUvw[uvwID].xyz;
+    float3 uvw1 = uvwScaled + _UdonLightVolumeUvw[uvwID + 2].xyz;
+    float3 uvw2 = uvwScaled + _UdonLightVolumeUvw[uvwID + 4].xyz;
                 
     // Sample additive
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
