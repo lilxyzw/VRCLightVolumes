@@ -25,7 +25,7 @@ uniform sampler3D _UdonLightVolume;
 // World to Local (-0.5, 0.5) UVW Matrix
 uniform float4x4 _UdonLightVolumeInvWorldMatrix[32];
 
-// L1 SH components rotation (relative to baked rotataion)
+// L1 SH components rotation (relative to baked rotation)
 uniform float3 _UdonLightVolumeRotation[64];
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
@@ -59,7 +59,7 @@ float3 LV_LocalToIsland(uint volumeID, uint texID, float3 localUVW){
     uint uvwID = volumeID * 6 + texID * 2;
     float3 uvwMin = _UdonLightVolumeUvw[uvwID].xyz;
     float3 uvwMax = _UdonLightVolumeUvw[uvwID + 1].xyz;
-    // Ramapping world bounds to UVW bounds
+    // Remapping world bounds to UVW bounds
     return lerp(uvwMin, uvwMax, saturate(localUVW + 0.5));
 }
 
@@ -264,7 +264,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         return;
     }
         
-    // Fallback to lowest weight light volume if oudside of every volume
+    // Fallback to lowest weight light volume if outside of every volume
     localUVW_A = isNoA ? localUVW : localUVW_A;
     volumeID_A = isNoA ? _UdonLightVolumeCount - 1 : volumeID_A;
 
