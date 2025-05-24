@@ -37,6 +37,34 @@ uniform float3 _UdonLightVolumeUvw[192];
 // Color multiplier (RGB) | If we actually need to rotate L1 components at all (A)
 uniform float4 _UdonLightVolumeColor[32];
 
+// Point Lights count
+uniform float _UdonPointLightVolumeCount;
+
+// Point light position and range
+uniform float4 _UdonPointLightVolumePosition[128];
+
+// Point light color and size
+uniform float4 _UdonPointLightVolumeColor[128];
+
+void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
+    
+    float4 pos = _UdonPointLightVolumePosition[(uint) id];
+    float3 dir = pos.xyz - worldPos;
+    float ddir = dot(dir, dir);
+    
+    if (ddir > pos.w * pos.w) return;
+    
+    float3 dirN = dir * rsqrt(ddir + 1e-6);
+    float4 color = _UdonPointLightVolumeColor[(uint) id];
+    float att = 1 / (color.w * color.w + ddir);
+    
+    L0 += color.rgb * att;
+    L1r += L0.r * dirN;
+    L1g += L0.g * dirN;
+    L1b += L0.b * dirN;
+
+}
+
 // Rotates vector by Matrix 2x3
 float3 LV_MultiplyVectorByMatrix2x3(float3 v, float3 r0, float3 r1) {
     float3 r2 = cross(r0, r1);
@@ -217,9 +245,14 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     L1b = float3(0, 0, 0);
     
     // Fallback to default light probes if Light Volume are not enabled
-    if (!_UdonLightVolumeEnabled || _UdonLightVolumeCount == 0) {
+    if (!_UdonLightVolumeEnabled || (_UdonLightVolumeCount == 0 && _UdonPointLightVolumeCount == 0)) {
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
         return;
+    }
+    
+    // Process Point Lights
+    for (uint id = 0; id < (uint) _UdonPointLightVolumeCount; id++) {
+        LV_PointLight(id, worldPos, L0, L1r, L1g, L1b);
     }
     
     uint volumeID_A = -1; // Main, dominant volume ID
@@ -335,7 +368,12 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     L1g = float3(0, 0, 0);
     L1b = float3(0, 0, 0);
     
-    if (!_UdonLightVolumeEnabled || _UdonLightVolumeAdditiveCount == 0) return;
+    if (!_UdonLightVolumeEnabled || (_UdonLightVolumeAdditiveCount == 0 && _UdonPointLightVolumeCount == 0)) return;
+    
+    // Process Point Lights
+    for (uint id = 0; id < (uint) _UdonPointLightVolumeCount; id++) {
+        LV_PointLight(id, worldPos, L0, L1r, L1g, L1b);
+    }
     
     // Additive volumes variables
     float3 localUVW = float3(0, 0, 0);
