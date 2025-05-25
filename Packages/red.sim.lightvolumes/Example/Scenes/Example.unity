@@ -473,10 +473,10 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 183091914}
   Range: 10
-  Color: {r: 1, g: 1, b: 1, a: 0}
-  Intensity: 3
-  Angle: 0.68
-  ConeFalloff: 9.51
+  Color: {r: 0.8584906, g: 0.90670854, b: 1, a: 0}
+  Intensity: 1
+  Angle: 0.83
+  ConeFalloff: 3.15
 --- !u!4 &183091916
 Transform:
   m_ObjectHideFlags: 0
@@ -485,13 +485,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 183091913}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.89547086, y: -0.23451148, z: 0.3386378, w: 0.16870345}
-  m_LocalPosition: {x: 0.407, y: 2.61, z: -15.518}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 27.45, y: -216.46, z: -159.847}
+  m_Father: {fileID: 332103982}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &246619992
 GameObject:
   m_ObjectHideFlags: 0
@@ -640,11 +640,11 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 332103980}
-  Range: 4.94
-  Color: {r: 1, g: 0, b: 0, a: 0}
-  Intensity: 4.03
-  Angle: 0.64
-  ConeFalloff: 7.49
+  Range: 5
+  Color: {r: 1, g: 0.49803922, b: 0, a: 0}
+  Intensity: 1
+  Angle: 0.81
+  ConeFalloff: 3.67
 --- !u!4 &332103982
 Transform:
   m_ObjectHideFlags: 0
@@ -653,13 +653,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 332103979}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.2495372, y: -0.9396227, z: 0.22518782, w: 0.064271644}
-  m_LocalPosition: {x: -0.14, y: 0.85, z: -15.39}
+  m_LocalRotation: {x: -0.16002901, y: -0.94759434, z: 0.25562075, w: 0.10542181}
+  m_LocalPosition: {x: 1.067, y: 3.041, z: -12.794}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1636616214}
+  - {fileID: 183091916}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 23.023, y: -885.324, z: 32.75}
+  m_LocalEulerAnglesHint: {x: -206.789, y: 1098.389, z: 203.586}
 --- !u!1001 &350519503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -892,7 +894,7 @@ Transform:
   m_GameObject: {fileID: 377396392}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: -18}
+  m_LocalPosition: {x: -5.47, y: 1.665, z: -7.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1775,7 +1777,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1270109891748915428, guid: 39efc0387abc72a4fbe5aa958ca92df1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.68
+      value: 2.39
       objectReference: {fileID: 0}
     - target: {fileID: 1270109891748915428, guid: 39efc0387abc72a4fbe5aa958ca92df1, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1815,7 +1817,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2129285262713602144, guid: 39efc0387abc72a4fbe5aa958ca92df1, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2274,10 +2276,10 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1636616212}
   Range: 10
-  Color: {r: 0.15686274, g: 0.33061683, b: 1, a: 0}
-  Intensity: 3
-  Angle: 0.33
-  ConeFalloff: 1.37
+  Color: {r: 1, g: 1, b: 1, a: 0}
+  Intensity: 8.47
+  Angle: 0.95
+  ConeFalloff: 2.95
 --- !u!4 &1636616214
 Transform:
   m_ObjectHideFlags: 0
@@ -2286,13 +2288,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1636616211}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.27795485, y: 0.792439, z: -0.20960858, w: -0.5008452}
-  m_LocalPosition: {x: -1.509, y: 0.92, z: -15.925}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 37.635, y: -121.217, z: -376.926}
+  m_Father: {fileID: 332103982}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1665989574
 GameObject:
   m_ObjectHideFlags: 0
@@ -3417,6 +3419,4 @@ SceneRoots:
   - {fileID: 3274164246485087675}
   - {fileID: 4800693890613754323}
   - {fileID: 332103982}
-  - {fileID: 183091916}
-  - {fileID: 1636616214}
   - {fileID: 1422909935}

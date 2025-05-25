@@ -1,4 +1,4 @@
-#ifndef VRC_LIGHT_VOLUMES_INCLUDED
+﻿#ifndef VRC_LIGHT_VOLUMES_INCLUDED
 #define VRC_LIGHT_VOLUMES_INCLUDED
 
 // Are Light Volumes enabled on scene?
@@ -40,10 +40,10 @@ uniform float4 _UdonLightVolumeColor[32];
 // Point Lights count
 uniform float _UdonPointLightVolumeCount;
 
-// Point light position and range
+// Point light position and invRangeSq 
 uniform float4 _UdonPointLightVolumePosition[128];
 
-// Point light color and size
+// Point light color and angle
 uniform float4 _UdonPointLightVolumeColor[128];
 
 // Point light direction and cone falloff
@@ -57,29 +57,36 @@ float LV_Smoothstep01(float x) {
 // Samples spot light
 void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
     
+    // Light position and inversed squared range 
     float4 pos = _UdonPointLightVolumePosition[(uint) id];
+    float invSqRange = pos.w;
+    
     float3 dir = pos.xyz - worldPos;
-    float ddir = max(dot(dir, dir), 1e-6);
-    float rdir = rcp(ddir);
+    float sqlen = max(dot(dir, dir), 1e-6);
+    float invSqLen = rcp(sqlen);
     
-    if (rdir < pos.w) return;
+    // Culling spotlight by radius
+    if (invSqLen < invSqRange ) return;
     
+    // Color, angle, direction and cone falloff
     float4 color = _UdonPointLightVolumeColor[(uint) id];
+    float angle = color.w;
     float4 ldir = _UdonPointLightVolumeDirection[(uint) id];
-    float dirRadius = ddir * pos.w;
-    
-    float3 dirN = dir * rsqrt(ddir);
-    
-    float spotMask = saturate((dot(ldir.xyz, -dirN) - color.w) * ldir.w);
-    float att = saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.77f)) * LV_Smoothstep01(spotMask);
+    float coneFalloff = ldir.w;
 
-    float3 attDir = dirN * att;
+    float3 dirN = dir * rsqrt(sqlen);
+    
+    float spotMask = LV_Smoothstep01(saturate((dot(ldir.xyz, -dirN) - angle) * coneFalloff));
+    
+    float dirRadius = sqlen * invSqRange;
+    float att = saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * spotMask;
+    
     float3 l0 = color.rgb * att;
     
     L0 += l0;
-    L1r += l0.r * attDir;
-    L1g += l0.g * attDir;
-    L1b += l0.b * attDir;
+    L1r += dirN * l0.r;
+    L1g += dirN * l0.g;
+    L1b += dirN * l0.b;
 
 }
 

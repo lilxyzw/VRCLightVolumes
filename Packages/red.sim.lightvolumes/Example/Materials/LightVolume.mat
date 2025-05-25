@@ -61,13 +61,13 @@ Material:
     - _Exposure: 1
     - _Float0: 1
     - _Gamma: 1
-    - _Glossiness: 0.75
+    - _Glossiness: 0.867
     - _Highlight: 0.67
     - _Keyword0: 0
     - _LengthFactor0: 0.001
     - _LightVolumes: 1
     - _LightVolumesSpeculars: 0
-    - _Metallic: 0.75
+    - _Metallic: 0
     - _Metalness: 0
     - _Middle: 0.74
     - _MonoLerp: 0

@@ -207,7 +207,7 @@ namespace VRCLightVolumes {
                 Vector4 c = instance.Color * instance.Intensity;
                 c.w = instance.Angle;
                 Vector4 d = instance.transform.forward;
-                d.w = instance.ConeFalloff;
+                d.w = instance.ConeFalloff * instance.ConeFalloff;
 
                 _pointLightPosition[i] = p;
                 _pointLightColor[i] = c;
