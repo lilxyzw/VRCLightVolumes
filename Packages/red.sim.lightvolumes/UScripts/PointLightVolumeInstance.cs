@@ -16,7 +16,15 @@ namespace VRCLightVolumes {
 #endif
     {
         [Min(0.0001f)] public float Range = 5f;
-        [ColorUsage(showAlpha: false, hdr: true)] public Color Color;
-        public float Size = 0.1f;
+        [ColorUsage(showAlpha: false)] public Color Color;
+        public float Intensity = 1f;
+        public float Angle = 1f;
+        public float ConeFalloff = 1f;
+        private void OnDrawGizmos() {
+            Gizmos.color = new Color(1,1,0,0.25f);
+            Gizmos.DrawWireSphere(transform.position, Range);
+        }
+
     }
+
 }

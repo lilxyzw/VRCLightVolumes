@@ -46,22 +46,40 @@ uniform float4 _UdonPointLightVolumePosition[128];
 // Point light color and size
 uniform float4 _UdonPointLightVolumeColor[128];
 
+// Point light direction and cone falloff
+uniform float4 _UdonPointLightVolumeDirection[128];
+
+// Smoothstep to 0, 1 but cheaper
+float LV_Smoothstep01(float x) {
+    return x * x * (3 - 2 * x);
+}
+
+// Samples spot light
 void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
     
     float4 pos = _UdonPointLightVolumePosition[(uint) id];
     float3 dir = pos.xyz - worldPos;
-    float ddir = dot(dir, dir);
+    float ddir = max(dot(dir, dir), 1e-6);
+    float rdir = rcp(ddir);
     
-    if (ddir > pos.w * pos.w) return;
+    if (rdir < pos.w) return;
     
-    float3 dirN = dir * rsqrt(ddir + 1e-6);
     float4 color = _UdonPointLightVolumeColor[(uint) id];
-    float att = 1 / (color.w * color.w + ddir);
+    float4 ldir = _UdonPointLightVolumeDirection[(uint) id];
+    float dirRadius = ddir * pos.w;
     
-    L0 += color.rgb * att;
-    L1r += L0.r * dirN;
-    L1g += L0.g * dirN;
-    L1b += L0.b * dirN;
+    float3 dirN = dir * rsqrt(ddir);
+    
+    float spotMask = saturate((dot(ldir.xyz, -dirN) - color.w) * ldir.w);
+    float att = saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.77f)) * LV_Smoothstep01(spotMask);
+
+    float3 attDir = dirN * att;
+    float3 l0 = color.rgb * att;
+    
+    L0 += l0;
+    L1r += l0.r * attDir;
+    L1g += l0.g * attDir;
+    L1b += l0.b * attDir;
 
 }
 

@@ -473,8 +473,10 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 183091914}
   Range: 10
-  Color: {r: 0.09237594, g: 1.1353012, b: 0, a: 0}
-  Size: 1
+  Color: {r: 1, g: 1, b: 1, a: 0}
+  Intensity: 3
+  Angle: 0.68
+  ConeFalloff: 9.51
 --- !u!4 &183091916
 Transform:
   m_ObjectHideFlags: 0
@@ -483,13 +485,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 183091913}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.29, y: 2.125, z: -15.63}
+  m_LocalRotation: {x: 0.89547086, y: -0.23451148, z: 0.3386378, w: 0.16870345}
+  m_LocalPosition: {x: 0.407, y: 2.61, z: -15.518}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 27.45, y: -216.46, z: -159.847}
 --- !u!1 &246619992
 GameObject:
   m_ObjectHideFlags: 0
@@ -638,9 +640,11 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 332103980}
-  Range: 10
-  Color: {r: 1.2715217, g: 0.021767871, b: 0, a: 0}
-  Size: 1
+  Range: 4.94
+  Color: {r: 1, g: 0, b: 0, a: 0}
+  Intensity: 4.03
+  Angle: 0.64
+  ConeFalloff: 7.49
 --- !u!4 &332103982
 Transform:
   m_ObjectHideFlags: 0
@@ -649,13 +653,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 332103979}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.421, y: 1.318, z: -14.842}
+  m_LocalRotation: {x: -0.2495372, y: -0.9396227, z: 0.22518782, w: 0.064271644}
+  m_LocalPosition: {x: -0.14, y: 0.85, z: -15.39}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 23.023, y: -885.324, z: 32.75}
 --- !u!1001 &350519503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1811,7 +1815,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2129285262713602144, guid: 39efc0387abc72a4fbe5aa958ca92df1, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2270,8 +2274,10 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1636616212}
   Range: 10
-  Color: {r: 0, g: 0.049674243, b: 1.6436744, a: 0}
-  Size: 1
+  Color: {r: 0.15686274, g: 0.33061683, b: 1, a: 0}
+  Intensity: 3
+  Angle: 0.33
+  ConeFalloff: 1.37
 --- !u!4 &1636616214
 Transform:
   m_ObjectHideFlags: 0
@@ -2280,13 +2286,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1636616211}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.143, y: 1.534, z: -20.062}
+  m_LocalRotation: {x: -0.27795485, y: 0.792439, z: -0.20960858, w: -0.5008452}
+  m_LocalPosition: {x: -1.509, y: 0.92, z: -15.925}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 37.635, y: -121.217, z: -376.926}
 --- !u!1 &1665989574
 GameObject:
   m_ObjectHideFlags: 0

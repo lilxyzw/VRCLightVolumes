@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ADDITIVEONLY_ON
   - _LIGHTVOLUMES_ON
   - _SPECULARS_ON
   m_InvalidKeywords:
@@ -52,7 +53,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AdditiveOnly: 0
+    - _AdditiveOnly: 1
     - _AmbientOcclusion: 1
     - _BumpScale: 1
     - _Culling: 2
@@ -60,13 +61,13 @@ Material:
     - _Exposure: 1
     - _Float0: 1
     - _Gamma: 1
-    - _Glossiness: 0.5
+    - _Glossiness: 0.75
     - _Highlight: 0.67
     - _Keyword0: 0
     - _LengthFactor0: 0.001
     - _LightVolumes: 1
     - _LightVolumesSpeculars: 0
-    - _Metallic: 0.5
+    - _Metallic: 0.75
     - _Metalness: 0
     - _Middle: 0.74
     - _MonoLerp: 0

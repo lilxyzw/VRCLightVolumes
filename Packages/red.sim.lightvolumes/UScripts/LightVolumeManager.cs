@@ -48,6 +48,7 @@ namespace VRCLightVolumes {
         private int[] _enabledPointIDs = new int[128];
         private Vector4[] _pointLightPosition;
         private Vector4[] _pointLightColor;
+        private Vector4[] _pointLightDirection;
         private int _pointLightCount = 0;
 
         private int lightVolumeInvLocalEdgeSmoothID;
@@ -65,6 +66,7 @@ namespace VRCLightVolumes {
 
         private int _pointLightPositionID;
         private int _pointLightColorID;
+        private int _pointLightDirectionID;
         private int _pointLightCountID;
 
         // Initializing gloabal shader arrays if needed 
@@ -89,6 +91,7 @@ namespace VRCLightVolumes {
 
             _pointLightPositionID = VRCShader.PropertyToID("_UdonPointLightVolumePosition");
             _pointLightColorID = VRCShader.PropertyToID("_UdonPointLightVolumeColor");
+            _pointLightDirectionID = VRCShader.PropertyToID("_UdonPointLightVolumeDirection");
             _pointLightCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCount");
 
 #if UNITY_EDITOR
@@ -103,6 +106,7 @@ namespace VRCLightVolumes {
 
             VRCShader.SetGlobalVectorArray(_pointLightPositionID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightColorID, new Vector4[128]);
+            VRCShader.SetGlobalVectorArray(_pointLightDirectionID, new Vector4[128]);
 
             _isInitialized = true;
         }
@@ -191,6 +195,7 @@ namespace VRCLightVolumes {
             // Initializing required arrays
             _pointLightPosition = new Vector4[_pointLightCount];
             _pointLightColor = new Vector4[_pointLightCount];
+            _pointLightDirection = new Vector4[_pointLightCount];
 
             // Filling arrays with enabled point light volumes
             for (int i = 0; i < _pointLightCount; i++) {
@@ -198,12 +203,15 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[pointId];
 
                 Vector4 p = instance.transform.position;
-                p.w = instance.Range;
-                Vector4 c = instance.Color;
-                c.w = instance.Size;
-                
+                p.w = 1 / (instance.Range * instance.Range);
+                Vector4 c = instance.Color * instance.Intensity;
+                c.w = instance.Angle;
+                Vector4 d = instance.transform.forward;
+                d.w = instance.ConeFalloff;
+
                 _pointLightPosition[i] = p;
                 _pointLightColor[i] = c;
+                _pointLightDirection[i] = d;
             }
 
             bool isAtlas = LightVolumeAtlas != null;
@@ -248,6 +256,7 @@ namespace VRCLightVolumes {
             if (_pointLightCount != 0) {
                 VRCShader.SetGlobalVectorArray(_pointLightColorID, _pointLightColor);
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
+                VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
             }
             VRCShader.SetGlobalFloat(_pointLightCountID, _pointLightCount);
 
