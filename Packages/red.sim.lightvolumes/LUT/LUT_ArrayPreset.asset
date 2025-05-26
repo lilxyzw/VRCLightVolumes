@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47f91343d4ad12542b3eb9511e2b310c, type: 3}
+  m_Name: LUT_ArrayPreset
+  m_EditorClassIdentifier: 
+  m_selectedSize: 2
+  m_lockRatio: 1
+  m_sizeX: 128
+  m_sizeY: 128
+  m_tex3DMode: 0
+  m_linearMode: 0
+  m_mipMaps: 0
+  m_wrapMode: 1
+  m_filterMode: 2
+  m_anisoLevel: 1
+  m_selectedFormatEnum: 5
+  m_quality: 100
+  m_folderPath: Packages/red.sim.lightvolumes/LUT/
+  m_fileName: LUTs
+  m_filenameChanged: 1
+  m_allTextures:
+  - {fileID: 2800000, guid: f2c9fa8b79e7cde47bfd7c3acb98392e, type: 3}
+  - {fileID: 2800000, guid: a10fb5ae7e02b32418d1b02f3f687f62, type: 3}
+  - {fileID: 2800000, guid: 8fe531100e9575f41a35e9a1e0eda1eb, type: 3}
+  - {fileID: 2800000, guid: 2fa90b5ec6b509049843318be87f22f8, type: 3}

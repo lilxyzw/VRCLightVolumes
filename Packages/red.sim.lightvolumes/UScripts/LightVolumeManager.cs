@@ -32,6 +32,8 @@ namespace VRCLightVolumes {
 
         public PointLightVolumeInstance[] PointLightVolumeInstances = new PointLightVolumeInstance[0];
 
+        public Texture2DArray Attenuation;
+
         private bool _isInitialized = false;
 
         // Actually enabled Volumes
@@ -68,6 +70,7 @@ namespace VRCLightVolumes {
         private int _pointLightColorID;
         private int _pointLightDirectionID;
         private int _pointLightCountID;
+        private int _pointLightAttenuationID;
 
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
@@ -93,6 +96,7 @@ namespace VRCLightVolumes {
             _pointLightColorID = VRCShader.PropertyToID("_UdonPointLightVolumeColor");
             _pointLightDirectionID = VRCShader.PropertyToID("_UdonPointLightVolumeDirection");
             _pointLightCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCount");
+            _pointLightAttenuationID = VRCShader.PropertyToID("_UdonPointLightVolumeAttenuation");
 
 #if UNITY_EDITOR
             if (_isInitialized) return;
@@ -205,9 +209,14 @@ namespace VRCLightVolumes {
                 Vector4 p = instance.transform.position;
                 p.w = 1 / (instance.Range * instance.Range);
                 Vector4 c = instance.Color * instance.Intensity;
-                c.w = instance.Angle;
+                float outerAngle = instance.Angle / 2;
+                c.w = Mathf.Cos(outerAngle);
                 Vector4 d = instance.transform.forward;
-                d.w = instance.ConeFalloff * instance.ConeFalloff;
+                if (instance.AttenuationLUT_ID < 0) { // Default attenuation
+                    d.w = 1 / (Mathf.Cos(outerAngle * (1.0f - Mathf.Clamp01(instance.ConeFalloff))) - c.w);
+                } else { // LUT attenuation
+                    d.w = - instance.AttenuationLUT_ID;
+                }
 
                 _pointLightPosition[i] = p;
                 _pointLightColor[i] = c;
@@ -258,6 +267,10 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
             }
+            if(Attenuation != null) {
+                VRCShader.SetGlobalTexture(_pointLightAttenuationID, Attenuation);
+            }
+
             VRCShader.SetGlobalFloat(_pointLightCountID, _pointLightCount);
 
         }

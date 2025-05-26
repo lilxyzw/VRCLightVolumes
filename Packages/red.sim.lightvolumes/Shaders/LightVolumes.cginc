@@ -40,14 +40,30 @@ uniform float4 _UdonLightVolumeColor[32];
 // Point Lights count
 uniform float _UdonPointLightVolumeCount;
 
-// Point light position and invRangeSq 
+// Point light position and inversed squared range 
 uniform float4 _UdonPointLightVolumePosition[128];
 
-// Point light color and angle
+// Point light color and cos of outer angle
 uniform float4 _UdonPointLightVolumeColor[128];
 
 // Point light direction and cone falloff
 uniform float4 _UdonPointLightVolumeDirection[128];
+
+// Attenuation tex for point lights
+UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeAttenuation);
+
+inline float sdCapsule(float3 p, float3 a, float3 b, float r) {
+    
+    float3 pa = p - a;
+    float3 ba = b - a;
+
+    // 1 / |ba|², можно предвычислить и передавать как uniform
+    float invLenSq = rcp(dot(ba, ba));
+
+    float t = saturate(dot(pa, ba) * invLenSq);
+
+    return length(pa - ba * t) - r;
+}
 
 // Smoothstep to 0, 1 but cheaper
 float LV_Smoothstep01(float x) {
@@ -70,23 +86,40 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
     
     // Color, angle, direction and cone falloff
     float4 color = _UdonPointLightVolumeColor[(uint) id];
-    float angle = color.w;
+    float cosAngle = color.w;
     float4 ldir = _UdonPointLightVolumeDirection[(uint) id];
     float coneFalloff = ldir.w;
 
     float3 dirN = dir * rsqrt(sqlen);
-    
-    float spotMask = LV_Smoothstep01(saturate((dot(ldir.xyz, -dirN) - angle) * coneFalloff));
-    
     float dirRadius = sqlen * invSqRange;
-    float att = saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * spotMask;
     
-    float3 l0 = color.rgb * att;
+    float3 att = color.rgb; // Light attenuation
     
-    L0 += l0;
-    L1r += dirN * l0.r;
-    L1g += dirN * l0.g;
-    L1b += dirN * l0.b;
+    if (cosAngle < 1) { // It is a spot light
+        
+        float spotMask = dot(ldir.xyz, -dirN) - cosAngle;
+        if(spotMask == 0) return;
+        if (coneFalloff > 0) { // If it uses default attenuation
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_Smoothstep01(saturate(spotMask * coneFalloff));
+        } else { // If it uses Attenuation LUT
+            float spot = 1 - saturate(spotMask * rcp(1 - cosAngle));
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeAttenuation, float3(sqrt(spot), dirRadius, -coneFalloff));
+        }
+        
+    } else { // It is a point light
+        
+        if (coneFalloff > 0) { // If it uses default attenuation
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
+        } else { // If it uses Attenuation LUT
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeAttenuation, float3(0, dirRadius, -coneFalloff));
+        }
+        
+    }
+
+    L0 += att;
+    L1r += dirN * att.r;
+    L1g += dirN * att.g;
+    L1b += dirN * att.b;
 
 }
 

@@ -20,6 +20,8 @@ namespace VRCLightVolumes {
         public float Intensity = 1f;
         public float Angle = 1f;
         public float ConeFalloff = 1f;
+        public int AttenuationLUT_ID = -1;
+
         private void OnDrawGizmos() {
             Gizmos.color = new Color(1,1,0,0.25f);
             Gizmos.DrawWireSphere(transform.position, Range);
