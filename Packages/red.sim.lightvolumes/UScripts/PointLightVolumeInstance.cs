@@ -15,16 +15,33 @@ namespace VRCLightVolumes {
     public class PointLightVolumeInstance : MonoBehaviour
 #endif
     {
-        [Min(0.0001f)] public float Range = 5f;
+        public float Range = 5f;
         [ColorUsage(showAlpha: false)] public Color Color;
         public float Intensity = 1f;
         public float Angle = 1f;
-        public float ConeFalloff = 1f;
-        public int AttenuationLUT_ID = -1;
+        public float Falloff = 1f;
+        public int FalloffLUT = -1;
 
-        private void OnDrawGizmos() {
-            Gizmos.color = new Color(1,1,0,0.25f);
-            Gizmos.DrawWireSphere(transform.position, Range);
+        // Sets range data which is actually an inverted squared range
+        public void SetRange(float range) {
+            Range = 1 / (range * range);
+        }
+
+        // Sets angle data which is actually a Cos(angleRad / 2) 
+        public void SetAngle(float angleDeg) {
+            Angle = Mathf.Cos(angleDeg * Mathf.Deg2Rad * 0.5f);
+        }
+
+        // Sets LUT ID instead of falloff which is actually a negative ID value
+        public void SetFalloffLUT(int falloffLUT) {
+            Falloff = -falloffLUT;
+        }
+
+        // Sets both angle and falloff because angle required to determine falloff anyway
+        public void SetAngleFalloff(float angleDeg, float falloff) {
+            float outerAngle = angleDeg * Mathf.Deg2Rad * 0.5f;
+            Angle = Mathf.Cos(outerAngle);
+            Falloff = 1 / (Mathf.Cos(outerAngle * (1.0f - Mathf.Clamp01(falloff))) - Angle);
         }
 
     }

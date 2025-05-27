@@ -207,16 +207,11 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[pointId];
 
                 Vector4 p = instance.transform.position;
-                p.w = 1 / (instance.Range * instance.Range);
+                p.w = instance.Range;
                 Vector4 c = instance.Color * instance.Intensity;
-                float outerAngle = instance.Angle / 2;
-                c.w = Mathf.Cos(outerAngle);
+                c.w = instance.Angle;
                 Vector4 d = instance.transform.forward;
-                if (instance.AttenuationLUT_ID < 0) { // Default attenuation
-                    d.w = 1 / (Mathf.Cos(outerAngle * (1.0f - Mathf.Clamp01(instance.ConeFalloff))) - c.w);
-                } else { // LUT attenuation
-                    d.w = - instance.AttenuationLUT_ID;
-                }
+                d.w = instance.Falloff;
 
                 _pointLightPosition[i] = p;
                 _pointLightColor[i] = c;
@@ -250,7 +245,7 @@ namespace VRCLightVolumes {
             // All light volumes count
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
-            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, Mathf.Min(Mathf.Max(AdditiveMaxOverdraw, 0), _additiveCount));
+            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
 
             // Defines if Light Volumes enabled in scene
             VRCShader.SetGlobalFloat(lightVolumeEnabledID, 1);

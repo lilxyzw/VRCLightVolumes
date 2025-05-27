@@ -410,17 +410,24 @@ namespace VRCLightVolumes {
         private void OnEnable() {
             SetupDependencies();
             SetupBakeryDependencies();
+            LightVolumeSetup.RefreshVolumesList();
             LightVolumeSetup.SyncUdonScript();
         }
 
         private void OnDisable() {
-            if (LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
+            if (LightVolumeSetup != null) {
+                LightVolumeSetup.RefreshVolumesList();
+                LightVolumeSetup.SyncUdonScript();
+            }
             if (PreviewVoxels)
                 ReleasePreviewBuffers();
         }
 
         private void OnDestroy() {
-            if (LightVolumeSetup != null) LightVolumeSetup.SyncUdonScript();
+            if (LightVolumeSetup != null) {
+                LightVolumeSetup.RefreshVolumesList();
+                LightVolumeSetup.SyncUdonScript();
+            }
             if (PreviewVoxels)
                 ReleasePreviewBuffers();
         }

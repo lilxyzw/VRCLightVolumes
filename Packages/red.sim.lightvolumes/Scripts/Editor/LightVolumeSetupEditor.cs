@@ -7,9 +7,12 @@ namespace VRCLightVolumes {
     [CustomEditor(typeof(LightVolumeSetup))]
     public class LightVolumeSetupEditor : Editor {
 
-        private SerializedProperty volumesProp;
-        private SerializedProperty weightsProp;
-        private ReorderableList reorderableList;
+        private SerializedProperty _volumesProp;
+        private SerializedProperty _weightsProp;
+        private ReorderableList _lightVolumesList;
+
+        private SerializedProperty _pointLightVolumesProp;
+        private ReorderableList _pointLightVolumesList;
 
         private LightVolumeSetup _lightVolumeSetup;
 
@@ -22,12 +25,14 @@ namespace VRCLightVolumes {
 
             _lightVolumeSetup = (LightVolumeSetup)target;
 
-            volumesProp = serializedObject.FindProperty("LightVolumes");
-            weightsProp = serializedObject.FindProperty("LightVolumesWeights");
+            _volumesProp = serializedObject.FindProperty("LightVolumes");
+            _weightsProp = serializedObject.FindProperty("LightVolumesWeights");
 
-            reorderableList = new ReorderableList(
+            // ============ LIGHT VOLUMES LIST ===============
+
+            _lightVolumesList = new ReorderableList(
                 serializedObject,
-                volumesProp,
+                _volumesProp,
                 true, // draggable
                 true, // displayHeader
                 false, // displayAddButton
@@ -35,7 +40,7 @@ namespace VRCLightVolumes {
             );
 
             // Drawing header
-            reorderableList.drawHeaderCallback = (Rect rect) => {
+            _lightVolumesList.drawHeaderCallback = (Rect rect) => {
 
                 float totalWidth = rect.width;
                 float availableWidth = totalWidth - 15f - 4f;
@@ -70,12 +75,12 @@ namespace VRCLightVolumes {
                         for (int i = 0; i < DragAndDrop.objectReferences.Length; i++) {
                             GameObject go = (GameObject)DragAndDrop.objectReferences[i];
                             if (go.TryGetComponent(out LightVolume volume)) {
-                                int newIndex = volumesProp.arraySize;
+                                int newIndex = _volumesProp.arraySize;
                                 if (newIndex == 256) break;
-                                volumesProp.arraySize++;
-                                weightsProp.arraySize = volumesProp.arraySize;
-                                volumesProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = volume;
-                                weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 0;
+                                _volumesProp.arraySize++;
+                                _weightsProp.arraySize = _volumesProp.arraySize;
+                                _volumesProp.GetArrayElementAtIndex(newIndex).objectReferenceValue = volume;
+                                _weightsProp.GetArrayElementAtIndex(newIndex).floatValue = 0;
                             }
                         }
                         Event.current.Use();
@@ -87,12 +92,12 @@ namespace VRCLightVolumes {
             };
 
             // Drawing each element
-            reorderableList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) => {
+            _lightVolumesList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) => {
 
-                if (index < 0 || index >= volumesProp.arraySize || index >= weightsProp.arraySize) return;
+                if (index < 0 || index >= _volumesProp.arraySize || index >= _weightsProp.arraySize) return;
 
-                SerializedProperty volumeElement = volumesProp.GetArrayElementAtIndex(index);
-                SerializedProperty weightElement = weightsProp.GetArrayElementAtIndex(index);
+                SerializedProperty volumeElement = _volumesProp.GetArrayElementAtIndex(index);
+                SerializedProperty weightElement = _weightsProp.GetArrayElementAtIndex(index);
 
                 rect.y += 2; // Top padding
                 float totalWidth = rect.width;
@@ -105,7 +110,7 @@ namespace VRCLightVolumes {
 
                 if (volumeElement.objectReferenceValue != null && volumeElement.objectReferenceValue.GetType() == typeof(LightVolume)) {
                     var volume = (LightVolume)volumeElement.objectReferenceValue;
-                    GUIContent icon = volume.Additive ? EditorGUIUtility.IconContent("d_Spotlight Icon") : EditorGUIUtility.IconContent("d_PreMatLight1@2x");
+                    GUIContent icon = volume.Additive ? EditorGUIUtility.IconContent("d_AreaLight Icon") : EditorGUIUtility.IconContent("d_PreMatLight1@2x");
                     icon.tooltip = volume.Additive ? "Additive Volume" : "Regular Volume";
                     EditorGUI.LabelField(iconRect, icon);
                 }
@@ -116,21 +121,89 @@ namespace VRCLightVolumes {
             };
 
             // On Moving element around
-            reorderableList.onReorderCallbackWithDetails = (ReorderableList list, int oldIndex, int newIndex) => {
-                if (oldIndex >= 0 && oldIndex < weightsProp.arraySize && newIndex >= 0 && newIndex < weightsProp.arraySize) {
-                    weightsProp.MoveArrayElement(oldIndex, newIndex);
-                } else if (weightsProp.arraySize != volumesProp.arraySize) {
+            _lightVolumesList.onReorderCallbackWithDetails = (ReorderableList list, int oldIndex, int newIndex) => {
+                if (oldIndex >= 0 && oldIndex < _weightsProp.arraySize && newIndex >= 0 && newIndex < _weightsProp.arraySize) {
+                    _weightsProp.MoveArrayElement(oldIndex, newIndex);
+                } else if (_weightsProp.arraySize != _volumesProp.arraySize) {
                     // In case of a sync error
-                    weightsProp.arraySize = volumesProp.arraySize;
+                    _weightsProp.arraySize = _volumesProp.arraySize;
                     EditorUtility.SetDirty(target);
                 }
                 _lightVolumeSetup.SyncUdonScript();
             };
 
             // On Click on element
-            reorderableList.onSelectCallback = (ReorderableList list) => {
-                SerializedProperty volumeElement = volumesProp.GetArrayElementAtIndex(list.index);
+            _lightVolumesList.onSelectCallback = (ReorderableList list) => {
+                SerializedProperty volumeElement = _volumesProp.GetArrayElementAtIndex(list.index);
                 LightVolume volume = volumeElement.objectReferenceValue as LightVolume;
+                if (volume != null) EditorGUIUtility.PingObject(volume.gameObject);
+            };
+
+            // ================ POINT LIGHT VOLUMES LIST =============
+
+            _pointLightVolumesProp = serializedObject.FindProperty("PointLightVolumes");
+
+            _pointLightVolumesList = new ReorderableList(
+                serializedObject,
+                _pointLightVolumesProp,
+                true, // draggable
+                true, // displayHeader
+                false, // displayAddButton
+                false  // displayRemoveButton
+            );
+
+            // Drawing header
+            _pointLightVolumesList.drawHeaderCallback = (Rect rect) => {
+
+                float totalWidth = rect.width;
+                float availableWidth = totalWidth - 15f - 4f;
+                float weightWidth = 42f;
+                float space = 5f;
+                float volumeWidth = availableWidth - weightWidth - space;
+                float xOffset = rect.x + 15f;
+
+                Rect volumeHeaderRect = new Rect(xOffset, rect.y, volumeWidth, EditorGUIUtility.singleLineHeight);
+
+                EditorGUI.LabelField(volumeHeaderRect, "Point Light Volumes");
+
+            };
+
+            // Drawing each element
+            _pointLightVolumesList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) => {
+
+                if (index < 0 || index >= _pointLightVolumesProp.arraySize) return;
+
+                SerializedProperty volumeElement = _pointLightVolumesProp.GetArrayElementAtIndex(index);
+
+                rect.y += 2; // Top padding
+                float totalWidth = rect.width;
+                float weightWidth = 45f; // Weight width
+                float space = 5f;        // Spacing
+
+                Rect iconRect = new Rect(rect.x, rect.y, totalWidth - weightWidth - space, EditorGUIUtility.singleLineHeight);
+                Rect volumeRect = new Rect(rect.x + 24, rect.y, totalWidth - weightWidth - space, EditorGUIUtility.singleLineHeight);
+                Rect weightRect = new Rect(rect.x + totalWidth - weightWidth, rect.y, weightWidth, EditorGUIUtility.singleLineHeight);
+
+                if (volumeElement.objectReferenceValue != null && volumeElement.objectReferenceValue.GetType() == typeof(PointLightVolume)) {
+                    var volume = (PointLightVolume)volumeElement.objectReferenceValue;
+                    GUIContent icon = volume.Type == PointLightVolume.LightType.SpotLight ? EditorGUIUtility.IconContent("d_Spotlight Icon") : EditorGUIUtility.IconContent("d_Light Icon");
+                    icon.tooltip = volume.Type == PointLightVolume.LightType.SpotLight ? "Spot Light Volume" : "Point Light Volume";
+                    EditorGUI.LabelField(iconRect, icon);
+                }
+
+                EditorGUI.LabelField(volumeRect, volumeElement.objectReferenceValue != null ? volumeElement.objectReferenceValue.name : "None");
+
+            };
+
+            // On Moving element around
+            _pointLightVolumesList.onReorderCallbackWithDetails = (ReorderableList list, int oldIndex, int newIndex) => {
+                _lightVolumeSetup.SyncUdonScript();
+            };
+
+            // On Click on element
+            _pointLightVolumesList.onSelectCallback = (ReorderableList list) => {
+                SerializedProperty volumeElement = _pointLightVolumesProp.GetArrayElementAtIndex(list.index);
+                PointLightVolume volume = volumeElement.objectReferenceValue as PointLightVolume;
                 if (volume != null) EditorGUIUtility.PingObject(volume.gameObject);
             };
 
@@ -139,11 +212,11 @@ namespace VRCLightVolumes {
         public override void OnInspectorGUI() {
             serializedObject.Update();
 
-            if (volumesProp.arraySize != weightsProp.arraySize) {
-                weightsProp.arraySize = volumesProp.arraySize;
-                for (int i = 0; i < volumesProp.arraySize; i++) {
-                    if (i >= weightsProp.arraySize - (volumesProp.arraySize - weightsProp.arraySize)) {
-                        SerializedProperty weightElement = weightsProp.GetArrayElementAtIndex(i);
+            if (_volumesProp.arraySize != _weightsProp.arraySize) {
+                _weightsProp.arraySize = _volumesProp.arraySize;
+                for (int i = 0; i < _volumesProp.arraySize; i++) {
+                    if (i >= _weightsProp.arraySize - (_volumesProp.arraySize - _weightsProp.arraySize)) {
+                        SerializedProperty weightElement = _weightsProp.GetArrayElementAtIndex(i);
                         weightElement.floatValue = i;
                     }
                 }
@@ -171,11 +244,15 @@ namespace VRCLightVolumes {
 
             GUILayout.Space(10);
 
-            reorderableList.DoLayoutList();
+            if(_lightVolumeSetup.LightVolumes.Count > 0)
+                _lightVolumesList.DoLayoutList();
+
+            if (_lightVolumeSetup.PointLightVolumes.Count > 0)
+                _pointLightVolumesList.DoLayoutList();
 
             GUILayout.Space(-15);
 
-            List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev" };
+            List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "PointLightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev" };
             if (_lightVolumeSetup.BakingMode != LightVolumeSetup.Baking.Bakery) {
                 hiddenFields.Add("FixLightProbesL1");
             }
