@@ -7,6 +7,7 @@
 - [Mochies-Unity-Shaders](https://github.com/MochiesCode/Mochies-Unity-Shaders) (1.61)
 - [Graphlit Shaders and Shader Editor by z3y](https://github.com/z3y/Graphlit) (2.0.1)
 - [GeneLit by Momoma](https://github.com/momoma-null/GeneLit) (1.0.7)
+- [Moriohs Toon Shader](https://gitlab.com/xMorioh/moriohs-toon-shader) (v.2.1.0)
 - [Orels Unity Shaders (Toon and PBR)](https://github.com/orels1/orels-Unity-Shaders) (dev.12) (To access it you will need to enable "Show Pre-Release Packages" in VCC Settings)
 
 *More shaders yet to be added*
