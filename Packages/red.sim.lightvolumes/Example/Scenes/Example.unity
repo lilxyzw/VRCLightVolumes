@@ -1348,7 +1348,7 @@ MonoBehaviour:
   - {fileID: 1873981909}
   - {fileID: 634561122}
   - {fileID: 998485786}
-  Attenuation: {fileID: 18700000, guid: 1951848108a692b4b8e4118664520c37, type: 2}
+  FalloffLUT: {fileID: 18700000, guid: a672ae52826c9804e8105c42687a88da, type: 2}
 --- !u!4 &446951796
 Transform:
   m_ObjectHideFlags: 0
@@ -1813,7 +1813,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.55169815, b: 0.13396227, a: 1}
   Intensity: 17.04
   Angle: 0.8480481
-  Falloff: 6.5810294
+  Falloff: -2
   FalloffLUT: -1
 --- !u!114 &954898945
 MonoBehaviour:
@@ -1856,11 +1856,11 @@ MonoBehaviour:
   Range: 3.92
   Color: {r: 1, g: 0.55169815, b: 0.13396227, a: 1}
   Intensity: 17.04
-  Shape: 0
+  Shape: 1
   Angle: 64
   Falloff: 1
-  FalloffLUT: {fileID: 0}
-  FalloffLUT_ID: -1
+  FalloffLUT: {fileID: 2800000, guid: f2c9fa8b79e7cde47bfd7c3acb98392e, type: 3}
+  FalloffLUT_ID: 2
   PointLightVolumeInstance: {fileID: 954898944}
   LightVolumeSetup: {fileID: 446951793}
 --- !u!4 &954898947
@@ -2958,11 +2958,11 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1636616216}
-  Range: 0.06507705
+  Range: 0.021947874
   Color: {r: 1, g: 0.55169815, b: 0.13396227, a: 1}
-  Intensity: 17.04
-  Angle: 0.8480481
-  Falloff: 6.5810294
+  Intensity: 8.72
+  Angle: 0.88294756
+  Falloff: 0
   FalloffLUT: -1
 --- !u!4 &1636616214
 Transform:
@@ -2972,13 +2972,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1636616211}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.2950413, y: 0.5721031, z: -0.2313976, w: 0.7294545}
-  m_LocalPosition: {x: -0.257, y: 2.183, z: -16.89}
+  m_LocalRotation: {x: -0.0015644946, y: 0.61712664, z: 0.0012270587, w: 0.78686136}
+  m_LocalPosition: {x: -0.732, y: 0.582, z: -16.989}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 44.044, y: 76.213, z: 0}
+  m_LocalEulerAnglesHint: {x: -0.228, y: 76.213, z: 0}
 --- !u!114 &1636616216
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -3017,14 +3017,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 1
-  Range: 3.92
+  Range: 6.75
   Color: {r: 1, g: 0.55169815, b: 0.13396227, a: 1}
-  Intensity: 17.04
-  Shape: 0
-  Angle: 64
+  Intensity: 8.72
+  Shape: 1
+  Angle: 56
   Falloff: 1
-  FalloffLUT: {fileID: 0}
-  FalloffLUT_ID: -1
+  FalloffLUT: {fileID: 2800000, guid: 708ca3491bf35734287092ff34254577, type: 3}
+  FalloffLUT_ID: 0
   PointLightVolumeInstance: {fileID: 1636616213}
   LightVolumeSetup: {fileID: 446951793}
 --- !u!1 &1665989574
@@ -3990,8 +3990,8 @@ MonoBehaviour:
   Shape: 0
   Angle: 64
   Falloff: 1
-  FalloffLUT: {fileID: 0}
-  FalloffLUT_ID: -1
+  FalloffLUT: {fileID: 2800000, guid: f2c9fa8b79e7cde47bfd7c3acb98392e, type: 3}
+  FalloffLUT_ID: 2
   PointLightVolumeInstance: {fileID: 1873981909}
   LightVolumeSetup: {fileID: 446951793}
 --- !u!4 &1873981912
@@ -4275,8 +4275,8 @@ MonoBehaviour:
   Range: 0.06507705
   Color: {r: 1, g: 0.55169815, b: 0.13396227, a: 1}
   Intensity: 17.04
-  Angle: 0.8480481
-  Falloff: 6.5810294
+  Angle: 0.78260815
+  Falloff: -1
   FalloffLUT: -1
 --- !u!114 &1918749185
 MonoBehaviour:
@@ -4319,11 +4319,11 @@ MonoBehaviour:
   Range: 3.92
   Color: {r: 1, g: 0.55169815, b: 0.13396227, a: 1}
   Intensity: 17.04
-  Shape: 0
-  Angle: 64
+  Shape: 1
+  Angle: 77
   Falloff: 1
-  FalloffLUT: {fileID: 0}
-  FalloffLUT_ID: -1
+  FalloffLUT: {fileID: 2800000, guid: 2fa90b5ec6b509049843318be87f22f8, type: 3}
+  FalloffLUT_ID: 1
   PointLightVolumeInstance: {fileID: 1918749184}
   LightVolumeSetup: {fileID: 446951793}
 --- !u!4 &1918749187
@@ -4335,7 +4335,7 @@ Transform:
   m_GameObject: {fileID: 1918749183}
   serializedVersion: 2
   m_LocalRotation: {x: 0.2950413, y: 0.5721031, z: -0.2313976, w: 0.7294545}
-  m_LocalPosition: {x: 0.486, y: 1.983, z: -20.728}
+  m_LocalPosition: {x: 0.64, y: 1.79, z: -20.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

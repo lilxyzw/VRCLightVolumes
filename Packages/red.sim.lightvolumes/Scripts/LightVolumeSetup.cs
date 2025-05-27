@@ -95,6 +95,37 @@ namespace VRCLightVolumes {
             }
         }
 
+        // Generates LUT array based on all the LUT Textures2D provided in PointLightVolumes
+        public void GenerateLUTArray() {
+
+            List<PointLightVolume> lutVolumes = new List<PointLightVolume>();
+            List<Texture2D> lutTextures = new List<Texture2D>();
+
+            int count = PointLightVolumes.Count;
+            for (int i = 0; i < count; i++) {
+                if (PointLightVolumes[i].Shape == PointLightVolume.LightShape.FalloffLUT && PointLightVolumes[i].FalloffLUT != null) {
+                    lutVolumes.Add(PointLightVolumes[i]);
+                    lutTextures.Add(PointLightVolumes[i].FalloffLUT);
+                }
+            }
+
+            Texture2DArray lutArray = Texture2DArrayGenerator.CreateTexture2DArray(lutTextures, 128, 128, out int[] ids);
+
+            if (lutArray != null) {
+
+                for (int i = 0; i < ids.Length; i++) {
+                    lutVolumes[i].FalloffLUT_ID = ids[i];
+                    lutVolumes[i].SyncUdonScript();
+                }
+
+            }
+
+            LightVolumeManager.FalloffLUT = lutArray;
+
+            LVUtils.SaveTexture2DArrayAsAsset(lutArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUT.asset");
+
+        }
+
         // Subscribing to OnBaked events
         private void OnEnable() {
 #if BAKERY_INCLUDED

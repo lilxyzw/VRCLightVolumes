@@ -63,7 +63,9 @@ namespace VRCLightVolumes {
                 Rect weightHeaderRect = new Rect(xOffset + volumeWidth + space, rect.y, weightWidth, EditorGUIUtility.singleLineHeight);
                 Rect fieldRect = new Rect(xOffset + 96, rect.y + 2, 32, rect.height);
 
-                EditorGUI.LabelField(volumeHeaderRect, "Light Volumes");
+                GUIContent title = new GUIContent($"Light Volumes ({_lightVolumeSetup.LightVolumes.Count})");
+                title.tooltip = "Max 32 can be visible on scene at the same time.";
+                EditorGUI.LabelField(volumeHeaderRect, title);
                 EditorGUI.LabelField(weightHeaderRect, "Weight");
 
                 EventType eventType = Event.current.type;
@@ -164,7 +166,9 @@ namespace VRCLightVolumes {
 
                 Rect volumeHeaderRect = new Rect(xOffset, rect.y, volumeWidth, EditorGUIUtility.singleLineHeight);
 
-                EditorGUI.LabelField(volumeHeaderRect, "Point Light Volumes");
+                GUIContent title = new GUIContent($"Point Light Volumes ({_lightVolumeSetup.PointLightVolumes.Count})");
+                title.tooltip = "Max 128 can be visible on scene at the same time.";
+                EditorGUI.LabelField(volumeHeaderRect, title);
 
             };
 

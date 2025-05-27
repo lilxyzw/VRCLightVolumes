@@ -14,12 +14,15 @@ namespace VRCLightVolumes {
         public LightShape Shape = LightShape.Parametric;
         [Range(0.1f, 360)] public float Angle = 60f;
         [Range(0.001f, 1)] public float Falloff = 0f;
-        public Texture2D FalloffLUT;
+        public Texture2D FalloffLUT = null;
 
         public int FalloffLUT_ID = -1;
 
         public PointLightVolumeInstance PointLightVolumeInstance;
         public LightVolumeSetup LightVolumeSetup;
+
+        private Texture2D _falloffLUTPrev = null;
+        private LightShape _shapePrev = LightShape.Parametric;
 
         // Looks for LightVolumeSetup and LightVolumeInstance udon script and setups them if needed
         public void SetupDependencies() {
@@ -36,7 +39,19 @@ namespace VRCLightVolumes {
             }
         }
 
-        private void SyncUdonScript() {
+        private void Update() {
+            SetupDependencies();
+            if (_falloffLUTPrev != FalloffLUT) {
+                _falloffLUTPrev = FalloffLUT;
+                LightVolumeSetup.GenerateLUTArray();
+            }
+            if(_shapePrev != Shape) {
+                _shapePrev = Shape;
+                LightVolumeSetup.GenerateLUTArray();
+            }
+        }
+
+        public void SyncUdonScript() {
             SetupDependencies();
             PointLightVolumeInstance.Color = Color;
             PointLightVolumeInstance.Intensity = Intensity;

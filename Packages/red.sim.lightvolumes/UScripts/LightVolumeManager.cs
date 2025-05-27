@@ -32,7 +32,7 @@ namespace VRCLightVolumes {
 
         public PointLightVolumeInstance[] PointLightVolumeInstances = new PointLightVolumeInstance[0];
 
-        public Texture2DArray Attenuation;
+        public Texture2DArray FalloffLUT;
 
         private bool _isInitialized = false;
 
@@ -262,8 +262,8 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
             }
-            if(Attenuation != null) {
-                VRCShader.SetGlobalTexture(_pointLightAttenuationID, Attenuation);
+            if(FalloffLUT != null) {
+                VRCShader.SetGlobalTexture(_pointLightAttenuationID, FalloffLUT);
             }
 
             VRCShader.SetGlobalFloat(_pointLightCountID, _pointLightCount);

@@ -41,10 +41,10 @@ namespace VRCLightVolumes {
         // Check if it's previewed as a prefab, or it's a part of a scene
         public static bool IsInPrefabAsset(Object obj) {
 #if UNITY_EDITOR
-        var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
-        var prefabType = PrefabUtility.GetPrefabAssetType(obj);
-        var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
-        return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            var prefabType = PrefabUtility.GetPrefabAssetType(obj);
+            var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
+            return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
 #else
             return false;
 #endif
@@ -84,40 +84,80 @@ namespace VRCLightVolumes {
         // Saves 3D Texture to Assets
         public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
 #if UNITY_EDITOR
-        if (textureToSave == null) {
-            Debug.LogError("[LightVolumeUtils] Error saving Texture3D: texture is null");
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(assetPath)) {
-            Debug.LogError("[LightVolumeUtils] Error saving Texture3D: Saving path is null");
-            return false;
-        }
-
-        try {
-            string directoryPath = Path.GetDirectoryName(assetPath);
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
-                Directory.CreateDirectory(directoryPath);
-                AssetDatabase.Refresh();
+            if (textureToSave == null) {
+                Debug.LogError("[LightVolumeUtils] Error saving Texture3D: texture is null");
+                return false;
             }
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeUtils] Error while creating folders '{assetPath}': {e.Message}");
-            return false;
-        }
 
-        try {
-            AssetDatabase.CreateAsset(textureToSave, assetPath);
-            EditorUtility.SetDirty(textureToSave);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log($"[LightVolumeUtils] Texture3D saved at path: '{assetPath}'");
-            return true;
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeUtils] Error saving Texture3D at path: '{assetPath}': {e.Message}");
-            return false;
-        }
+            if (string.IsNullOrEmpty(assetPath)) {
+                Debug.LogError("[LightVolumeUtils] Error saving Texture3D: Saving path is null");
+                return false;
+            }
+
+            try {
+                string directoryPath = Path.GetDirectoryName(assetPath);
+                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
+                    Directory.CreateDirectory(directoryPath);
+                    AssetDatabase.Refresh();
+                }
+            } catch (System.Exception e) {
+                Debug.LogError($"[LightVolumeUtils] Error while creating folders '{assetPath}': {e.Message}");
+                return false;
+            }
+
+            try {
+                AssetDatabase.CreateAsset(textureToSave, assetPath);
+                EditorUtility.SetDirty(textureToSave);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                Debug.Log($"[LightVolumeUtils] Texture3D saved at path: '{assetPath}'");
+                return true;
+            } catch (System.Exception e) {
+                Debug.LogError($"[LightVolumeUtils] Error saving Texture3D at path: '{assetPath}': {e.Message}");
+                return false;
+            }
 #else
             Debug.LogError($"[LightVolumeUtils] You can only save Texture3D in editor!");
+            return false;
+#endif
+        }
+
+        // Saves 2D Texture Array to Assets
+        public static bool SaveTexture2DArrayAsAsset(Texture2DArray textureToSave, string assetPath) {
+#if UNITY_EDITOR
+            if (textureToSave == null) {
+                Debug.LogError("[LightVolumeUtils] Error saving Texture2DArray: texture is null");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(assetPath)) {
+                Debug.LogError("[LightVolumeUtils] Error saving Texture2DArray: Saving path is null");
+                return false;
+            }
+
+            try {
+                string directoryPath = Path.GetDirectoryName(assetPath);
+                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
+                    Directory.CreateDirectory(directoryPath);
+                    AssetDatabase.Refresh();
+                }
+            } catch (System.Exception e) {
+                Debug.LogError($"[LightVolumeUtils] Error while creating folders '{assetPath}': {e.Message}");
+                return false;
+            }
+
+            try {
+                AssetDatabase.CreateAsset(textureToSave, assetPath);
+                EditorUtility.SetDirty(textureToSave);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                return true;
+            } catch (System.Exception e) {
+                Debug.LogError($"[LightVolumeUtils] Error saving Texture2DArray at path: '{assetPath}': {e.Message}");
+                return false;
+            }
+#else
+            Debug.LogError($"[LightVolumeUtils] You can only save Texture2DArray in editor!");
             return false;
 #endif
         }
