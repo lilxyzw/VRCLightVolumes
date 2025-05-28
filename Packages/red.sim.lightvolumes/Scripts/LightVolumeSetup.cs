@@ -46,6 +46,8 @@ namespace VRCLightVolumes {
 
         public Baking _bakingModePrev;
 
+        public bool IsLegacyUVWConverted = false; // Is legacy UVW fix applied. Only need to do it once, so it's a flag for that
+
 #if UNITY_EDITOR
 
 #if BAKERY_INCLUDED
@@ -98,31 +100,64 @@ namespace VRCLightVolumes {
         // Generates LUT array based on all the LUT Textures2D provided in PointLightVolumes
         public void GenerateLUTArray() {
 
-            List<PointLightVolume> lutVolumes = new List<PointLightVolume>();
+            List<PointLightVolume> spotVolumes = new List<PointLightVolume>();
             List<Texture2D> lutTextures = new List<Texture2D>();
 
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
-                if (PointLightVolumes[i].Shape == PointLightVolume.LightShape.FalloffLUT && PointLightVolumes[i].FalloffLUT != null) {
-                    lutVolumes.Add(PointLightVolumes[i]);
+                if (PointLightVolumes[i].Shape == PointLightVolume.LightShape.Custom && PointLightVolumes[i].Type == PointLightVolume.LightType.SpotLight && PointLightVolumes[i].FalloffLUT != null) {
+                    spotVolumes.Add(PointLightVolumes[i]);
                     lutTextures.Add(PointLightVolumes[i].FalloffLUT);
                 }
             }
 
-            Texture2DArray lutArray = Texture2DArrayGenerator.CreateTexture2DArray(lutTextures, 128, 128, out int[] ids);
+            Texture2DArray lutArray = TextureArrayGenerator.CreateTexture2DArray(lutTextures, 128, 128, out int[] ids);
 
             if (lutArray != null) {
 
                 for (int i = 0; i < ids.Length; i++) {
-                    lutVolumes[i].FalloffLUT_ID = ids[i];
-                    lutVolumes[i].SyncUdonScript();
+                    spotVolumes[i].CustomID = ids[i];
+                    spotVolumes[i].SyncUdonScript();
                 }
 
             }
 
             LightVolumeManager.FalloffLUT = lutArray;
 
-            LVUtils.SaveTexture2DArrayAsAsset(lutArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUT.asset");
+            if(lutArray != null)
+                LVUtils.SaveAsAsset(lutArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUTArray.asset");
+
+        }
+
+        // Generates Cubemap array based on all the Cubemap textures provided in PointLightVolumes
+        public void GenerateCubemapArray() {
+
+            List<PointLightVolume> pointVolumes = new List<PointLightVolume>();
+            List<Cubemap> cubeTextures = new List<Cubemap>();
+
+            int count = PointLightVolumes.Count;
+            for (int i = 0; i < count; i++) {
+                if (PointLightVolumes[i].Shape == PointLightVolume.LightShape.Custom && PointLightVolumes[i].Type == PointLightVolume.LightType.PointLight && PointLightVolumes[i].Cubemap != null) {
+                    pointVolumes.Add(PointLightVolumes[i]);
+                    cubeTextures.Add(PointLightVolumes[i].Cubemap);
+                }
+            }
+
+            CubemapArray cubeArray = TextureArrayGenerator.CreateCubemapArray(cubeTextures, 512, out int[] ids);
+
+            if (cubeArray != null) {
+
+                for (int i = 0; i < ids.Length; i++) {
+                    pointVolumes[i].CustomID = ids[i];
+                    pointVolumes[i].SyncUdonScript();
+                }
+
+            }
+
+            LightVolumeManager.Cubemaps = cubeArray;
+            
+            if (cubeArray != null)
+                LVUtils.SaveAsAsset(cubeArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightCubemapArray.asset");
 
         }
 
@@ -241,6 +276,7 @@ namespace VRCLightVolumes {
 
         private void Update() {
             SetupDependencies();
+            ConvertLegacyUVW();
             // Resetup required game objects and components for light volumes in new baking mode
             if (_bakingModePrev != BakingMode) {
                 _bakingModePrev = BakingMode;
@@ -250,6 +286,35 @@ namespace VRCLightVolumes {
                 }
                 SyncUdonScript();
             }
+        }
+
+        // Try to convert Legacy UVW data into a new compact data format
+        private void ConvertLegacyUVW() {
+
+            if (IsLegacyUVWConverted || LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
+
+            for (int i = 0; i < LightVolumes.Count; i++) {
+
+                if (LightVolumes[i] == null) continue;
+                var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
+                if (lightVolumeInstance == null) continue;
+                if(lightVolumeInstance.BoundsUvwMin0.w != 0 && lightVolumeInstance.BoundsUvwMin1.w != 0 && lightVolumeInstance.BoundsUvwMin2.w != 0) {
+                    continue; // This is already NOT Legacy UVW, skip
+                }
+
+                Vector3 scale = lightVolumeInstance.BoundsUvwMax0 - lightVolumeInstance.BoundsUvwMin0;
+                Vector3 uvwMin0 = lightVolumeInstance.BoundsUvwMin0;
+                Vector3 uvwMin1 = lightVolumeInstance.BoundsUvwMin1;
+                Vector3 uvwMin2 = lightVolumeInstance.BoundsUvwMin2;
+
+                lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
+                lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
+                lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+
+                LVUtils.MarkDirty(lightVolumeInstance);
+            }
+
+            IsLegacyUVWConverted = true;
 
         }
 
@@ -274,10 +339,16 @@ namespace VRCLightVolumes {
 
                 if (lightVolumeInstance == null) continue;
 
-                lightVolumeInstance.BoundsUvwMin0 = atlas.BoundsUvwMin[i * 3];
-                lightVolumeInstance.BoundsUvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
-                lightVolumeInstance.BoundsUvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
+                Vector3 scale = atlas.BoundsUvwMax[i * 3] - atlas.BoundsUvwMin[i * 3];
+                Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 3];
+                Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
+                Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
 
+                lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
+                lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
+                lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+
+                // Legacy
                 lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
                 lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
                 lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
@@ -287,7 +358,7 @@ namespace VRCLightVolumes {
                 LVUtils.MarkDirty(lightVolumeInstance);
             }
 
-            LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
+            LVUtils.SaveAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
 
             SyncUdonScript();
 

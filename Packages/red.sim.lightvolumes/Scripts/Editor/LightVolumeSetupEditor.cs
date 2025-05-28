@@ -256,7 +256,7 @@ namespace VRCLightVolumes {
 
             GUILayout.Space(-15);
 
-            List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "PointLightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev" };
+            List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "PointLightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev", "IsLegacyUVWConverted" };
             if (_lightVolumeSetup.BakingMode != LightVolumeSetup.Baking.Bakery) {
                 hiddenFields.Add("FixLightProbesL1");
             }

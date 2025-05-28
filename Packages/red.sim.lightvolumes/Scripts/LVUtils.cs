@@ -81,16 +81,15 @@ namespace VRCLightVolumes {
             return (value - MinOld) / (MaxOld - MinOld);
         }
 
-        // Saves 3D Texture to Assets
-        public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
+        public static bool SaveAsAsset(Object asset, string assetPath) {
 #if UNITY_EDITOR
-            if (textureToSave == null) {
-                Debug.LogError("[LightVolumeUtils] Error saving Texture3D: texture is null");
+            if (asset == null) {
+                Debug.LogError("[LightVolumeUtils] Error saving file: Asset is null");
                 return false;
             }
 
             if (string.IsNullOrEmpty(assetPath)) {
-                Debug.LogError("[LightVolumeUtils] Error saving Texture3D: Saving path is null");
+                Debug.LogError("[LightVolumeUtils] Error saving file: Saving path is null");
                 return false;
             }
 
@@ -106,58 +105,17 @@ namespace VRCLightVolumes {
             }
 
             try {
-                AssetDatabase.CreateAsset(textureToSave, assetPath);
-                EditorUtility.SetDirty(textureToSave);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-                Debug.Log($"[LightVolumeUtils] Texture3D saved at path: '{assetPath}'");
-                return true;
-            } catch (System.Exception e) {
-                Debug.LogError($"[LightVolumeUtils] Error saving Texture3D at path: '{assetPath}': {e.Message}");
-                return false;
-            }
-#else
-            Debug.LogError($"[LightVolumeUtils] You can only save Texture3D in editor!");
-            return false;
-#endif
-        }
-
-        // Saves 2D Texture Array to Assets
-        public static bool SaveTexture2DArrayAsAsset(Texture2DArray textureToSave, string assetPath) {
-#if UNITY_EDITOR
-            if (textureToSave == null) {
-                Debug.LogError("[LightVolumeUtils] Error saving Texture2DArray: texture is null");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(assetPath)) {
-                Debug.LogError("[LightVolumeUtils] Error saving Texture2DArray: Saving path is null");
-                return false;
-            }
-
-            try {
-                string directoryPath = Path.GetDirectoryName(assetPath);
-                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
-                    Directory.CreateDirectory(directoryPath);
-                    AssetDatabase.Refresh();
-                }
-            } catch (System.Exception e) {
-                Debug.LogError($"[LightVolumeUtils] Error while creating folders '{assetPath}': {e.Message}");
-                return false;
-            }
-
-            try {
-                AssetDatabase.CreateAsset(textureToSave, assetPath);
-                EditorUtility.SetDirty(textureToSave);
+                AssetDatabase.CreateAsset(asset, assetPath);
+                EditorUtility.SetDirty(asset);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
                 return true;
             } catch (System.Exception e) {
-                Debug.LogError($"[LightVolumeUtils] Error saving Texture2DArray at path: '{assetPath}': {e.Message}");
+                Debug.LogError($"[LightVolumeUtils] Error saving asset at path: '{assetPath}': {e.Message}");
                 return false;
             }
 #else
-            Debug.LogError($"[LightVolumeUtils] You can only save Texture2DArray in editor!");
+            Debug.LogError($"[LightVolumeUtils] You can only save asset in editor!");
             return false;
 #endif
         }
@@ -322,6 +280,29 @@ namespace VRCLightVolumes {
             sh[b, z] = L1b.z;
 
             return sh;
+        }
+
+        public static void TextureSetReadWrite(Texture texture, bool enabled) {
+#if UNITY_EDITOR
+            if (texture == null) {
+                return;
+            }
+
+            string path = AssetDatabase.GetAssetPath(texture);
+            if (string.IsNullOrEmpty(path)) {
+                return;
+            }
+
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null) {
+                return;
+            }
+
+            if (importer.isReadable != enabled) {
+                importer.isReadable = enabled;
+                importer.SaveAndReimport();
+            }
+#endif
         }
 
     }

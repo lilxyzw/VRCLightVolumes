@@ -254,9 +254,9 @@ namespace VRCLightVolumes {
 
                 // Saving 3D Texture assets
                 string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}";
-                LVUtils.SaveTexture3DAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
-                LVUtils.SaveTexture3DAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
-                LVUtils.SaveTexture3DAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
+                LVUtils.SaveAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
+                LVUtils.SaveAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
+                LVUtils.SaveAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
 
                 // Applying textures to volume
                 Texture0 = tex0;

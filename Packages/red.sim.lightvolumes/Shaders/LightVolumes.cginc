@@ -1,6 +1,19 @@
 ﻿#ifndef VRC_LIGHT_VOLUMES_INCLUDED
 #define VRC_LIGHT_VOLUMES_INCLUDED
 
+// Makes it possible to sample Texcure Cube Arrays in surface shaders. Thanks to error.mdl!
+#if defined(SHADER_TARGET_SURFACE_ANALYSIS_MOJOSHADER)
+    #define UNITY_DECLARE_TEXCUBEARRAY(tex) samplerCUBE tex
+    #define UNITY_DECLARE_TEXCUBEARRAY_NOSAMPLER(tex) samplerCUBE tex
+    #define UNITY_ARGS_TEXCUBEARRAY(tex) samplerCUBE tex
+    #define UNITY_PASS_TEXCUBEARRAY(tex) tex
+
+    #define UNITY_SAMPLE_TEXCUBEARRAY(tex,coord) texCUBE(tex,coord)
+    #define UNITY_SAMPLE_TEXCUBEARRAY_LOD(tex,coord,lod) texCUBElod(tex, float4(coord, lod))
+    #define UNITY_SAMPLE_TEXCUBEARRAY_SAMPLER(tex,samplertex,coord)  texCUBE(tex,coord)
+    #define UNITY_SAMPLE_TEXCUBEARRAY_SAMPLER_LOD(tex,samplertex,coord,lod) texCUBElod(tex, float4(coord, lod))
+#endif
+
 // Are Light Volumes enabled on scene?
 uniform float _UdonLightVolumeEnabled;
 
@@ -22,17 +35,17 @@ uniform float _UdonLightVolumeSharpBounds;
 // Main 3D Texture atlas
 uniform sampler3D _UdonLightVolume;
 
-// World to Local (-0.5, 0.5) UVW Matrix
-uniform float4x4 _UdonLightVolumeInvWorldMatrix[32];
+// World to Local (-0.5, 0.5) UVW Matrix 3x4
+uniform float4 _UdonLightVolumeInvWorldMatrix3x4[96];
 
-// L1 SH components rotation (relative to baked rotation)
-uniform float3 _UdonLightVolumeRotation[64];
+// L1 SH quaternion rotation (relative to baked rotation)
+uniform float4 _UdonLightVolumeRotationQaternion[32];
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[32];
 
-// AABB Bounds of islands on the 3D Texture atlas
-uniform float3 _UdonLightVolumeUvw[192];
+// AABB Bounds of islands on the 3D Texture atlas. XYZ: UvwMin, W: Scale per axis
+uniform float4 _UdonLightVolumeUvwScale[96];
 
 // Color multiplier (RGB) | If we actually need to rotate L1 components at all (A)
 uniform float4 _UdonLightVolumeColor[32];
@@ -43,19 +56,29 @@ uniform float _UdonPointLightVolumeCount;
 // Point light position and inversed squared range 
 uniform float4 _UdonPointLightVolumePosition[128];
 
-// Point light color and cos of outer angle
+// Point light color and spot light cos of outer angle
 uniform float4 _UdonPointLightVolumeColor[128];
 
-// Point light direction and cone falloff
+// Spot light direction and cone falloff
 uniform float4 _UdonPointLightVolumeDirection[128];
 
-// Attenuation tex for point lights
-UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeAttenuation);
+// LUT tex array for spot lights
+UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeLUT);
+
+// Cubemap tex array for point lights
+UNITY_DECLARE_TEXCUBEARRAY(_UdonPointLightVolumeCubemap);
 
 // Smoothstep to 0, 1 but cheaper
 float LV_Smoothstep01(float x) {
     return x * x * (3 - 2 * x);
 }
+
+// Rotates vector by Quaternion
+float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
+    float3 t = 2.0 * cross(q.xyz, v);
+    return v + q.w * t + cross(q.xyz, t);
+}
+
 
 // Samples spot light
 void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b, inout uint count) {
@@ -90,15 +113,16 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_Smoothstep01(saturate(spotMask * coneFalloff));
         } else { // If it uses Attenuation LUT
             float spot = 1 - saturate(spotMask * rcp(1 - cosAngle));
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeAttenuation, float3(sqrt(spot), dirRadius, -coneFalloff));
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(spot, dirRadius)), -coneFalloff)).xyz;
         }
         
     } else { // It is a point light
         
-        if (coneFalloff > 0) { // If it uses default attenuation
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
-        } else { // If it uses Attenuation LUT
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeAttenuation, float3(0, dirRadius, -coneFalloff));
+        att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
+
+        if (coneFalloff <= 0) { // If it uses a cubemap
+            dirN = LV_MultiplyVectorByQuaternion(dirN, float4(ldir.xyz, cosAngle - 1)); // Rotate cubemap
+            att *= UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(dirN, -coneFalloff), 0).xyz;
         }
         
     }
@@ -136,23 +160,25 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
     
     float3 att = color.rgb; // Light attenuation
     
+    float3 dirN = dir * rsqrt(sqlen);
+    
     if (cosAngle < 1) { // It is a spot light
-        float3 dirN = dir * rsqrt(sqlen);
         float spotMask = dot(ldir.xyz, -dirN) - cosAngle;
         if(spotMask < 0) return;
         if (coneFalloff > 0) { // If it uses default attenuation
             att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_Smoothstep01(saturate(spotMask * coneFalloff));
         } else { // If it uses Attenuation LUT
             float spot = 1 - saturate(spotMask * rcp(1 - cosAngle));
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeAttenuation, float3(sqrt(spot), dirRadius, -coneFalloff));
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(spot), dirRadius, -coneFalloff));
         }
         
     } else { // It is a point light
         
-        if (coneFalloff > 0) { // If it uses default attenuation
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
-        } else { // If it uses Attenuation LUT
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeAttenuation, float3(0, dirRadius, -coneFalloff));
+        att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
+
+        if (coneFalloff <= 0) { // If it uses a cubemap
+            dirN = LV_MultiplyVectorByQuaternion(dirN, ldir); // Rotate cubemap
+            att *= UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(dirN, -coneFalloff), 0).xyz;
         }
         
     }
@@ -163,10 +189,13 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
 
 }
 
-// Rotates vector by Matrix 2x3
-float3 LV_MultiplyVectorByMatrix2x3(float3 v, float3 r0, float3 r1) {
-    float3 r2 = cross(r0, r1);
-    return float3(dot(v, r0), dot(v, r1), dot(v, r2));
+// Gets current rotation matrix by volume ID
+float4x4 LV_Matrix(uint id) {
+    int id3 = id * 3;
+    float4 row0 = _UdonLightVolumeInvWorldMatrix3x4[id3];
+    float4 row1 = _UdonLightVolumeInvWorldMatrix3x4[id3 + 1];
+    float4 row2 = _UdonLightVolumeInvWorldMatrix3x4[id3 + 2];
+    return float4x4(row0, row1, row2, float4(0, 0, 0, 1));
 }
 
 // Checks if local UVW point is in bounds from -0.5 to +0.5
@@ -176,7 +205,7 @@ bool LV_PointLocalAABB(float3 localUVW){
 
 // Calculates local UVW using volume ID
 float3 LV_LocalFromVolume(uint volumeID, float3 worldPos) {
-    return mul(_UdonLightVolumeInvWorldMatrix[volumeID], float4(worldPos, 1.0)).xyz;
+    return mul(LV_Matrix(volumeID), float4(worldPos, 1.0)).xyz;
 }
 
 // Samples 3 SH textures and packing them into L1 channels
@@ -222,12 +251,16 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
 void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     
     // Additive UVW
-    uint uvwID = id * 6;
-    float3 uvwMin0 = _UdonLightVolumeUvw[uvwID].xyz;
-    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - uvwMin0);
-    float3 uvw0 = uvwMin0 + uvwScaled;
-    float3 uvw1 = _UdonLightVolumeUvw[uvwID + 2].xyz + uvwScaled;
-    float3 uvw2 = _UdonLightVolumeUvw[uvwID + 4].xyz + uvwScaled;
+    uint uvwID = id * 3;
+    float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
+    float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
+    float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
+    float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
+    
+    float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
+    float3 uvw0 = uvwPos0.xyz + uvwScaled;
+    float3 uvw1 = uvwPos1.xyz + uvwScaled;
+    float3 uvw2 = uvwPos2.xyz + uvwScaled;
                 
     // Sample additive
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
@@ -241,21 +274,21 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     
     // Rotate if needed
     if (color.a != 0) {
-        int id2 = id * 2;
-        float3 r0 = _UdonLightVolumeRotation[id2];
-        float3 r1 = _UdonLightVolumeRotation[id2 + 1];
-        L1r = LV_MultiplyVectorByMatrix2x3(L1r, r0, r1);
-        L1g = LV_MultiplyVectorByMatrix2x3(L1g, r0, r1);
-        L1b = LV_MultiplyVectorByMatrix2x3(L1b, r0, r1);
+        float4 r = _UdonLightVolumeRotationQaternion[id];
+        L1r = LV_MultiplyVectorByQuaternion(L1r, r);
+        L1g = LV_MultiplyVectorByQuaternion(L1g, r);
+        L1b = LV_MultiplyVectorByQuaternion(L1b, r);
     }
                 
 }
 
 // Samples a Volume with ID and Local UVW, but L0 component only
 float3 LV_SampleVolume_L0(uint id, float3 localUVW) {
-    uint uvwID = id * 6;
-    float3 uvwMin0 = _UdonLightVolumeUvw[uvwID].xyz;
-    float3 uvw0 = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - uvwMin0) + uvwMin0;
+    uint uvwID = id * 3;
+    float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
+    float3 uvwScale = float3(uvwPos0.w, _UdonLightVolumeUvwScale[uvwID + 1].w, _UdonLightVolumeUvwScale[uvwID + 2].w);
+    float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
+    float3 uvw0 = uvwPos0.xyz + uvwScaled;
     return tex3Dlod(_UdonLightVolume, float4(uvw0, 0)).rgb * _UdonLightVolumeColor[id].rgb;
 }
 

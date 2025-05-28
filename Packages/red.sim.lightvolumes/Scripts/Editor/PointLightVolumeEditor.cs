@@ -10,6 +10,9 @@ namespace VRCLightVolumes {
 
         PointLightVolume PointLightVolume;
 
+        const int TEX_SIZE = 128;
+        Texture2D lutTexture;
+
         private void OnEnable() {
             PointLightVolume = (PointLightVolume)target;
         }
@@ -18,7 +21,7 @@ namespace VRCLightVolumes {
 
             serializedObject.Update();
 
-            List<string> hiddenFields = new List<string> { "m_Script", "FalloffLUT_ID", "PointLightVolumeInstance", "LightVolumeSetup" };
+            List<string> hiddenFields = new List<string> { "m_Script", "CustomID", "PointLightVolumeInstance", "LightVolumeSetup" };
 
             if(PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
                 hiddenFields.Add("Angle");
@@ -27,8 +30,14 @@ namespace VRCLightVolumes {
 
             if (PointLightVolume.Shape == PointLightVolume.LightShape.Parametric) {
                 hiddenFields.Add("FalloffLUT");
-            } else if (PointLightVolume.Shape == PointLightVolume.LightShape.FalloffLUT) {
+                hiddenFields.Add("Cubemap");
+            } else if (PointLightVolume.Shape == PointLightVolume.LightShape.Custom) {
                 hiddenFields.Add("Falloff");
+                if(PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
+                    hiddenFields.Add("FalloffLUT");
+                } else {
+                    hiddenFields.Add("Cubemap");
+                }
             }
 
             DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());
@@ -75,14 +84,10 @@ namespace VRCLightVolumes {
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
                 Handles.color = new Color(1f, 1f, 0f, 0.6f);
                 DrawSpotLight(origin, diskCenter, forward, radius, dirs);
-                Handles.color = new Color(1f, 1f, 1f, 0.1f);
-                DrawPointLight(origin, range);
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
                 DrawSpotLight(origin, diskCenter, forward, radius, dirs);
-                Handles.color = new Color(1f, 1f, 1f, 0.025f);
-                DrawPointLight(origin, range);
 
             }
 
