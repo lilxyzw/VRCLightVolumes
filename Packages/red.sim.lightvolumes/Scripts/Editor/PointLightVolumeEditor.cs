@@ -38,6 +38,9 @@ namespace VRCLightVolumes {
                 } else {
                     hiddenFields.Add("Cubemap");
                 }
+            } else if (PointLightVolume.Shape == PointLightVolume.LightShape.LUT) {
+                hiddenFields.Add("Falloff");
+                hiddenFields.Add("Cubemap");
             }
 
             DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());

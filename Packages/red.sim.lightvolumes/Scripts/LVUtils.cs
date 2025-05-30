@@ -239,7 +239,7 @@ namespace VRCLightVolumes {
 
         // Fixes bakery L1 probe channel
         public static Vector3 LinearizeSingleSH(float L0, Vector3 L1) {
-            L1 = L1 / 2;
+            L1 = L1 * 0.5f;
             float L1length = L1.magnitude;
             if (L1length > 0.0 && L0 > 0.0) {
                 L1 *= Mathf.Min(L0 / L1length, 1.13f);

@@ -16,60 +16,103 @@ namespace VRCLightVolumes {
 #endif
     {
         public bool IsDynamic = false;
-        public float Range = 5f;
-        [ColorUsage(showAlpha: false)] public Color Color;
-        public float Intensity = 1f;
-        public float Angle = 1f;
-        public float Falloff = 1f;
-
         public Vector4 PositionData;
         public Vector4 ColorData;
         public Vector4 DirectionData;
+        public float CustomID;
+        public float angle;
+
+        // Checks if it's a spotlight
+        public bool IsSpotLight() {
+            return PositionData.w < 0;
+        }
+
+        // Checks if uses custom texture
+        public bool IsCustomTexture() {
+            return CustomID < 0;
+        }
+
+        // Checks if uses LUT
+        public bool IsLut() {
+            return CustomID > 0;
+        }
+
+        // Checks if uses Parametric mode
+        public bool IsParametric() {
+            return CustomID == 0;
+        }
 
         // Sets range data which is actually an inverted squared range
         public void SetRange(float range) {
-            Range = 1 / (range * range);
+            PositionData.w = Mathf.Sign(PositionData.w) / (range * range); // Saving the sign that was here before
         }
 
-        // Sets angle data which is actually a Cos(angleRad / 2) 
-        public void SetAngle(float angleDeg) {
-            Angle = Mathf.Cos(angleDeg * Mathf.Deg2Rad * 0.5f);
+        // Sets LUT ID
+        public void SetLut(int id) {
+            CustomID = id + 1;
+            ColorData.w = Mathf.Cos(angle);
         }
 
-        // Sets LUT or Cubemap ID instead of falloff which is actually a negative ID value
-        public void SetCustomID(int id) {
-            Falloff = -id;
+        // Sets Cubemap or a Cookie ID
+        public void SetCustomTexture(int id) {
+            CustomID = - id - 1;
+            if(IsSpotLight()) { // If it's spotlight
+                ColorData.w = Mathf.Tan(angle);
+            }
         }
 
-        // Sets both angle and falloff because angle required to determine falloff anyway
-        public void SetAngleFalloff(float angleDeg, float falloff) {
-            float outerAngle = angleDeg * Mathf.Deg2Rad * 0.5f;
-            Angle = Mathf.Cos(outerAngle);
-            Falloff = 1 / (Mathf.Cos(outerAngle * (1.0f - Mathf.Clamp01(falloff))) - Angle);
+        // Sets light into parametric mode
+        public void SetParametric() {
+            CustomID = 0;
+            ColorData.w = Mathf.Cos(angle);
+        }
+
+        // Sets light into the point light type
+        public void SetPointLight() {
+            PositionData.w = Mathf.Abs(PositionData.w);
+        }
+
+        // Sets light into the spot light type with both angle and falloff because angle required to determine falloff anyway
+        public void SetSpotLight(float angleDeg, float falloff) {
+            angle = angleDeg * Mathf.Deg2Rad * 0.5f;
+            if (IsCustomTexture()) {
+                ColorData.w = Mathf.Tan(angle); // Using Custom Tex
+            } else {
+                ColorData.w = Mathf.Cos(angle);
+                DirectionData.w = 1 / (Mathf.Cos(angle * (1.0f - Mathf.Clamp01(falloff))) - ColorData.w);
+            }
+            PositionData.w = - Mathf.Abs(PositionData.w);
+        }
+
+        // Sets light into the spot light type with angle specified
+        public void SetSpotLight(float angleDeg) {
+            angle = angleDeg * Mathf.Deg2Rad * 0.5f;
+            if (IsCustomTexture()) {
+                ColorData.w = Mathf.Tan(angle); // Using Custom Tex
+            } else {
+                ColorData.w = Mathf.Cos(angle);
+            }
+            PositionData.w = - Mathf.Abs(PositionData.w);
+        }
+
+        // Sets color
+        public void SetColor(Color color, float intensity) {
+            Vector4 c = color * intensity;
+            ColorData = new Vector4(c.x, c.y, c.z, ColorData.w);
         }
 
         // Updates data required for shader
-        public void UpdateData() {
+        public void UpdateTransform() {
 
-            PositionData = transform.position;
-            PositionData.w = Range;
+            Vector3 pos = transform.position;
+            PositionData = new Vector4(pos.x, pos.y, pos.z, PositionData.w);
 
-            ColorData = Color * Intensity;
-
-            if (Angle < 1 || Falloff > 0) { // If Spot Light or a point light with no cubemap
-                DirectionData = transform.forward;
-                DirectionData.w = Falloff;
-                ColorData.w = Angle;
-            } else { // If Point Light
+            if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
+                Vector3 dir = transform.forward;
+                DirectionData = new Vector4(dir.x, dir.y, dir.z, DirectionData.w);
+            } else if (!IsParametric()) { // If Point Light with a cubemap or a spot light with cookie
                 Quaternion rot = Quaternion.Inverse(transform.rotation);
-                // A hack to save memory!
-                if (rot.w < 0) { // If w component is negative. Then negate the quaternion to make it possible to store w
-                    DirectionData = new Vector4(-rot.x, -rot.y, -rot.z, Falloff); // Negate! It's the same rotation actually!
-                    ColorData.w = -rot.w + 1; // Storing w component (+1) of quaternion in angle to save mamory
-                } else { // If w component is positive
-                    DirectionData = new Vector4(rot.x, rot.y, rot.z, Falloff);
-                    ColorData.w = rot.w + 1; // Storing w component (+1) of quaternion in angle to save mamory
-                }
+                DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
             }
 
         }

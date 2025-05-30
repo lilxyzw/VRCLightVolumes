@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using System;
 
 #if UDONSHARP
@@ -16,6 +17,8 @@ namespace VRCLightVolumes {
     public class LightVolumeManager : MonoBehaviour
 #endif
     {
+
+        public const float Version = 2; // VRC Light Volumes Current version. This value used in shaders (_UdonLightVolumeEnabled) to determine which features are can be used
 
         [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
         public Texture3D LightVolumeAtlas;
@@ -53,7 +56,7 @@ namespace VRCLightVolumes {
         private Vector4[] _pointLightPosition;
         private Vector4[] _pointLightColor;
         private Vector4[] _pointLightDirection;
-
+        private float[] _pointLightCustomId;
 
         // Legacy support Data
         private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
@@ -83,8 +86,9 @@ namespace VRCLightVolumes {
         private int _pointLightPositionID;
         private int _pointLightColorID;
         private int _pointLightDirectionID;
+        private int _pointLightCustomIdID;
         private int _pointLightCountID;
-        private int _pointLightLUTID;
+        private int _pointLightLutID;
         private int _pointLightCubemapID;
         // Legacy support
         private int lightVolumeRotationID;
@@ -117,7 +121,8 @@ namespace VRCLightVolumes {
             _pointLightColorID = VRCShader.PropertyToID("_UdonPointLightVolumeColor");
             _pointLightDirectionID = VRCShader.PropertyToID("_UdonPointLightVolumeDirection");
             _pointLightCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCount");
-            _pointLightLUTID = VRCShader.PropertyToID("_UdonPointLightVolumeLUT");
+            _pointLightCustomIdID = VRCShader.PropertyToID("_UdonPointLightVolumeCustomID");
+            _pointLightLutID = VRCShader.PropertyToID("_UdonPointLightVolumeLUT");
             _pointLightCubemapID = VRCShader.PropertyToID("_UdonPointLightVolumeCubemap");
             // Legacy support
             lightVolumeRotationID = VRCShader.PropertyToID("_UdonLightVolumeRotation");
@@ -137,6 +142,7 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalVectorArray(_pointLightPositionID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightColorID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightDirectionID, new Vector4[128]);
+            VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, new float[128]);
             // Legacy support
             VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, new Matrix4x4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeRotationID, new Vector4[64]);
@@ -243,9 +249,9 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[i];
                 if (instance != null && instance.gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
-                    instance.UpdateData();
+                    instance.UpdateTransform();
 #else
-                    if (instance.IsDynamic) instance.UpdateData();
+                    if (instance.IsDynamic) instance.UpdateTransform();
 #endif
                     _enabledPointIDs[_pointLightCount] = i;
                     _pointLightCount++;
@@ -256,6 +262,7 @@ namespace VRCLightVolumes {
             _pointLightPosition = new Vector4[_pointLightCount];
             _pointLightColor = new Vector4[_pointLightCount];
             _pointLightDirection = new Vector4[_pointLightCount];
+            _pointLightCustomId = new float[_pointLightCount];
 
             // Filling arrays with enabled point light volumes
             for (int i = 0; i < _pointLightCount; i++) {
@@ -263,6 +270,7 @@ namespace VRCLightVolumes {
                 _pointLightPosition[i] = instance.PositionData;
                 _pointLightColor[i] = instance.ColorData;
                 _pointLightDirection[i] = instance.DirectionData;
+                _pointLightCustomId[i] = instance.CustomID;
             }
 
             bool isAtlas = LightVolumeAtlas != null;
@@ -296,9 +304,6 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
 
-            // Defines if Light Volumes enabled in scene
-            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 1);
-
             // Volume's relative rotation
             VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
 
@@ -316,13 +321,17 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightColorID, _pointLightColor);
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
+                VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
             }
             if(FalloffLUT != null) {
-                VRCShader.SetGlobalTexture(_pointLightLUTID, FalloffLUT);
+                VRCShader.SetGlobalTexture(_pointLightLutID, FalloffLUT);
             }
             if (Cubemaps != null) {
                 VRCShader.SetGlobalTexture(_pointLightCubemapID, Cubemaps);
             }
+
+            // Defines if Light Volumes enabled in scene. 0 if disabled. And a version number if enabled
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, Version);
 
         }
     }

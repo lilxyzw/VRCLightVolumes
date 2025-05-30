@@ -48,18 +48,6 @@ namespace VRCLightVolumes {
 
         public bool IsLegacyUVWConverted = false; // Is legacy UVW fix applied. Only need to do it once, so it's a flag for that
 
-#if UNITY_EDITOR
-
-#if BAKERY_INCLUDED
-        private bool _subscribedToBakery = false;
-#endif
-        private bool _subscribedToUnityLightmapper = false;
-
-        private void OnSelectionChanged() {
-            if (Selection.activeObject == gameObject) {
-                RefreshVolumesList();
-            }
-        }
 
         public void RefreshVolumesList() {
             // Searching for all light volumes in scene
@@ -97,6 +85,21 @@ namespace VRCLightVolumes {
             }
         }
 
+#if UNITY_EDITOR
+
+#if BAKERY_INCLUDED
+        private bool _subscribedToBakery = false;
+#endif
+        private bool _subscribedToUnityLightmapper = false;
+
+        private void OnSelectionChanged() {
+            if (Selection.activeObject == gameObject) {
+                RefreshVolumesList();
+            }
+        }
+
+        
+
         // Generates LUT array based on all the LUT Textures2D provided in PointLightVolumes
         public void GenerateLUTArray() {
 
@@ -105,7 +108,9 @@ namespace VRCLightVolumes {
 
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
-                if (PointLightVolumes[i].Shape == PointLightVolume.LightShape.Custom && PointLightVolumes[i].Type == PointLightVolume.LightType.SpotLight && PointLightVolumes[i].FalloffLUT != null) {
+                if (((PointLightVolumes[i].Shape != PointLightVolume.LightShape.Parametric && PointLightVolumes[i].Type == PointLightVolume.LightType.SpotLight) ||
+                    (PointLightVolumes[i].Shape == PointLightVolume.LightShape.LUT && PointLightVolumes[i].Type == PointLightVolume.LightType.PointLight)) &&
+                    PointLightVolumes[i].FalloffLUT != null) {
                     spotVolumes.Add(PointLightVolumes[i]);
                     lutTextures.Add(PointLightVolumes[i].FalloffLUT);
                 }

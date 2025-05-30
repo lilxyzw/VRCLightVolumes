@@ -44,6 +44,7 @@ namespace VRCLightVolumes {
 
         private void Update() {
             SetupDependencies();
+#if UNITY_EDITOR
             if (_falloffLUTPrev != FalloffLUT) {
                 _falloffLUTPrev = FalloffLUT;
                 LightVolumeSetup.GenerateLUTArray();
@@ -57,22 +58,33 @@ namespace VRCLightVolumes {
                 LightVolumeSetup.GenerateLUTArray();
                 LightVolumeSetup.GenerateCubemapArray();
             }
+#endif
         }
 
         public void SyncUdonScript() {
             SetupDependencies();
             PointLightVolumeInstance.IsDynamic = Dynamic;
-            PointLightVolumeInstance.Color = Color;
-            PointLightVolumeInstance.Intensity = Intensity;
+            PointLightVolumeInstance.SetColor(Color, Intensity);
             PointLightVolumeInstance.SetRange(Range);
 
             if(Type == LightType.PointLight) { // Point light
-                PointLightVolumeInstance.SetAngle(0); // Use it as Point Light
-                if (Shape == LightShape.Custom && Cubemap != null) PointLightVolumeInstance.SetCustomID(CustomID); // Use LUT
-                else PointLightVolumeInstance.SetCustomID(-1); // Don't use custom tex
+                if (Shape == LightShape.Custom && Cubemap != null) {
+                    PointLightVolumeInstance.SetCustomTexture(CustomID); // Use Custom Cubemap Texture
+                } else if (Shape == LightShape.LUT && FalloffLUT != null) {
+                    PointLightVolumeInstance.SetLut(CustomID); // Use LUT
+                } else {
+                    PointLightVolumeInstance.SetParametric(); // Use this light in parametric mode
+                }
+                PointLightVolumeInstance.SetPointLight(); // Use it as Point Light
             } else { // Spot Light
-                PointLightVolumeInstance.SetAngleFalloff(Angle, Falloff); // Don't use custom tex
-                if (Shape == LightShape.Custom && FalloffLUT != null) PointLightVolumeInstance.SetCustomID(CustomID); // Use LUT
+                if (Shape == LightShape.Custom && FalloffLUT != null) {
+                    PointLightVolumeInstance.SetCustomTexture(CustomID); // Use Custom Projection Texture
+                } else if (Shape == LightShape.LUT && FalloffLUT != null) {
+                    PointLightVolumeInstance.SetLut(CustomID); // Use LUT
+                } else {
+                    PointLightVolumeInstance.SetParametric(); // Use this light in parametric mode
+                }
+                PointLightVolumeInstance.SetSpotLight(Angle, Falloff); // Don't use custom tex
             }
 
             LVUtils.MarkDirty(PointLightVolumeInstance);
@@ -116,6 +128,7 @@ namespace VRCLightVolumes {
 
         public enum LightShape {
             Parametric,
+            LUT,
             Custom
         }
 

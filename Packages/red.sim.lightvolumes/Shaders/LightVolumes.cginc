@@ -1,5 +1,7 @@
 ﻿#ifndef VRC_LIGHT_VOLUMES_INCLUDED
 #define VRC_LIGHT_VOLUMES_INCLUDED
+#define VRCLV_VERSION 2
+
 
 // Makes it possible to sample Texcure Cube Arrays in surface shaders. Thanks to error.mdl!
 #if defined(SHADER_TARGET_SURFACE_ANALYSIS_MOJOSHADER)
@@ -59,8 +61,11 @@ uniform float4 _UdonPointLightVolumePosition[128];
 // Point light color and spot light cos of outer angle
 uniform float4 _UdonPointLightVolumeColor[128];
 
-// Spot light direction and cone falloff
+// Spot light direction and cone falloff or a rotation quaternion
 uniform float4 _UdonPointLightVolumeDirection[128];
+
+// Stores a LUT or a cubemap ID + 1. Stores 0 if not using any custom tex
+uniform float _UdonPointLightVolumeCustomID[128];
 
 // LUT tex array for spot lights
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeLUT);
@@ -79,13 +84,12 @@ float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     return v + q.w * t + cross(q.xyz, t);
 }
 
-
 // Samples spot light
 void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b, inout uint count) {
     
     // Light position and inversed squared range 
-    float4 pos = _UdonPointLightVolumePosition[(uint) id];
-    float invSqRange = pos.w;
+    float4 pos = _UdonPointLightVolumePosition[id];
+    float invSqRange = abs(pos.w); // Sign of range defines if it's point light (positive) or a spot light (negative)
     
     float3 dir = pos.xyz - worldPos;
     float sqlen = max(dot(dir, dir), 1e-6);
@@ -94,35 +98,57 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
     // Culling spotlight by radius
     if (invSqLen < invSqRange ) return;
     
-    // Color, angle, direction and cone falloff
-    float4 color = _UdonPointLightVolumeColor[(uint) id];
-    float cosAngle = color.w;
-    float4 ldir = _UdonPointLightVolumeDirection[(uint) id];
+    float4 color = _UdonPointLightVolumeColor[id]; // Color, angle
+    float angle = color.w;
+    float4 ldir = _UdonPointLightVolumeDirection[id]; // Dir + falloff or Rotation
     float coneFalloff = ldir.w;
-
+    int customId = (int) _UdonPointLightVolumeCustomID[id]; // Custom Texture ID
+    
     float3 dirN = dir * rsqrt(sqlen);
     float dirRadius = sqlen * invSqRange;
     
     float3 att = color.rgb; // Light attenuation
     
-    if (cosAngle < 1) { // It is a spot light
+    if (pos.w < 0) { // It is a spot light
         
-        float spotMask = dot(ldir.xyz, -dirN) - cosAngle;
-        if(spotMask < 0) return;
-        if (coneFalloff > 0) { // If it uses default attenuation
+        if (customId > 0) {  // If it uses Attenuation LUT
+            
+            float spotMask = dot(ldir.xyz, -dirN) - angle;
+            if(spotMask < 0) return;
+            float spot = 1 - saturate(spotMask * rcp(1 - angle));
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(spot, dirRadius)), customId - 1)).xyz;
+            
+        } else if (customId < 0) { // If uses cookie
+            
+            float3 localDir = LV_MultiplyVectorByQuaternion(-dirN, ldir);
+            if (localDir.z <= 0.0) return;
+            float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
+            if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(uv * 0.5 + 0.5, - customId - 1)).xyz;
+            
+        } else { // If it uses default parametric attenuation
+            
+            float spotMask = dot(ldir.xyz, -dirN) - angle;
+            if(spotMask < 0) return;
             att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_Smoothstep01(saturate(spotMask * coneFalloff));
-        } else { // If it uses Attenuation LUT
-            float spot = 1 - saturate(spotMask * rcp(1 - cosAngle));
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(spot, dirRadius)), -coneFalloff)).xyz;
+            
         }
         
     } else { // It is a point light
         
-        att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
-
-        if (coneFalloff <= 0) { // If it uses a cubemap
-            dirN = LV_MultiplyVectorByQuaternion(dirN, float4(ldir.xyz, cosAngle - 1)); // Rotate cubemap
-            att *= UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(dirN, -coneFalloff), 0).xyz;
+        
+        if (customId < 0) { // If it uses a cubemap
+            
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(LV_MultiplyVectorByQuaternion(dirN, ldir), -customId - 1), 0).xyz;
+            
+        } else if (customId > 0) { // Using LUT
+            
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(0, dirRadius)), customId - 1)).xyz;
+            
+        } else { // If it uses default parametric attenuation
+            
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
+            
         }
         
     }
@@ -141,7 +167,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
     
     // Light position and inversed squared range 
     float4 pos = _UdonPointLightVolumePosition[(uint) id];
-    float invSqRange = pos.w;
+    float invSqRange = abs(pos.w);
     
     float3 dir = pos.xyz - worldPos;
     float sqlen = max(dot(dir, dir), 1e-6);
@@ -152,33 +178,58 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
     
     // Color, angle, direction and cone falloff
     float4 color = _UdonPointLightVolumeColor[(uint) id];
-    float cosAngle = color.w;
+    float angle = color.w;
     float4 ldir = _UdonPointLightVolumeDirection[(uint) id];
     float coneFalloff = ldir.w;
+    int customId = (int) _UdonPointLightVolumeCustomID[id]; // Custom Texture ID
     
     float dirRadius = sqlen * invSqRange;
     
     float3 att = color.rgb; // Light attenuation
     
-    float3 dirN = dir * rsqrt(sqlen);
-    
-    if (cosAngle < 1) { // It is a spot light
-        float spotMask = dot(ldir.xyz, -dirN) - cosAngle;
-        if(spotMask < 0) return;
-        if (coneFalloff > 0) { // If it uses default attenuation
+    if (pos.w < 0) { // It is a spot light
+        
+        float3 dirN = dir * rsqrt(sqlen);
+        
+        if (customId > 0) {  // If it uses Attenuation LUT
+            
+            float spotMask = dot(ldir.xyz, -dirN) - angle;
+            if(spotMask < 0) return;
+            float spot = 1 - saturate(spotMask * rcp(1 - angle));
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(spot, dirRadius)), customId - 1)).xyz;
+            
+        } else if (customId < 0) { // If uses cookie
+            
+            float3 localDir = LV_MultiplyVectorByQuaternion(-dirN, ldir);
+            if (localDir.z <= 0.0) return;
+            float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
+            if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(uv * 0.5 + 0.5, - customId - 1)).xyz;
+            
+        } else { // If it uses default parametric attenuation
+            
+            float spotMask = dot(ldir.xyz, -dirN) - angle;
+            if(spotMask < 0) return;
             att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_Smoothstep01(saturate(spotMask * coneFalloff));
-        } else { // If it uses Attenuation LUT
-            float spot = 1 - saturate(spotMask * rcp(1 - cosAngle));
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(spot), dirRadius, -coneFalloff));
+            
         }
         
     } else { // It is a point light
         
-        att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
-
-        if (coneFalloff <= 0) { // If it uses a cubemap
-            dirN = LV_MultiplyVectorByQuaternion(dirN, ldir); // Rotate cubemap
-            att *= UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(dirN, -coneFalloff), 0).xyz;
+        
+        if (customId < 0) { // If it uses a cubemap
+            
+            float3 dirN = dir * rsqrt(sqlen);
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(LV_MultiplyVectorByQuaternion(dirN, ldir), -customId - 1), 0).xyz;
+            
+        } else if (customId > 0) { // Using LUT
+            
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(0, dirRadius)), customId - 1)).xyz;
+            
+        } else { // If it uses default parametric attenuation
+            
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f));
+            
         }
         
     }
@@ -355,14 +406,17 @@ float3 LightVolumeSpecularDominant(float3 f0, float smoothness, float3 worldNorm
 }
 
 float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
-    
     float3 specularf0 = lerp(0.04f, albedo, metallic);
     return LightVolumeSpecularDominant(specularf0, smoothness, worldNormal, viewDir, L0, L1r, L1g, L1b);
 }
 
 // Calculate Light Volume Color based on all SH components provided and the world normal
 float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
-    return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
+    if (_UdonLightVolumeEnabled != 0) {
+        return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
+    } else { // No Light Volumes here in this scene. Scene is probably baked with Bakery, and overexposed light probes should be fixed. Just a stupid fix that kinda works.
+        return float3(LV_EvaluateSH(L0.r, L1r * 0.565f, worldNormal), LV_EvaluateSH(L0.g, L1g * 0.565f, worldNormal), LV_EvaluateSH(L0.b, L1b * 0.565f, worldNormal));
+    }
 }
 
 // Calculates SH components based on the world position
@@ -378,7 +432,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     // Clamping gloabal iteration counts
     uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
     uint volumesCount = clamp((uint) _UdonLightVolumeCount, 0, 32);
-    if (!_UdonLightVolumeEnabled || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
+    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
         return;
     }
@@ -510,7 +564,7 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     // Clamping gloabal iteration counts
     uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
     uint additiveCount = clamp((uint) _UdonLightVolumeAdditiveCount, 0, 32);
-    if (!_UdonLightVolumeEnabled || (additiveCount == 0 && pointCount == 0)) return;
+    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
     uint maxOverdraw = clamp((uint) _UdonLightVolumeAdditiveMaxOverdraw, 1, 32);
     uint count = min(additiveCount, maxOverdraw);
     
@@ -548,7 +602,7 @@ float3 LightVolumeSH_L0(float3 worldPos) {
     // Clamping gloabal iteration counts
     uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
     uint volumesCount = clamp((uint) _UdonLightVolumeCount, 0, 32);
-    if (!_UdonLightVolumeEnabled || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
+    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
         return LV_SampleLightProbe_L0();
     }
     uint maxOverdraw = clamp((uint) _UdonLightVolumeAdditiveMaxOverdraw, 1, 32);
@@ -652,7 +706,7 @@ float3 LightVolumeAdditiveSH_L0(float3 worldPos) {
     // Clamping gloabal iteration counts
     uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
     uint additiveCount = clamp((uint) _UdonLightVolumeAdditiveCount, 0, 32);
-    if (!_UdonLightVolumeEnabled || (additiveCount == 0 && pointCount == 0)) return L0;
+    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return L0;
     uint maxOverdraw = clamp((uint) _UdonLightVolumeAdditiveMaxOverdraw, 1, 32);
     uint count = min(additiveCount, maxOverdraw);
     
