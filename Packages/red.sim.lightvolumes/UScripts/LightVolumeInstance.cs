@@ -66,11 +66,21 @@ namespace VRCLightVolumes {
         }
 
         private void OnEnable() {
-            if (Utilities.IsValid(UpdateNotifier)) UpdateNotifier.RequestUpdateVolumes();
+#if UDONSHARP
+            if (Utilities.IsValid(UpdateNotifier))
+#else
+            if (UpdateNotifier != null)
+#endif
+                UpdateNotifier.RequestUpdateVolumes();
         }
 
         private void OnDisable() {
-            if (Utilities.IsValid(UpdateNotifier)) UpdateNotifier.RequestUpdateVolumes();
+#if UDONSHARP
+            if (Utilities.IsValid(UpdateNotifier))
+#else
+            if (UpdateNotifier != null)
+#endif
+                UpdateNotifier.RequestUpdateVolumes();
         }
 
         // Calculates and sets invLocalEdgeBlending

@@ -6,6 +6,7 @@ using UnityEngine.Serialization;
 using VRC.SDKBase;
 using UdonSharp;
 #else
+using System.Collections;
 using VRCShader = UnityEngine.Shader;
 #endif
 
@@ -34,7 +35,11 @@ namespace VRCLightVolumes {
         public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
 
         private bool _isInitialized = false;
+#if UDONSHARP
         private bool _isUpdateRequested = false;
+#else
+        private Coroutine _updateCoroutine = null;
+#endif
 
         // Actually enabled Volumes
         private int _enabledCount = 0;
@@ -112,12 +117,27 @@ namespace VRCLightVolumes {
             UpdateVolumes();
         }
 
+#if !UDONSHARP
+        private void OnDisable() {
+            if (_updateCoroutine != null) {
+                StopCoroutine(_updateCoroutine);
+                _updateCoroutine = null;
+            }
+        }
+#endif
+
         public void RequestUpdateVolumes() {
+#if UDONSHARP
             if (_isUpdateRequested) return; // Prevent multiple requests
             _isUpdateRequested = true;
             SendCustomEventDelayedFrames(nameof(DeferredUpdateVolumes), 1);
+#else
+            if (_updateCoroutine != null || !isActiveAndEnabled) return;
+            _updateCoroutine = StartCoroutine(DeferredUpdateVolumes());
+#endif
         }
 
+#if UDONSHARP
         public void DeferredUpdateVolumes() {
             if (AutoUpdateVolumes && enabled && gameObject.activeInHierarchy) {
                 SendCustomEventDelayedFrames(nameof(DeferredUpdateVolumes), 1); // Auto schedule next update if AutoUpdateVolumes is enabled
@@ -126,6 +146,15 @@ namespace VRCLightVolumes {
             }
             UpdateVolumes();
         }
+#else
+        private IEnumerator DeferredUpdateVolumes() {
+            do {
+                yield return null;
+                UpdateVolumes();
+            } while (AutoUpdateVolumes);
+            _updateCoroutine = null;
+        }
+#endif
 
         public void UpdateVolumes() {
 
