@@ -88,7 +88,7 @@ namespace VRCLightVolumes {
             return texArray;
         }
 
-        public static CubemapArray CreateCubemapArray(List<Cubemap> cubemaps, int resolution, out int[] ids) {
+        public static Texture2DArray CreateCubemapArray(List<Cubemap> cubemaps, int width, int height, out int[] ids) {
 
             if (cubemaps == null || cubemaps.Count == 0) {
                 ids = new int[0];
@@ -128,22 +128,69 @@ namespace VRCLightVolumes {
             ids = origToUnique;
             int uniqueCount = uniqueTexs.Count;
 
+            List<Texture2D> textures = new List<Texture2D>();
+
+            // Processing Cubemaps
+
+            for (int i = 0; i < uniqueCount; i++) {
+
+                int size = uniqueTexs[i].width;
+                var form = uniqueTexs[i].format;
+                int mipCount = uniqueTexs[i].mipmapCount;
+
+                for (int f = 0; f < 6; f++) {
+                    var faceTex = new Texture2D(size, size, form, mipCount > 1);
+                    faceTex.Apply(false, true);
+                    Graphics.CopyTexture(uniqueTexs[i], f, 0, faceTex, 0, 0);
+                    textures.Add(faceTex);
+                }
+
+            }
+
+            // Processing Texture 2D Array
+
             var format = GraphicsFormat.R32G32B32_SFloat;
-            var cubeArray = new CubemapArray(resolution, uniqueCount, format, TextureCreationFlags.None) {
+            var texArray = new Texture2DArray(width, height, uniqueCount * 6, format, TextureCreationFlags.None) {
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Trilinear
             };
 
-            for (int i = 0; i < uniqueCount; i++) {
-                for (int face = 0; face < 6; face++) {
-                    Color[] pixels = uniqueTexs[i].GetPixels((CubemapFace)face);
-                    cubeArray.SetPixels(pixels, (CubemapFace)face, i);
-                }
+            // Temporary RT for GPU-side resampling and conversion
+            RenderTexture rt = new RenderTexture(width, height, 0, RenderTextureFormat.ARGBFloat) {
+                enableRandomWrite = false,
+                useMipMap = false,
+                autoGenerateMips = false,
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Trilinear
+            };
+            rt.Create();
+
+            // Intermediate readable texture
+            Texture2D tempTex = new Texture2D(width, height, TextureFormat.RGBAFloat, false, true);
+
+            int facesCount = textures.Count;
+
+            for (int i = 0; i < facesCount; i++) {
+                var src = textures[i];
+                Graphics.Blit(src, rt);
+
+                RenderTexture.active = rt;
+                tempTex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                tempTex.Apply();
+
+                Color[] pixels = tempTex.GetPixels();
+
+                texArray.SetPixels(pixels, i);
             }
 
-            cubeArray.Apply(false, false);
+            RenderTexture.active = null;
+            rt.Release();
+            Object.DestroyImmediate(rt);
+            Object.DestroyImmediate(tempTex);
 
-            return cubeArray;
+            texArray.Apply(false, false);
+
+            return texArray;
 
         }
 

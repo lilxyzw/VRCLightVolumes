@@ -18,6 +18,11 @@ namespace VRCLightVolumes {
 
         [SerializeField] public List<PointLightVolume> PointLightVolumes = new List<PointLightVolume>();
 
+        [Header("Point Light Volumes")]
+        public Vector2Int LUTResolution = new Vector2Int(128, 128);
+        public Vector2Int TextureResolution = new Vector2Int(512, 512);
+        public Vector2Int CubemapResolution = new Vector2Int(512, 512);
+
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
 #if BAKERY_INCLUDED
@@ -116,7 +121,7 @@ namespace VRCLightVolumes {
                 }
             }
 
-            Texture2DArray lutArray = TextureArrayGenerator.CreateTexture2DArray(lutTextures, 128, 128, out int[] ids);
+            Texture2DArray lutArray = TextureArrayGenerator.CreateTexture2DArray(lutTextures, LUTResolution.x, LUTResolution.y, out int[] ids);
 
             if (lutArray != null) {
 
@@ -127,7 +132,7 @@ namespace VRCLightVolumes {
 
             }
 
-            LightVolumeManager.FalloffLUT = lutArray;
+            LightVolumeManager.LUT = lutArray;
 
             if(lutArray != null)
                 LVUtils.SaveAsAsset(lutArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUTArray.asset");
@@ -148,7 +153,7 @@ namespace VRCLightVolumes {
                 }
             }
 
-            CubemapArray cubeArray = TextureArrayGenerator.CreateCubemapArray(cubeTextures, 512, out int[] ids);
+            Texture2DArray cubeArray = TextureArrayGenerator.CreateCubemapArray(cubeTextures, CubemapResolution.x, CubemapResolution.y, out int[] ids);
 
             if (cubeArray != null) {
 
@@ -159,7 +164,7 @@ namespace VRCLightVolumes {
 
             }
 
-            LightVolumeManager.Cubemaps = cubeArray;
+            LightVolumeManager.Cubemap = cubeArray;
             
             if (cubeArray != null)
                 LVUtils.SaveAsAsset(cubeArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightCubemapArray.asset");

@@ -35,9 +35,11 @@ namespace VRCLightVolumes {
         [Tooltip("All Point Light Volume instances. You can enable or disable point light volumes game objects at runtime. Manually disabling unnecessary point light volumes improves performance.")]
         public PointLightVolumeInstance[] PointLightVolumeInstances = new PointLightVolumeInstance[0];
         [Tooltip("All Falloff LUT textures that can be used for spot lights.")]
-        public Texture2DArray FalloffLUT;
+        public Texture2DArray LUT;
         [Tooltip("All Cubemap textures that can be used for point lights.")]
-        public Texture Cubemaps;
+        public Texture2DArray Cubemap;
+        [Tooltip("All Cookie textures that can be used for point lights.")]
+        public Texture2DArray Cookie;
 
         private bool _isInitialized = false;
 
@@ -323,11 +325,11 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
                 VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
             }
-            if(FalloffLUT != null) {
-                VRCShader.SetGlobalTexture(_pointLightLutID, FalloffLUT);
+            if(LUT != null) {
+                VRCShader.SetGlobalTexture(_pointLightLutID, LUT);
             }
-            if (Cubemaps != null) {
-                VRCShader.SetGlobalTexture(_pointLightCubemapID, Cubemaps);
+            if (Cubemap != null) {
+                VRCShader.SetGlobalTexture(_pointLightCubemapID, Cubemap);
             }
 
             // Defines if Light Volumes enabled in scene. 0 if disabled. And a version number if enabled
