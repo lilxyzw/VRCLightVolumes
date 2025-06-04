@@ -166,7 +166,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     // (3) Unity stores SH coefficients (unity_SHAr..unity_SHC) pre-multiplied with the constant
     //     part of each SH basis function, so we need to multiply by constant part to match it.
     const float cosineKernelL0 = 3.141592653589793f; // (1)
-    const float cosineKernelL1 = 2.0f * 3.141592653589793f; // (1)
+    const float cosineKernelL1 = 2.0f * 3.141592653589793f / 3.0f; // (1)
     const float oneOverPi = 1.0f / 3.141592653589793f; // (2)
     const float normalizationL1 = 0.5f * sqrt(3.0f / 3.141592653589793f); // (3)
     const float weightL0 = cosineKernelL0 * normalizationL0 * oneOverPi; // (1), (2), (3)
