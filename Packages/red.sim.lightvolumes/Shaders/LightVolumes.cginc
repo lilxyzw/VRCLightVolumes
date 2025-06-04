@@ -161,8 +161,8 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     // (1) We want the coefficients for irradiance, so we need to convolve with the
     //     clamped cosine kernel, as detailed in https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf.
     //     The kernel has coefficients PI and 2/3*PI for L0 and L1 respectively.
-    // (2) Unity's area lights underestimate the irradiance from area lights by a factor
-    //     of PI for historical reasons. We need to divide by PI to match this 'incorrect' behavior.
+    // (2) Unity's area lights underestimate the irradiance by a factor of PI for historical reasons.
+    //     We need to divide by PI to match this 'incorrect' behavior.
     // (3) Unity stores SH coefficients (unity_SHAr..unity_SHC) pre-multiplied with the constant
     //     part of each SH basis function, so we need to multiply by constant part to match it.
     const float cosineKernelL0 = 3.141592653589793f; // (1)
