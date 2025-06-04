@@ -2,6 +2,7 @@
 #define VRC_LIGHT_VOLUMES_INCLUDED
 #define VRCLV_VERSION 2
 
+#pragma skip_optimizations d3d11
 
 // Makes it possible to sample Texcure Cube Arrays in surface shaders. Thanks to error.mdl!
 #if defined(SHADER_TARGET_SURFACE_ANALYSIS_MOJOSHADER)
@@ -55,16 +56,24 @@ uniform float4 _UdonLightVolumeColor[32];
 // Point Lights count
 uniform float _UdonPointLightVolumeCount;
 
-// Point light position and inversed squared range 
+// For point light: XYZ = Position, W = Inverse squared range
+// For spot light: XYZ = Position, W = Inverse squared range, negated
+// For area light: XYZ = Position, W = Width
 uniform float4 _UdonPointLightVolumePosition[128];
 
-// Point light color and spot light cos of outer angle
+// For point light: XYZ = Color, W = Cos of angle (for LUT)
+// For spot light: XYZ = Color, W = Cos of outer angle if no custom texture, tan of outer angle otherwise
+// For area light: XYZ = Color, W = 2 + Height
 uniform float4 _UdonPointLightVolumeColor[128];
 
-// Spot light direction and cone falloff or a rotation quaternion
+// For point light: XYZW = Rotation quaternion
+// For spot light: XYZ = Direction, W = Cone falloff
+// For area light: XYZW = Rotation quaternion
 uniform float4 _UdonPointLightVolumeDirection[128];
 
-// Stores a LUT or a cubemap ID + 1. Stores 0 if not using any custom tex
+// If parametric: Stores 0
+// If uses custom lut: Stores LUT ID with positive sign
+// If uses custom texture: Stores texture ID with negative sign
 uniform float _UdonPointLightVolumeCustomID[128];
 
 // LUT tex array for spot lights
@@ -84,6 +93,94 @@ float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     return v + q.w * t + cross(q.xyz, t);
 }
 
+// Projects irradiance from a planar quad with uniform radiant exitance into L1 spherical harmonics.
+// Based on "Analytic Spherical Harmonic Coefficients for Polygonal Area Lights" by Wang and Ramamoorthi.
+// https://cseweb.ucsd.edu/~ravir/ash.pdf
+float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4])
+{
+    // Check which side of the light we are on. The polygon is assumed to be planar.
+    float3 lightNormal = cross(lightVertices[2] - lightVertices[0], lightVertices[1] - lightVertices[0]);
+    if (dot(lightNormal, shadingPosition - lightVertices[0]) < 0.0)
+        return 0;
+
+    // Transform the vertices into local space cenetered on the shading position,
+    // project, the polygon onto the unit sphere.
+    for (uint i = 0; i < 4; i++)
+    {
+        lightVertices[i] = normalize(lightVertices[i] - shadingPosition);
+    }
+
+    // Compute the solid angle subtended by the polygon at the shading position,
+    // using Arvo's formula (5.1) https://dl.acm.org/doi/pdf/10.1145/218380.218467.
+    // The L0 term is directly proportional to the solid angle.
+    float solidAngle = 0;
+    for (uint i = 0; i < 4; i++)
+    {
+        uint next = (i + 1) % 4;
+        uint prev = (i + 4 - 1) % 4;
+        float3 a = cross(lightVertices[i], lightVertices[prev]);
+        float3 b = cross(lightVertices[i], lightVertices[next]);
+        solidAngle += acos(clamp(dot(a, b) / (length(a) * length(b)), -1, 1));
+    }
+    solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
+    float l0 = (0.5f * sqrt(1.0f / 3.141592653589793f)) * solidAngle;
+
+    // Precomputed directions of rotated zonal harmonics,
+    // and associated weights for each basis function.
+    // I.E. \omega_{l,d} and \alpha_{l,d}^m in the paper respectively.
+    const float3 zhDir0 = float3(0.866025, -0.500001, -0.000004);
+    const float3 zhDir1 = float3(-0.759553, 0.438522, -0.480394);
+    const float3 zhDir2 = float3(-0.000002, 0.638694,  0.769461);
+    const float3 zhWeightL1y = float3(2.1995339f, 2.50785367f, 1.56572711f);
+    const float3 zhWeightL1z = float3(-1.82572523f, -2.08165037f, 0.00000000f);
+    const float3 zhWeightL1x = float3(2.42459869f, 1.44790525f, 0.90397552f);
+
+    // Compute the integral of the legendre polynomials over the surface of the
+    // projected polygon for each zonal harmonic direction (S_l in the paper).
+    // Computed as a sum of line integrals over the edges of the polygon.
+    float3 surfaceIntegral = 0.0;
+    for (uint edge = 0; edge < 4; edge++)
+    {
+        uint next = (edge + 1) % 4;
+        float3 mu = normalize(cross(lightVertices[edge], lightVertices[next]));;
+        float cosGamma = dot(lightVertices[edge], lightVertices[next]);
+        float gamma = acos(clamp(cosGamma, -1, 1));
+        surfaceIntegral.x += gamma * dot(zhDir0, mu);
+        surfaceIntegral.y += gamma * dot(zhDir1, mu);
+        surfaceIntegral.z += gamma * dot(zhDir2, mu);
+    }
+    surfaceIntegral *= 0.5;
+
+    // Combine each surface (sub)integral with the associated weights to get
+    // full surface integral for each SH basis function.
+    float l1y = dot(zhWeightL1y, surfaceIntegral);
+    float l1z = dot(zhWeightL1z, surfaceIntegral);
+    float l1x = dot(zhWeightL1x, surfaceIntegral);
+
+    // The l1y, l1z, l1x are raw SH coefficients for radiance from the polygon.
+    // We need to apply some more transformations before we are done:
+    // (1) We want the coefficients for irradiance, so we need to convolve with the
+    //     clamped cosine kernel, as detailed in https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf.
+    //     The kernel has coefficients PI and 2/3*PI for L0 and L1 respectively.
+    // (2) Unity's area lights underestimate the irradiance from area lights by a factor
+    //     of PI for historical reasons. We need to divide by PI to match this 'incorrect' behavior.
+    // (3) Unity stores SH coefficients (unity_SHAr..unity_SHC) pre-multiplied with the constant
+    //     part of each SH basis function, so we need to multiply by constant part to match it.
+    const float cosineKernelL0 = 3.141592653589793f; // (1)
+    const float cosineKernelL1 = 2.0f * 3.141592653589793f; // (1)
+    const float oneOverPi = 1.0f / 3.141592653589793f; // (2)
+    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f); // (3)
+    const float normalizationL1 = 0.5f * sqrt(3.0f / 3.141592653589793f); // (3)
+    const float weightL0 = cosineKernelL0 * normalizationL0 * oneOverPi; // (1), (2), (3)
+    const float weightL1 = cosineKernelL1 * normalizationL1 * oneOverPi; // (1), (2), (3)
+    l0 *= weightL0;
+    l1y *= weightL1;
+    l1z *= weightL1;
+    l1x *= weightL1;
+    
+    return float4(l1x, l1y, l1z, l0);
+}
+
 // Samples spot light
 void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b, inout uint count) {
     
@@ -94,11 +191,16 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
     float3 dir = pos.xyz - worldPos;
     float sqlen = max(dot(dir, dir), 1e-6);
     float invSqLen = rcp(sqlen);
+
+    float4 color = _UdonPointLightVolumeColor[id]; // Color, angle
+
+    bool isSpotLight = pos.w < 0;
+    bool isPointLight = !isSpotLight && color.w <= 1.5f;
     
     // Culling spotlight by radius
-    if (invSqLen < invSqRange ) return;
+    // TODO(pema99): Add culling for area lights? You currently hit the overdraw limit very quickly
+    if ((isSpotLight || isPointLight) && invSqLen < invSqRange ) return;
     
-    float4 color = _UdonPointLightVolumeColor[id]; // Color, angle
     float angle = color.w;
     float4 ldir = _UdonPointLightVolumeDirection[id]; // Dir + falloff or Rotation
     float coneFalloff = ldir.w;
@@ -109,7 +211,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
     
     float3 att = color.rgb; // Light attenuation
     
-    if (pos.w < 0) { // It is a spot light
+    if (isSpotLight) { // It is a spot light
         
         if (customId > 0) {  // If it uses Attenuation LUT
             
@@ -134,8 +236,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             
         }
         
-    } else { // It is a point light
-        
+    } else if (isPointLight) { // It is a point light
         
         if (customId < 0) { // If it uses a cubemap
             
@@ -151,6 +252,29 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             
         }
         
+    } else { // It is an area light
+
+        // Area light is defined by centroid, rotation and size
+        float3 centroidPos = pos.xyz;
+        float4 rotationQuat = ldir;
+        float2 size = float2(pos.w, color.w - 2.0f);
+        
+        // Get the vertices of the area light
+        float3 verts[4];
+        verts[0] = centroidPos + LV_MultiplyVectorByQuaternion(float3(-size.x, size.y, 0), rotationQuat);
+        verts[1] = centroidPos + LV_MultiplyVectorByQuaternion(float3(size.x, size.y, 0), rotationQuat);
+        verts[2] = centroidPos + LV_MultiplyVectorByQuaternion(float3(size.x, -size.y, 0), rotationQuat);
+        verts[3] = centroidPos + LV_MultiplyVectorByQuaternion(float3(-size.x, -size.y, 0), rotationQuat);
+
+        // Project irradiance and accumulate the SH coefficients
+        float4 areaLightSH = LV_ProjectQuadLightIrradianceSH(worldPos, verts);
+        L0 += areaLightSH.w * color.rgb;
+        L1r += areaLightSH.xyz * color.r;
+        L1g += areaLightSH.xyz * color.g;
+        L1b += areaLightSH.xyz * color.b;
+
+        count++;
+        return;
     }
 
     // Finnally adding SH components and incrementing counter
@@ -162,6 +286,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
 
 }
 
+// TODO(pema99): Implement area lights for the L0-only functions
 // Samples spot light but for L0 only
 void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint count) {
     
