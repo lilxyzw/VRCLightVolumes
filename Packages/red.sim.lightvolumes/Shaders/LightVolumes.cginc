@@ -101,7 +101,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     if (dot(lightNormal, shadingPosition - lightVertices[0]) < 0.0)
         return 0;
 
-    // Transform the vertices into local space cenetered on the shading position,
+    // Transform the vertices into local space centered on the shading position,
     // project, the polygon onto the unit sphere.
     for (uint edge = 0; edge < 4; edge++)
     {
@@ -122,7 +122,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     }
     solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
     const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f); // Constant part of L0 basis function.
-    float l0 = normalizationL0 * solidAngle; // Project solid angle L0 SH.
+    float l0 = normalizationL0 * solidAngle; // Project solid angle to L0 SH.
 
     // Precomputed directions of rotated zonal harmonics,
     // and associated weights for each basis function.
@@ -141,7 +141,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     for (uint edge = 0; edge < 4; edge++)
     {
         uint next = (edge + 1) % 4;
-        float3 mu = normalize(cross(lightVertices[edge], lightVertices[next]));;
+        float3 mu = normalize(cross(lightVertices[edge], lightVertices[next]));
         float cosGamma = dot(lightVertices[edge], lightVertices[next]);
         float gamma = acos(clamp(cosGamma, -1, 1));
         surfaceIntegral.x += gamma * dot(zhDir0, mu);
