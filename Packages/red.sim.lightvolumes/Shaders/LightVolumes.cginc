@@ -103,21 +103,21 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
 
     // Transform the vertices into local space cenetered on the shading position,
     // project, the polygon onto the unit sphere.
-    for (uint i = 0; i < 4; i++)
+    for (uint edge = 0; edge < 4; edge++)
     {
-        lightVertices[i] = normalize(lightVertices[i] - shadingPosition);
+        lightVertices[edge] = normalize(lightVertices[edge] - shadingPosition);
     }
 
     // Compute the solid angle subtended by the polygon at the shading position,
     // using Arvo's formula (5.1) https://dl.acm.org/doi/pdf/10.1145/218380.218467.
     // The L0 term is directly proportional to the solid angle.
     float solidAngle = 0;
-    for (uint i = 0; i < 4; i++)
+    for (uint edge = 0; edge < 4; edge++)
     {
-        uint next = (i + 1) % 4;
-        uint prev = (i + 4 - 1) % 4;
-        float3 a = cross(lightVertices[i], lightVertices[prev]);
-        float3 b = cross(lightVertices[i], lightVertices[next]);
+        uint next = (edge + 1) % 4;
+        uint prev = (edge + 4 - 1) % 4;
+        float3 a = cross(lightVertices[edge], lightVertices[prev]);
+        float3 b = cross(lightVertices[edge], lightVertices[next]);
         solidAngle += acos(clamp(dot(a, b) / (length(a) * length(b)), -1, 1));
     }
     solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
