@@ -121,7 +121,8 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
         solidAngle += acos(clamp(dot(a, b) / (length(a) * length(b)), -1, 1));
     }
     solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
-    float l0 = (0.5f * sqrt(1.0f / 3.141592653589793f)) * solidAngle;
+    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f); // Constant part of L0 basis function.
+    float l0 = (0.5f * sqrt(1.0f / 3.141592653589793f)) * solidAngle; // Project solid angle L0 SH.
 
     // Precomputed directions of rotated zonal harmonics,
     // and associated weights for each basis function.
@@ -167,7 +168,6 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     const float cosineKernelL0 = 3.141592653589793f; // (1)
     const float cosineKernelL1 = 2.0f * 3.141592653589793f; // (1)
     const float oneOverPi = 1.0f / 3.141592653589793f; // (2)
-    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f); // (3)
     const float normalizationL1 = 0.5f * sqrt(3.0f / 3.141592653589793f); // (3)
     const float weightL0 = cosineKernelL0 * normalizationL0 * oneOverPi; // (1), (2), (3)
     const float weightL1 = cosineKernelL1 * normalizationL1 * oneOverPi; // (1), (2), (3)
