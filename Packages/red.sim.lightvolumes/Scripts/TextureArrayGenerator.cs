@@ -1,197 +1,123 @@
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using System.Collections.Generic;
-using Unity.Collections;
+using System;
+using UnityEngine.Rendering;
 
 namespace VRCLightVolumes {
 
     public static class TextureArrayGenerator {
-        
-        public static Texture2DArray CreateTexture2DArray(List<Texture2D> textures, int width, int height, out int[] ids) {
-            
+
+        public static void CreateTexture2DArray(List<Texture> textures, int res, Action<Texture2DArray, int[]> onComplete) {
+
             if (textures == null || textures.Count == 0) {
-                ids = new int[0];
-                return null;
+                return;
             }
 
             int count = textures.Count;
 
-            // Overriding Read/Write
+            // Process every tex to rescale it or to convert cubemap into octahedtal cubemap format
+            List<RenderTexture> processedTextures = new List<RenderTexture>();
             for (int i = 0; i < count; i++) {
-                try {
-                    textures[i].GetPixel(0, 0);
-                } catch {
-                    LVUtils.TextureSetReadWrite(textures[i], true);
+                if (textures[i].GetType() == typeof(Cubemap)) {
+                    var cube = (Cubemap)textures[i];
+                    processedTextures.Add(CreateOctahedralCubemap(cube, res));
+                } else if (textures[i].GetType() == typeof(Texture2D)) {
+                    var tex = (Texture2D)textures[i];
+                    processedTextures.Add(CreateTexture(tex, res));
                 }
             }
 
-            // Deduplication of same textures 2D
-            var keyToUnique = new Dictionary<string, int>();
-            var uniqueTexs = new List<Texture2D>();
-            var origToUnique = new int[count];
+            var requests = new List<AsyncGPUReadbackRequest>(count);
+            var hashes = new Hash128[count];
+            var texCache = new RenderTexture[count];
 
-            for (int i = 0; i < count; ++i) {
-                Texture2D t = textures[i];
-                NativeArray<byte> raw = t.GetPixelData<byte>(0);
-                Hash128 hash = Hash128.Compute(raw);
-                string key = "" + hash;
+            int finished = 0;
+            bool failed = false;
 
-                if (!keyToUnique.TryGetValue(key, out int uIdx)) {
-                    uIdx = uniqueTexs.Count;
-                    uniqueTexs.Add(t);
-                    keyToUnique.Add(key, uIdx);
-                }
-                origToUnique[i] = uIdx;
+            for (int i = 0; i < count; i++) {
+                int index = i;
+
+                var request = AsyncGPUReadback.Request(processedTextures[i], 0, r => {
+
+                    if (r.hasError) {
+                        Debug.LogError($"Readback error at index {index}");
+                        failed = true;
+                        return;
+                    }
+
+                    var data = r.GetData<byte>();
+                    HashUtilities.ComputeHash128(ref data, ref hashes[index]);
+                    texCache[index] = processedTextures[index];
+
+                    finished++;
+                    if (finished == count && !failed) {
+                        Finalize(hashes, texCache, onComplete);
+                    }
+
+                });
+
+                requests.Add(request);
             }
-
-            ids = origToUnique;
-            int uniqueCount = uniqueTexs.Count;
-
-            var format = GraphicsFormat.R32G32B32_SFloat;
-            var texArray = new Texture2DArray(width, height, uniqueCount, format, TextureCreationFlags.None) {
-                wrapMode = TextureWrapMode.Clamp,
-                filterMode = FilterMode.Trilinear
-            };
-
-            // Temporary RT for GPU-side resampling and conversion
-            RenderTexture rt = new RenderTexture(width, height, 0, RenderTextureFormat.ARGBFloat) {
-                enableRandomWrite = false,
-                useMipMap = false,
-                autoGenerateMips = false,
-                wrapMode = TextureWrapMode.Clamp,
-                filterMode = FilterMode.Trilinear
-            };
-            rt.Create();
-
-            // Intermediate readable texture
-            Texture2D tempTex = new Texture2D(width, height, TextureFormat.RGBAFloat, false, true);
-
-            for (int i = 0; i < uniqueCount; i++) {
-                var src = uniqueTexs[i];
-                Graphics.Blit(src, rt);
-
-                RenderTexture.active = rt;
-                tempTex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                tempTex.Apply();
-
-                Color[] pixels = tempTex.GetPixels();
-                texArray.SetPixels(pixels, i);
-            }
-
-            RenderTexture.active = null;
-            rt.Release();
-            Object.DestroyImmediate(rt);
-            Object.DestroyImmediate(tempTex);
-
-            texArray.Apply(false, false);
-
-            return texArray;
         }
 
-        public static Texture2DArray CreateCubemapArray(List<Cubemap> cubemaps, int width, int height, out int[] ids) {
+        private static void Finalize(Hash128[] hashes, RenderTexture[] texCache, Action<Texture2DArray, int[]> onComplete) {
 
-            if (cubemaps == null || cubemaps.Count == 0) {
-                ids = new int[0];
-                return null;
-            }
+            int count = texCache.Length;
+            Dictionary<Hash128, int> hashToIndex = new Dictionary<Hash128, int>();
+            List<RenderTexture> uniqueTexs = new List<RenderTexture>();
+            int[] origToUnique = new int[count];
 
-            int count = cubemaps.Count;
-
-            // Ensure Read/Write
             for (int i = 0; i < count; i++) {
-                try {
-                    cubemaps[i].GetPixel(CubemapFace.PositiveX, 0, 0);
-                } catch {
-                    LVUtils.TextureSetReadWrite(cubemaps[i], true);
+                if (hashToIndex.TryGetValue(hashes[i], out int existingIndex)) {
+                    origToUnique[i] = existingIndex;
+                } else {
+                    int newIndex = uniqueTexs.Count;
+                    hashToIndex[hashes[i]] = newIndex;
+                    uniqueTexs.Add(texCache[i]);
+                    origToUnique[i] = newIndex;
                 }
             }
 
-            // Deduplication
-            var keyToUnique = new Dictionary<string, int>();
-            var uniqueTexs = new List<Cubemap>();
-            var origToUnique = new int[count];
+            int width = texCache[0].width;
+            int height = texCache[0].height;
+            var format = GraphicsFormat.R32G32B32A32_SFloat;
+            var texArray = new Texture2DArray(width, height, uniqueTexs.Count, format, TextureCreationFlags.None);
+            texArray.wrapMode = TextureWrapMode.Clamp;
+            texArray.filterMode = FilterMode.Trilinear;
+            texArray.anisoLevel = 0;
 
-            for (int i = 0; i < count; ++i) {
-                Cubemap t = cubemaps[i];
-                NativeArray<byte> raw = t.GetPixelData<byte>(0, CubemapFace.PositiveX);
-                Hash128 hash = Hash128.Compute(raw);
-                string key = hash.ToString();
-
-                if (!keyToUnique.TryGetValue(key, out int uIdx)) {
-                    uIdx = uniqueTexs.Count;
-                    uniqueTexs.Add(t);
-                    keyToUnique.Add(key, uIdx);
-                }
-                origToUnique[i] = uIdx;
-            }
-
-            ids = origToUnique;
-            int uniqueCount = uniqueTexs.Count;
-
-            List<Texture2D> textures = new List<Texture2D>();
-
-            // Processing Cubemaps
-
-            for (int i = 0; i < uniqueCount; i++) {
-
-                int size = uniqueTexs[i].width;
-                var form = uniqueTexs[i].format;
-                int mipCount = uniqueTexs[i].mipmapCount;
-
-                for (int f = 0; f < 6; f++) {
-                    var faceTex = new Texture2D(size, size, form, mipCount > 1);
-                    faceTex.Apply(false, true);
-                    Graphics.CopyTexture(uniqueTexs[i], f, 0, faceTex, 0, 0);
-                    textures.Add(faceTex);
-                }
-
-            }
-
-            // Processing Texture 2D Array
-
-            var format = GraphicsFormat.R32G32B32_SFloat;
-            var texArray = new Texture2DArray(width, height, uniqueCount * 6, format, TextureCreationFlags.None) {
-                wrapMode = TextureWrapMode.Clamp,
-                filterMode = FilterMode.Trilinear
-            };
-
-            // Temporary RT for GPU-side resampling and conversion
-            RenderTexture rt = new RenderTexture(width, height, 0, RenderTextureFormat.ARGBFloat) {
-                enableRandomWrite = false,
-                useMipMap = false,
-                autoGenerateMips = false,
-                wrapMode = TextureWrapMode.Clamp,
-                filterMode = FilterMode.Trilinear
-            };
-            rt.Create();
-
-            // Intermediate readable texture
-            Texture2D tempTex = new Texture2D(width, height, TextureFormat.RGBAFloat, false, true);
-
-            int facesCount = textures.Count;
-
-            for (int i = 0; i < facesCount; i++) {
-                var src = textures[i];
-                Graphics.Blit(src, rt);
-
+            for (int slice = 0; slice < uniqueTexs.Count; slice++) {
+                var rt = uniqueTexs[slice];
+                var temp = new Texture2D(width, height, TextureFormat.RGBAFloat, false, true);
                 RenderTexture.active = rt;
-                tempTex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                tempTex.Apply();
-
-                Color[] pixels = tempTex.GetPixels();
-
-                texArray.SetPixels(pixels, i);
+                temp.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                temp.Apply();
+                Graphics.CopyTexture(temp, 0, 0, texArray, slice, 0);
+                UnityEngine.Object.DestroyImmediate(temp);
             }
 
             RenderTexture.active = null;
-            rt.Release();
-            Object.DestroyImmediate(rt);
-            Object.DestroyImmediate(tempTex);
+            onComplete?.Invoke(texArray, origToUnique);
 
-            texArray.Apply(false, false);
+        }
 
-            return texArray;
+        public static RenderTexture CreateOctahedralCubemap(Cubemap cubemap, int res, int padding = 1) {
+            Material mat = new Material(Shader.Find("Hidden/CubeToOct"));
+            mat.SetFloat("_Padding", padding);
+            mat.SetFloat("_TextureSize", res);
+            mat.SetTexture("_CubeTex", cubemap);
+            RenderTexture rt = new RenderTexture(res, res, 0, RenderTextureFormat.ARGBFloat, 0);
+            rt.Create();
+            Graphics.Blit(null, rt, mat);
+            return rt;
+        }
 
+        public static RenderTexture CreateTexture(Texture2D tex, int res) {
+            RenderTexture rt = new RenderTexture(res, res, 0, RenderTextureFormat.ARGBFloat, 0);
+            rt.Create();
+            Graphics.Blit(tex, rt);
+            return rt;
         }
 
     }

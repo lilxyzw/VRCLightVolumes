@@ -2,21 +2,6 @@
 #define VRC_LIGHT_VOLUMES_INCLUDED
 #define VRCLV_VERSION 2
 
-
-// Makes it possible to sample Texcure Cube Arrays in surface shaders. Thanks to error.mdl!
-//#if defined(SHADER_TARGET_SURFACE_ANALYSIS_MOJOSHADER)
-//    #define UNITY_DECLARE_TEXCUBEARRAY(tex) samplerCUBE tex
-//    #define UNITY_DECLARE_TEXCUBEARRAY_NOSAMPLER(tex) samplerCUBE tex
-//    #define UNITY_ARGS_TEXCUBEARRAY(tex) samplerCUBE tex
-//    #define UNITY_PASS_TEXCUBEARRAY(tex) tex
-
-//    #define UNITY_SAMPLE_TEXCUBEARRAY(tex,coord) texCUBE(tex,coord)
-//    #define UNITY_SAMPLE_TEXCUBEARRAY_LOD(tex,coord,lod) texCUBElod(tex, float4(coord, lod))
-//    #define UNITY_SAMPLE_TEXCUBEARRAY_SAMPLER(tex,samplertex,coord)  texCUBE(tex,coord)
-//    #define UNITY_SAMPLE_TEXCUBEARRAY_SAMPLER_LOD(tex,samplertex,coord,lod) texCUBElod(tex, float4(coord, lod))
-
-//#endif
-
 // Are Light Volumes enabled on scene?
 uniform float _UdonLightVolumeEnabled;
 
@@ -68,16 +53,6 @@ uniform float4 _UdonPointLightVolumeDirection[128];
 // Stores a LUT or a cubemap ID + 1. Stores 0 if not using any custom tex
 uniform float _UdonPointLightVolumeCustomID[128];
 
-//sampler Sampler_UdonPointLightVolume;
-//UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeLUT);
-//UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCubemap);
-//UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeTexture);
-
-//SamplerState Sampler_UdonPointLightVolume;
-//Texture2DArray _UdonPointLightVolumeLUT;
-//Texture2DArray _UdonPointLightVolumeCubemap;
-//Texture2DArray _UdonPointLightVolumeTexture;
-
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeLUT);
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCubemap);
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCookie);
@@ -95,29 +70,16 @@ float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     return v + q.w * t + cross(q.xyz, t);
 }
 
-float4 LV_SampleCubemapArray(uint id, float3 dir) {
-    
-    float3 absDir = abs(dir);
-    float2 uv;
-    uint face;
+float2 LV_PackNormalOctQuadEncode(float3 n) {
+    n *= rcp(max(dot(abs(n), 1.0), 1e-6));
+    float t = saturate(-n.z);
+    float2 uv = n.xy + float2(n.x >= 0.0 ? t : -t, n.y >= 0.0 ? t : -t);
+    return uv;
+}
 
-    if (absDir.x >= absDir.y && absDir.x >= absDir.z) {
-        face = dir.x > 0 ? 0 : 1;
-        uv = float2((dir.x > 0 ? -dir.z : dir.z), -dir.y) * rcp(absDir.x);
-    }
-    else if (absDir.y >= absDir.z) {
-        face = dir.y > 0 ? 2 : 3;
-        uv = float2(dir.x, (dir.y > 0 ? dir.z : -dir.z)) * rcp(absDir.y);
-    }
-    else {
-        face = dir.z > 0 ? 4 : 5;
-        uv = float2((dir.z > 0 ? dir.x : -dir.x), -dir.y) * rcp(absDir.z);
-    }
-    
-    
-    float3 uvid = float3(uv * 0.5 + 0.5, id * 6 + face);
+float4 LV_SampleCubemapArray(uint id, float3 dir) {
+    float3 uvid = float3(LV_PackNormalOctQuadEncode(dir) * 0.5 + 0.5, id);
     return UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCubemap, uvid);
-    
 }
 
 // Samples spot light

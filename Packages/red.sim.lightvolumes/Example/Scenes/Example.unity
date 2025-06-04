@@ -1664,10 +1664,6 @@ MonoBehaviour:
     ID: 20
     SerializedTypeNames:
     - VRC.Udon.UdonBehaviour
-  - gameObject: {fileID: 0}
-    ID: 21
-    SerializedTypeNames:
-    - VRC.Udon.UdonBehaviour
   - gameObject: {fileID: 1739740403}
     ID: 22
     SerializedTypeNames:
@@ -1691,6 +1687,10 @@ MonoBehaviour:
     SerializedTypeNames:
     - VRC.SDK3.Components.VRCPickup
     - VRC.SDK3.Components.VRCObjectSync
+  - gameObject: {fileID: 1978494981}
+    ID: 27
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   PlayerPersistence: []
@@ -3406,13 +3406,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1978494981}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.5, y: -8.85, z: -0.9}
+  m_LocalRotation: {x: -0, y: -0, z: 1, w: 0.0000029504295}
+  m_LocalPosition: {x: 6.31, y: 6.5, z: 2.9}
   m_LocalScale: {x: 20, y: 20, z: 20}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 388313837}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!114 &1978494983
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -3461,9 +3461,9 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1978494983}
   IsDynamic: 1
-  PositionData: {x: -0.315, y: 1.6474999, z: -18.154, w: 0.0075091086}
-  ColorData: {x: 35.55, y: 35.55, z: 35.55, w: 0.7372773}
-  DirectionData: {x: 0, y: 0, z: 0, w: 1}
+  PositionData: {x: 0.2755, y: 2.415, z: -17.963999, w: 0.0075091086}
+  ColorData: {x: 23.34, y: 23.34, z: 23.34, w: 0.7372773}
+  DirectionData: {x: 0, y: 0, z: -1, w: 0.0000029504295}
   CustomID: -1
   angle: 0.7417649
 --- !u!114 &1978494985
@@ -3482,12 +3482,12 @@ MonoBehaviour:
   Type: 0
   Range: 11.54
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 35.55
+  Intensity: 23.34
   Shape: 2
   Angle: 85
   Falloff: 1
-  FalloffLUT: {fileID: 2800000, guid: f395c13c265829f4fa1aab8f76a1a35f, type: 3}
-  Cubemap: {fileID: 8900000, guid: a3434367dd4880041a3a1db4a7d22512, type: 3}
+  FalloffLUT: {fileID: 0}
+  Cubemap: {fileID: 8900000, guid: 9978fed9ab897bd4488908ccb29e3815, type: 3}
   CustomID: 0
   PointLightVolumeInstance: {fileID: 1978494984}
   LightVolumeSetup: {fileID: 446951793}
