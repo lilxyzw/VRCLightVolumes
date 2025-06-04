@@ -2,8 +2,6 @@
 #define VRC_LIGHT_VOLUMES_INCLUDED
 #define VRCLV_VERSION 2
 
-#pragma skip_optimizations d3d11
-
 // Makes it possible to sample Texcure Cube Arrays in surface shaders. Thanks to error.mdl!
 #if defined(SHADER_TARGET_SURFACE_ANALYSIS_MOJOSHADER)
     #define UNITY_DECLARE_TEXCUBEARRAY(tex) samplerCUBE tex
