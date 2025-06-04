@@ -122,7 +122,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     }
     solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
     const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f); // Constant part of L0 basis function.
-    float l0 = (0.5f * sqrt(1.0f / 3.141592653589793f)) * solidAngle; // Project solid angle L0 SH.
+    float l0 = normalizationL0 * solidAngle; // Project solid angle L0 SH.
 
     // Precomputed directions of rotated zonal harmonics,
     // and associated weights for each basis function.
