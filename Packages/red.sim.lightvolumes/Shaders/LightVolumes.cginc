@@ -70,16 +70,29 @@ float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     return v + q.w * t + cross(q.xyz, t);
 }
 
-float2 LV_PackNormalOctQuadEncode(float3 n) {
-    n *= rcp(max(dot(abs(n), 1.0), 1e-6));
-    float t = saturate(-n.z);
-    float2 uv = n.xy + float2(n.x >= 0.0 ? t : -t, n.y >= 0.0 ? t : -t);
-    return uv;
-}
-
 float4 LV_SampleCubemapArray(uint id, float3 dir) {
-    float3 uvid = float3(LV_PackNormalOctQuadEncode(dir) * 0.5 + 0.5, id);
+    
+    float3 absDir = abs(dir);
+    float2 uv;
+    uint face;
+
+    if (absDir.x >= absDir.y && absDir.x >= absDir.z) {
+        face = dir.x > 0 ? 0 : 1;
+        uv = float2((dir.x > 0 ? -dir.z : dir.z), -dir.y) * rcp(absDir.x);
+    }
+    else if (absDir.y >= absDir.z) {
+        face = dir.y > 0 ? 2 : 3;
+        uv = float2(dir.x, (dir.y > 0 ? dir.z : -dir.z)) * rcp(absDir.y);
+    }
+    else {
+        face = dir.z > 0 ? 4 : 5;
+        uv = float2((dir.z > 0 ? dir.x : -dir.x), -dir.y) * rcp(absDir.z);
+    }
+    
+    
+    float3 uvid = float3(uv * 0.5 + 0.5, id * 6 + face);
     return UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCubemap, uvid);
+    
 }
 
 // Samples spot light

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 #if UNITY_EDITOR
+using Unity.EditorCoroutines.Editor;
 using System.IO;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
@@ -122,28 +123,19 @@ namespace VRCLightVolumes {
                     lutTextures.Add(PointLightVolumes[i].FalloffLUT);
                 }
             }
-
-            TextureArrayGenerator.CreateTexture2DArray(lutTextures, LUTResolution.x, OnTexGenerated);
-
-        }
-
-        private void OnTexGenerated(Texture2DArray lutArray, int[] ids) {
-
-            if (lutArray != null) {
-
-                for (int i = 0; i < ids.Length; i++) {
-                    _customTexPointVolumes[i].CustomID = ids[i];
-                    _customTexPointVolumes[i].SyncUdonScript();
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(lutTextures, LUTResolution.x, (texArray, ids) => {
+                if (texArray != null) {
+                    for (int i = 0; i < ids.Length; i++) {
+                        _customTexPointVolumes[i].CustomID = ids[i];
+                        _customTexPointVolumes[i].SyncUdonScript();
+                    }
                 }
-
-            }
-
-            LightVolumeManager.LUT = lutArray;
-
-            if (lutArray != null)
-                LVUtils.SaveAsAsset(lutArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUTArray.asset");
+                LightVolumeManager.LUT = texArray;
+                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUTArray.asset");
+            }), this);
 
         }
+
 
 
         // Generates Cubemap array based on all the Cubemap textures provided in PointLightVolumes
@@ -161,26 +153,16 @@ namespace VRCLightVolumes {
                     cubeTextures.Add(PointLightVolumes[i].Cubemap);
                 }
             }
-
-            TextureArrayGenerator.CreateTexture2DArray(cubeTextures, CubemapResolution.x, OnCubeGenerated);
-
-        }
-
-        private void OnCubeGenerated(Texture2DArray cubeArray, int[] ids) {
-
-            if (cubeArray != null) {
-
-                for (int i = 0; i < ids.Length; i++) {
-                    _customCubePointVolumes[i].CustomID = ids[i];
-                    _customCubePointVolumes[i].SyncUdonScript();
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(cubeTextures, CubemapResolution.x, (texArray, ids) => {
+                if (texArray != null) {
+                    for (int i = 0; i < ids.Length; i++) {
+                        _customCubePointVolumes[i].CustomID = ids[i];
+                        _customCubePointVolumes[i].SyncUdonScript();
+                    }
                 }
-
-            }
-
-            LightVolumeManager.Cubemap = cubeArray;
-
-            if (cubeArray != null)
-                LVUtils.SaveAsAsset(cubeArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightCubemapArray.asset");
+                LightVolumeManager.Cubemap = texArray;
+                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightCubemapArray.asset");
+            }), this);
 
         }
 
