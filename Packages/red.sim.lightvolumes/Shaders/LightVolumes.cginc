@@ -61,6 +61,11 @@ uniform float4 _UdonPointLightVolumeDirection[128];
 // If uses custom texture: Stores texture ID with negative sign
 uniform float _UdonPointLightVolumeCustomID[128];
 
+// If we are far enough from an area light that the irradiance
+// is guaranteed lower than the threshold defined by this value,
+// we cull the light.
+uniform float _UdonAreaLightBrightnessCutoff;
+
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeLUT);
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCubemap);
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCookie);
@@ -186,6 +191,25 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     return float4(l1x, l1y, l1z, l0);
 }
 
+// Computes the squared radius of a bounding sphere for a rectangular area light,
+// such that the solid angle of the light at every point outside the bounding sphere
+// is less than 'minSolidAngle'. This is done by isolating distance in the solid angle formula,
+// assuming the light is pointing directly towards the receiving point, and solving the
+// resulting quadratic equation.
+float LV_ComputeAreaLightSquaredBoundingSphere(float width, float height, float minSolidAngle)
+{
+    float A = width * height;
+    float w2 = width * width;
+    float h2 = height * height;
+    float B = 0.25 * (w2 + h2);
+    float t = tan(0.25 * minSolidAngle);
+    float T = t * t;
+    float TB = T * B;
+    float discriminant = sqrt(TB * TB + 4.0 * T * A * A);
+    float d2 = (discriminant - TB) * 0.125 / T;
+    return d2;
+}
+
 // Samples spot light
 void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b, inout uint count) {
     
@@ -268,24 +292,39 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
         float2 size = float2(pos.w, color.w - 2.0f);
         float2 halfSize = size * 0.5f;
 
+        float3 lightToWorldPos = worldPos - centroidPos;
+        
         // Get normal to cull the light early
         float3 normal = LV_MultiplyVectorByQuaternion(float3(0, 0, 1), rotationQuat);
-        if (dot(normal, worldPos - centroidPos) < 0.0)
+        if (dot(normal, lightToWorldPos) < 0.0)
             return;
+
+        // Calculate the bounding sphere of the area light given the cutoff irradiance
+        // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
+        if (_UdonAreaLightBrightnessCutoff > 0.0f)
+        {
+            float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
+            float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
+            float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
+            if (sqCutoffDist < 0)
+                return;
+            // Attenuate the light based on distance to the bounding sphere, so we don't get hard seam at the edge.
+            color.rgb *= saturate(sqCutoffDist / sqMaxDist);
+        }
         
-        // Get the basis vectors of the quad
+        // Compute the vertices of the quad
         float3 xAxis = LV_MultiplyVectorByQuaternion(float3(1, 0, 0), rotationQuat);
         float3 yAxis = LV_MultiplyVectorByQuaternion(float3(0, 1, 0), rotationQuat);
-
-        // Compute the vertices of the quad
         float3 verts[4];
         verts[0] = centroidPos + (-halfSize.x * xAxis) + ( halfSize.y * yAxis);
         verts[1] = centroidPos + ( halfSize.x * xAxis) + ( halfSize.y * yAxis);
         verts[2] = centroidPos + ( halfSize.x * xAxis) + (-halfSize.y * yAxis);
         verts[3] = centroidPos + (-halfSize.x * xAxis) + (-halfSize.y * yAxis);
 
-        // Project irradiance and accumulate the SH coefficients
+        // Project irradiance from the area light
         float4 areaLightSH = LV_ProjectQuadLightIrradianceSH(worldPos, verts);
+        
+        // Accumulate SH coefficients
         L0 += areaLightSH.w * color.rgb;
         L1r += areaLightSH.xyz * color.r;
         L1g += areaLightSH.xyz * color.g;
