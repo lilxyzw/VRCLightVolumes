@@ -288,34 +288,38 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalTexture(lightVolumeID, LightVolumeAtlas);
             }
 
-            // Defines if Light Probes Blending enabled in scene
-            VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
-            VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
-
-            // All light volumes inv Edge smooth
-            VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
-
-            // All light volumes UVW
-            VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, _boundsUvwScale);
-
-            // Volume Transform Matrix
-            VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, _invWorldMatrix3x4);
-
-            // All light volumes count
+            // Regular Light Volumes
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
-            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
+            if (_enabledCount != 0) {
 
-            // Volume's relative rotation
-            VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
+                // Defines if Light Probes Blending enabled in scene
+                VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
+                VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
 
-            // Volume's color correction
-            VRCShader.SetGlobalVectorArray(lightVolumeColorID, _colors);
+                // All light volumes inv Edge smooth
+                VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
 
-            // Legacy data setting
-            VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix); 
-            VRCShader.SetGlobalVectorArray(lightVolumeUvwID, _boundsUvw);
-            VRCShader.SetGlobalVectorArray(lightVolumeRotationID, _relativeRotation);
+                // All light volumes UVW
+                VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, _boundsUvwScale);
+
+                // Volume Transform Matrix
+                VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, _invWorldMatrix3x4);
+
+                // Max Overdraw
+                VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
+
+                // Volume's relative rotation
+                VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
+
+                // Volume's color correction
+                VRCShader.SetGlobalVectorArray(lightVolumeColorID, _colors);
+
+                // Legacy data setting
+                VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix);
+                VRCShader.SetGlobalVectorArray(lightVolumeUvwID, _boundsUvw);
+                VRCShader.SetGlobalVectorArray(lightVolumeRotationID, _relativeRotation);
+            }
 
             // Point Lights
             VRCShader.SetGlobalFloat(_pointLightCountID, _pointLightCount);
