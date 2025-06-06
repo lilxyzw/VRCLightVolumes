@@ -105,14 +105,9 @@ float4 LV_SampleCubemapArray(uint id, float3 dir) {
 
 // Projects irradiance from a planar quad with uniform radiant exitance into L1 spherical harmonics.
 // Based on "Analytic Spherical Harmonic Coefficients for Polygonal Area Lights" by Wang and Ramamoorthi.
-// https://cseweb.ucsd.edu/~ravir/ash.pdf
+// https://cseweb.ucsd.edu/~ravir/ash.pdf. Assumes that shadingPosition is not behind the quad.
 float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4])
 {
-    // Check which side of the light we are on. The polygon is assumed to be planar.
-    float3 lightNormal = cross(lightVertices[2] - lightVertices[0], lightVertices[1] - lightVertices[0]);
-    if (dot(lightNormal, shadingPosition - lightVertices[0]) < 0.0)
-        return 0;
-
     // Transform the vertices into local space centered on the shading position,
     // project, the polygon onto the unit sphere.
     for (uint edge = 0; edge < 4; edge++)
@@ -272,6 +267,11 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
         float4 rotationQuat = ldir;
         float2 size = float2(pos.w, color.w - 2.0f);
         float2 halfSize = size * 0.5f;
+
+        // Get normal to cull the light early
+        float3 normal = LV_MultiplyVectorByQuaternion(float3(0, 0, 1), rotationQuat);
+        if (dot(normal, worldPos - centroidPos) < 0.0)
+            return;
         
         // Get the basis vectors of the quad
         float3 xAxis = LV_MultiplyVectorByQuaternion(float3(1, 0, 0), rotationQuat);
