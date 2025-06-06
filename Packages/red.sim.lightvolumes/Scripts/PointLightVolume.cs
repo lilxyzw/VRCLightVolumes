@@ -15,8 +15,8 @@ namespace VRCLightVolumes {
         public LightShape Shape = LightShape.Parametric;
         [Range(0.1f, 360)] public float Angle = 60f;
         [Range(0.001f, 1)] public float Falloff = 1f;
-        [Min(0)] public float AreaLightWidth = 1f;
-        [Min(0)] public float AreaLightHeight = 1f;
+        [Min(0.001f)] public float AreaLightWidth = 1f;
+        [Min(0.001f)] public float AreaLightHeight = 1f;
         public Texture2D FalloffLUT = null;
         public Cubemap Cubemap = null;
 

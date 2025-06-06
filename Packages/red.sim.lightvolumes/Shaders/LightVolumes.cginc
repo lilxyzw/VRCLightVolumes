@@ -273,12 +273,16 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
         float2 size = float2(pos.w, color.w - 2.0f);
         float2 halfSize = size * 0.5f;
         
-        // Get the vertices of the area light
+        // Get the basis vectors of the quad
+        float3 xAxis = LV_MultiplyVectorByQuaternion(float3(1, 0, 0), rotationQuat);
+        float3 yAxis = LV_MultiplyVectorByQuaternion(float3(0, 1, 0), rotationQuat);
+
+        // Compute the vertices of the quad
         float3 verts[4];
-        verts[0] = centroidPos + LV_MultiplyVectorByQuaternion(float3(-halfSize.x, halfSize.y, 0), rotationQuat);
-        verts[1] = centroidPos + LV_MultiplyVectorByQuaternion(float3(halfSize.x, halfSize.y, 0), rotationQuat);
-        verts[2] = centroidPos + LV_MultiplyVectorByQuaternion(float3(halfSize.x, -halfSize.y, 0), rotationQuat);
-        verts[3] = centroidPos + LV_MultiplyVectorByQuaternion(float3(-halfSize.x, -halfSize.y, 0), rotationQuat);
+        verts[0] = centroidPos + (-halfSize.x * xAxis) + ( halfSize.y * yAxis);
+        verts[1] = centroidPos + ( halfSize.x * xAxis) + ( halfSize.y * yAxis);
+        verts[2] = centroidPos + ( halfSize.x * xAxis) + (-halfSize.y * yAxis);
+        verts[3] = centroidPos + (-halfSize.x * xAxis) + (-halfSize.y * yAxis);
 
         // Project irradiance and accumulate the SH coefficients
         float4 areaLightSH = LV_ProjectQuadLightIrradianceSH(worldPos, verts);
