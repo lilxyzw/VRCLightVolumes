@@ -20,9 +20,10 @@ namespace VRCLightVolumes {
         [SerializeField] public List<PointLightVolume> PointLightVolumes = new List<PointLightVolume>();
 
         [Header("Point Light Volumes")]
-        public Vector2Int LUTResolution = new Vector2Int(128, 128);
-        public Vector2Int TextureResolution = new Vector2Int(512, 512);
-        public Vector2Int CubemapResolution = new Vector2Int(512, 512);
+        public TextureArrayResolution LUTResolution = TextureArrayResolution._128x128;
+        public TextureArrayResolution TextureResolution = TextureArrayResolution._128x128;
+        public TextureArrayResolution CubemapResolution = TextureArrayResolution._128x128;
+        public TextureArrayFormat Format = TextureArrayFormat.RGBA32;
 
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
@@ -123,7 +124,7 @@ namespace VRCLightVolumes {
                     lutTextures.Add(PointLightVolumes[i].FalloffLUT);
                 }
             }
-            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(lutTextures, LUTResolution.x, (texArray, ids) => {
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(lutTextures, (int)LUTResolution, (TextureFormat)Format, (texArray, ids) => {
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
                         _customTexPointVolumes[i].CustomID = ids[i];
@@ -153,7 +154,7 @@ namespace VRCLightVolumes {
                     cubeTextures.Add(PointLightVolumes[i].Cubemap);
                 }
             }
-            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(cubeTextures, CubemapResolution.x, (texArray, ids) => {
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(cubeTextures, (int)CubemapResolution, (TextureFormat)Format, (texArray, ids) => {
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
                         _customCubePointVolumes[i].CustomID = ids[i];
@@ -446,6 +447,23 @@ namespace VRCLightVolumes {
         public enum Baking {
             Progressive,
             Bakery
+        }
+
+        public enum TextureArrayFormat {
+            RGBA32 = 4,
+            RGBAHalf = 17,
+            RGBAFloat = 20
+        }
+
+        public enum TextureArrayResolution {
+            _16x16 = 16,
+            _32x32 = 32,
+            _64x64 = 64,
+            _128x128 = 128,
+            _256x256 = 256,
+            _512x512 = 512,
+            _1024x1024 = 1024,
+            _2048x2048 = 2048
         }
 
     }
