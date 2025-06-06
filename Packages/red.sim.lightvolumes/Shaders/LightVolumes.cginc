@@ -2,19 +2,6 @@
 #define VRC_LIGHT_VOLUMES_INCLUDED
 #define VRCLV_VERSION 2
 
-// Makes it possible to sample Texcure Cube Arrays in surface shaders. Thanks to error.mdl!
-#if defined(SHADER_TARGET_SURFACE_ANALYSIS_MOJOSHADER)
-    #define UNITY_DECLARE_TEXCUBEARRAY(tex) samplerCUBE tex
-    #define UNITY_DECLARE_TEXCUBEARRAY_NOSAMPLER(tex) samplerCUBE tex
-    #define UNITY_ARGS_TEXCUBEARRAY(tex) samplerCUBE tex
-    #define UNITY_PASS_TEXCUBEARRAY(tex) tex
-
-    #define UNITY_SAMPLE_TEXCUBEARRAY(tex,coord) texCUBE(tex,coord)
-    #define UNITY_SAMPLE_TEXCUBEARRAY_LOD(tex,coord,lod) texCUBElod(tex, float4(coord, lod))
-    #define UNITY_SAMPLE_TEXCUBEARRAY_SAMPLER(tex,samplertex,coord)  texCUBE(tex,coord)
-    #define UNITY_SAMPLE_TEXCUBEARRAY_SAMPLER_LOD(tex,samplertex,coord,lod) texCUBElod(tex, float4(coord, lod))
-#endif
-
 // Are Light Volumes enabled on scene?
 uniform float _UdonLightVolumeEnabled;
 
@@ -74,11 +61,11 @@ uniform float4 _UdonPointLightVolumeDirection[128];
 // If uses custom texture: Stores texture ID with negative sign
 uniform float _UdonPointLightVolumeCustomID[128];
 
-// LUT tex array for spot lights
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeLUT);
+UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCubemap);
+UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCookie);
 
-// Cubemap tex array for point lights
-UNITY_DECLARE_TEXCUBEARRAY(_UdonPointLightVolumeCubemap);
+#define _UdonPointLightVolumeCookie _UdonPointLightVolumeLUT
 
 // Smoothstep to 0, 1 but cheaper
 float LV_Smoothstep01(float x) {
@@ -89,6 +76,31 @@ float LV_Smoothstep01(float x) {
 float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     float3 t = 2.0 * cross(q.xyz, v);
     return v + q.w * t + cross(q.xyz, t);
+}
+
+float4 LV_SampleCubemapArray(uint id, float3 dir) {
+    
+    float3 absDir = abs(dir);
+    float2 uv;
+    uint face;
+
+    if (absDir.x >= absDir.y && absDir.x >= absDir.z) {
+        face = dir.x > 0 ? 0 : 1;
+        uv = float2((dir.x > 0 ? -dir.z : dir.z), -dir.y) * rcp(absDir.x);
+    }
+    else if (absDir.y >= absDir.z) {
+        face = dir.y > 0 ? 2 : 3;
+        uv = float2(dir.x, (dir.y > 0 ? dir.z : -dir.z)) * rcp(absDir.y);
+    }
+    else {
+        face = dir.z > 0 ? 4 : 5;
+        uv = float2((dir.z > 0 ? dir.x : -dir.x), -dir.y) * rcp(absDir.z);
+    }
+    
+    
+    float3 uvid = float3(uv * 0.5 + 0.5, id * 6 + face);
+    return UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCubemap, uvid);
+    
 }
 
 // Projects irradiance from a planar quad with uniform radiant exitance into L1 spherical harmonics.
@@ -216,7 +228,8 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             float spotMask = dot(ldir.xyz, -dirN) - angle;
             if(spotMask < 0) return;
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(spot, dirRadius)), customId - 1)).xyz;
+            float3 uvid = float3(sqrt(float2(spot, dirRadius)), customId - 1);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
             
         } else if (customId < 0) { // If uses cookie
             
@@ -224,7 +237,8 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             if (localDir.z <= 0.0) return;
             float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(uv * 0.5 + 0.5, - customId - 1)).xyz;
+            float3 uvid = float3(uv * 0.5 + 0.5, -customId - 1);
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCookie, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -238,11 +252,12 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
         
         if (customId < 0) { // If it uses a cubemap
             
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(LV_MultiplyVectorByQuaternion(dirN, ldir), -customId - 1), 0).xyz;
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SampleCubemapArray(-customId - 1, LV_MultiplyVectorByQuaternion(dirN, ldir)).xyz;
             
         } else if (customId > 0) { // Using LUT
             
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(0, dirRadius)), customId - 1)).xyz;
+            float3 uvid = float3(sqrt(float2(0, dirRadius)), customId - 1);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -319,7 +334,8 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
             float spotMask = dot(ldir.xyz, -dirN) - angle;
             if(spotMask < 0) return;
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(spot, dirRadius)), customId - 1)).xyz;
+            float3 uvid = float3(sqrt(float2(spot, dirRadius)), customId - 1);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
             
         } else if (customId < 0) { // If uses cookie
             
@@ -327,7 +343,8 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
             if (localDir.z <= 0.0) return;
             float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(uv * 0.5 + 0.5, - customId - 1)).xyz;
+            float3 uvid = float3(uv * 0.5 + 0.5, -customId - 1);
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCookie, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -343,11 +360,12 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
         if (customId < 0) { // If it uses a cubemap
             
             float3 dirN = dir * rsqrt(sqlen);
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEXCUBEARRAY_LOD(_UdonPointLightVolumeCubemap, float4(LV_MultiplyVectorByQuaternion(dirN, ldir), -customId - 1), 0).xyz;
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SampleCubemapArray(-customId - 1, LV_MultiplyVectorByQuaternion(dirN, ldir)).xyz;
             
         } else if (customId > 0) { // Using LUT
             
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, float3(sqrt(float2(0, dirRadius)), customId - 1)).xyz;
+            float3 uvid = float3(sqrt(float2(0, dirRadius)), customId - 1);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             

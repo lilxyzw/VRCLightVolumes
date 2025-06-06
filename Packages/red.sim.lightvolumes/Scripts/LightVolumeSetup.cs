@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 #if UNITY_EDITOR
+using Unity.EditorCoroutines.Editor;
 using System.IO;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
@@ -17,6 +18,12 @@ namespace VRCLightVolumes {
         [SerializeField] public List<float> LightVolumesWeights = new List<float>();
 
         [SerializeField] public List<PointLightVolume> PointLightVolumes = new List<PointLightVolume>();
+
+        [Header("Point Light Volumes")]
+        public TextureArrayResolution LUTResolution = TextureArrayResolution._128x128;
+        public TextureArrayResolution TextureResolution = TextureArrayResolution._128x128;
+        public TextureArrayResolution CubemapResolution = TextureArrayResolution._128x128;
+        public TextureArrayFormat Format = TextureArrayFormat.RGBA32;
 
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
@@ -98,73 +105,68 @@ namespace VRCLightVolumes {
             }
         }
 
-        
+
 
         // Generates LUT array based on all the LUT Textures2D provided in PointLightVolumes
+        List<PointLightVolume> _customTexPointVolumes = new List<PointLightVolume>();
+
         public void GenerateLUTArray() {
 
-            List<PointLightVolume> spotVolumes = new List<PointLightVolume>();
-            List<Texture2D> lutTextures = new List<Texture2D>();
+            _customTexPointVolumes.Clear();
+            List<Texture> lutTextures = new List<Texture>();
 
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
                 if (((PointLightVolumes[i].Shape != PointLightVolume.LightShape.Parametric && PointLightVolumes[i].Type == PointLightVolume.LightType.SpotLight) ||
                     (PointLightVolumes[i].Shape == PointLightVolume.LightShape.LUT && PointLightVolumes[i].Type == PointLightVolume.LightType.PointLight)) &&
                     PointLightVolumes[i].FalloffLUT != null) {
-                    spotVolumes.Add(PointLightVolumes[i]);
+                    _customTexPointVolumes.Add(PointLightVolumes[i]);
                     lutTextures.Add(PointLightVolumes[i].FalloffLUT);
                 }
             }
-
-            Texture2DArray lutArray = TextureArrayGenerator.CreateTexture2DArray(lutTextures, 128, 128, out int[] ids);
-
-            if (lutArray != null) {
-
-                for (int i = 0; i < ids.Length; i++) {
-                    spotVolumes[i].CustomID = ids[i];
-                    spotVolumes[i].SyncUdonScript();
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(lutTextures, (int)LUTResolution, (TextureFormat)Format, (texArray, ids) => {
+                if (texArray != null) {
+                    for (int i = 0; i < ids.Length; i++) {
+                        _customTexPointVolumes[i].CustomID = ids[i];
+                        _customTexPointVolumes[i].SyncUdonScript();
+                    }
                 }
-
-            }
-
-            LightVolumeManager.FalloffLUT = lutArray;
-
-            if(lutArray != null)
-                LVUtils.SaveAsAsset(lutArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUTArray.asset");
+                LightVolumeManager.LUT = texArray;
+                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUTArray.asset");
+            }), this);
 
         }
 
+
+
         // Generates Cubemap array based on all the Cubemap textures provided in PointLightVolumes
+        List<PointLightVolume> _customCubePointVolumes = new List<PointLightVolume>();
+
         public void GenerateCubemapArray() {
 
-            List<PointLightVolume> pointVolumes = new List<PointLightVolume>();
-            List<Cubemap> cubeTextures = new List<Cubemap>();
+            _customCubePointVolumes.Clear();
+            List<Texture> cubeTextures = new List<Texture>();
 
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
                 if (PointLightVolumes[i].Shape == PointLightVolume.LightShape.Custom && PointLightVolumes[i].Type == PointLightVolume.LightType.PointLight && PointLightVolumes[i].Cubemap != null) {
-                    pointVolumes.Add(PointLightVolumes[i]);
+                    _customCubePointVolumes.Add(PointLightVolumes[i]);
                     cubeTextures.Add(PointLightVolumes[i].Cubemap);
                 }
             }
-
-            CubemapArray cubeArray = TextureArrayGenerator.CreateCubemapArray(cubeTextures, 512, out int[] ids);
-
-            if (cubeArray != null) {
-
-                for (int i = 0; i < ids.Length; i++) {
-                    pointVolumes[i].CustomID = ids[i];
-                    pointVolumes[i].SyncUdonScript();
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(cubeTextures, (int)CubemapResolution, (TextureFormat)Format, (texArray, ids) => {
+                if (texArray != null) {
+                    for (int i = 0; i < ids.Length; i++) {
+                        _customCubePointVolumes[i].CustomID = ids[i];
+                        _customCubePointVolumes[i].SyncUdonScript();
+                    }
                 }
-
-            }
-
-            LightVolumeManager.Cubemaps = cubeArray;
-            
-            if (cubeArray != null)
-                LVUtils.SaveAsAsset(cubeArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightCubemapArray.asset");
+                LightVolumeManager.Cubemap = texArray;
+                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightCubemapArray.asset");
+            }), this);
 
         }
+
 
         // Subscribing to OnBaked events
         private void OnEnable() {
@@ -445,6 +447,23 @@ namespace VRCLightVolumes {
         public enum Baking {
             Progressive,
             Bakery
+        }
+
+        public enum TextureArrayFormat {
+            RGBA32 = 4,
+            RGBAHalf = 17,
+            RGBAFloat = 20
+        }
+
+        public enum TextureArrayResolution {
+            _16x16 = 16,
+            _32x32 = 32,
+            _64x64 = 64,
+            _128x128 = 128,
+            _256x256 = 256,
+            _512x512 = 512,
+            _1024x1024 = 1024,
+            _2048x2048 = 2048
         }
 
     }

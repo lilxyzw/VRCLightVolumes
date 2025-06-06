@@ -81,43 +81,37 @@ namespace VRCLightVolumes {
             return (value - MinOld) / (MaxOld - MinOld);
         }
 
-        public static bool SaveAsAsset(Object asset, string assetPath) {
+        public static void SaveAsAsset(Object asset, string assetPath, System.Action<bool> callback = null) {
 #if UNITY_EDITOR
-            if (asset == null) {
-                Debug.LogError("[LightVolumeUtils] Error saving file: Asset is null");
-                return false;
+
+            if (asset == null || string.IsNullOrEmpty(assetPath)) {
+                Debug.LogError("[LightVolumeUtils] Invalid input for saving asset.");
+                callback?.Invoke(false);
+                return;
             }
 
-            if (string.IsNullOrEmpty(assetPath)) {
-                Debug.LogError("[LightVolumeUtils] Error saving file: Saving path is null");
-                return false;
-            }
+            void DelayedSave() {
+                EditorApplication.update -= DelayedSave;
 
-            try {
-                string directoryPath = Path.GetDirectoryName(assetPath);
-                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
-                    Directory.CreateDirectory(directoryPath);
-                    AssetDatabase.Refresh();
+                try {
+                    string dir = Path.GetDirectoryName(assetPath);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    AssetDatabase.CreateAsset(asset, assetPath);
+                    EditorUtility.SetDirty(asset);
+
+                    callback?.Invoke(true);
+                } catch (System.Exception e) {
+                    Debug.LogError($"[LightVolumeUtils] Save failed: {e.Message}");
+                    callback?.Invoke(false);
                 }
-            } catch (System.Exception e) {
-                Debug.LogError($"[LightVolumeUtils] Error while creating folders '{assetPath}': {e.Message}");
-                return false;
+#else
+                Debug.LogError($"[LightVolumeUtils] You can only save asset in editor!");
+#endif
             }
 
-            try {
-                AssetDatabase.CreateAsset(asset, assetPath);
-                EditorUtility.SetDirty(asset);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-                return true;
-            } catch (System.Exception e) {
-                Debug.LogError($"[LightVolumeUtils] Error saving asset at path: '{assetPath}': {e.Message}");
-                return false;
-            }
-#else
-            Debug.LogError($"[LightVolumeUtils] You can only save asset in editor!");
-            return false;
-#endif
+            EditorApplication.update += DelayedSave;
         }
 
         // Simple 3D denoiser

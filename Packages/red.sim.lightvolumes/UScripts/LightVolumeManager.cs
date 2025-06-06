@@ -35,9 +35,11 @@ namespace VRCLightVolumes {
         [Tooltip("All Point Light Volume instances. You can enable or disable point light volumes game objects at runtime. Manually disabling unnecessary point light volumes improves performance.")]
         public PointLightVolumeInstance[] PointLightVolumeInstances = new PointLightVolumeInstance[0];
         [Tooltip("All Falloff LUT textures that can be used for spot lights.")]
-        public Texture2DArray FalloffLUT;
+        public Texture2DArray LUT;
         [Tooltip("All Cubemap textures that can be used for point lights.")]
-        public Texture Cubemaps;
+        public Texture2DArray Cubemap;
+        [Tooltip("All Cookie textures that can be used for point lights.")]
+        public Texture2DArray Cookie;
 
         private bool _isInitialized = false;
 
@@ -286,34 +288,38 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalTexture(lightVolumeID, LightVolumeAtlas);
             }
 
-            // Defines if Light Probes Blending enabled in scene
-            VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
-            VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
-
-            // All light volumes inv Edge smooth
-            VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
-
-            // All light volumes UVW
-            VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, _boundsUvwScale);
-
-            // Volume Transform Matrix
-            VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, _invWorldMatrix3x4);
-
-            // All light volumes count
+            // Regular Light Volumes
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
-            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
+            if (_enabledCount != 0) {
 
-            // Volume's relative rotation
-            VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
+                // Defines if Light Probes Blending enabled in scene
+                VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
+                VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
 
-            // Volume's color correction
-            VRCShader.SetGlobalVectorArray(lightVolumeColorID, _colors);
+                // All light volumes inv Edge smooth
+                VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
 
-            // Legacy data setting
-            VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix); 
-            VRCShader.SetGlobalVectorArray(lightVolumeUvwID, _boundsUvw);
-            VRCShader.SetGlobalVectorArray(lightVolumeRotationID, _relativeRotation);
+                // All light volumes UVW
+                VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, _boundsUvwScale);
+
+                // Volume Transform Matrix
+                VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, _invWorldMatrix3x4);
+
+                // Max Overdraw
+                VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
+
+                // Volume's relative rotation
+                VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
+
+                // Volume's color correction
+                VRCShader.SetGlobalVectorArray(lightVolumeColorID, _colors);
+
+                // Legacy data setting
+                VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix);
+                VRCShader.SetGlobalVectorArray(lightVolumeUvwID, _boundsUvw);
+                VRCShader.SetGlobalVectorArray(lightVolumeRotationID, _relativeRotation);
+            }
 
             // Point Lights
             VRCShader.SetGlobalFloat(_pointLightCountID, _pointLightCount);
@@ -323,11 +329,11 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
                 VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
             }
-            if(FalloffLUT != null) {
-                VRCShader.SetGlobalTexture(_pointLightLutID, FalloffLUT);
+            if(LUT != null) {
+                VRCShader.SetGlobalTexture(_pointLightLutID, LUT);
             }
-            if (Cubemaps != null) {
-                VRCShader.SetGlobalTexture(_pointLightCubemapID, Cubemaps);
+            if (Cubemap != null) {
+                VRCShader.SetGlobalTexture(_pointLightCubemapID, Cubemap);
             }
 
             // Defines if Light Volumes enabled in scene. 0 if disabled. And a version number if enabled
