@@ -31,16 +31,20 @@ namespace VRCLightVolumes {
             if (PointLightVolume.Shape == PointLightVolume.LightShape.Parametric) {
                 hiddenFields.Add("FalloffLUT");
                 hiddenFields.Add("Cubemap");
+                hiddenFields.Add("Cookie");
             } else if (PointLightVolume.Shape == PointLightVolume.LightShape.Custom) {
                 hiddenFields.Add("Falloff");
                 if(PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
                     hiddenFields.Add("FalloffLUT");
-                } else {
+                    hiddenFields.Add("Cookie");
+                } else if (PointLightVolume.Type == PointLightVolume.LightType.SpotLight) {
+                    hiddenFields.Add("FalloffLUT");
                     hiddenFields.Add("Cubemap");
                 }
             } else if (PointLightVolume.Shape == PointLightVolume.LightShape.LUT) {
                 hiddenFields.Add("Falloff");
                 hiddenFields.Add("Cubemap");
+                hiddenFields.Add("Cookie");
             }
 
             DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());

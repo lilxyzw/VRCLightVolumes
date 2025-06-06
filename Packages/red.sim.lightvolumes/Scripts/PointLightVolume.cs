@@ -16,6 +16,7 @@ namespace VRCLightVolumes {
         [Range(0.1f, 360)] public float Angle = 60f;
         [Range(0.001f, 1)] public float Falloff = 1f;
         public Texture2D FalloffLUT = null;
+        public Texture2D Cookie = null;
         public Cubemap Cubemap = null;
 
         public int CustomID = -1;
@@ -24,6 +25,7 @@ namespace VRCLightVolumes {
         public LightVolumeSetup LightVolumeSetup;
 
         private Texture2D _falloffLUTPrev = null;
+        private Texture2D _cookiePrev = null;
         private Cubemap _cubemapPrev = null;
         private LightShape _shapePrev = LightShape.Parametric;
 
@@ -42,21 +44,35 @@ namespace VRCLightVolumes {
             }
         }
 
+        // Returns currently used custom texture depending on the light parameters
+        public Texture GetCustomTexture() {
+            if (Shape == LightShape.Parametric) {
+                return null;
+            } else if (Type == LightType.PointLight) {
+                if(Shape == LightShape.LUT) {
+                    return FalloffLUT;
+                } else if (Shape == LightShape.Custom) {
+                    return Cubemap;
+                }
+            } else if (Type == LightType.SpotLight) {
+                if (Shape == LightShape.LUT) {
+                    return FalloffLUT;
+                } else if (Shape == LightShape.Custom) {
+                    return Cookie;
+                }
+            }
+            return null;
+        }
+
         private void Update() {
             SetupDependencies();
 #if UNITY_EDITOR
-            if (_falloffLUTPrev != FalloffLUT) {
+            if (_falloffLUTPrev != FalloffLUT || Cookie != _cookiePrev || _cubemapPrev != Cubemap || _shapePrev != Shape) {
                 _falloffLUTPrev = FalloffLUT;
-                LightVolumeSetup.GenerateLUTArray();
-            }
-            if (_cubemapPrev != Cubemap) {
+                _cookiePrev = Cookie;
                 _cubemapPrev = Cubemap;
-                LightVolumeSetup.GenerateCubemapArray();
-            }
-            if(_shapePrev != Shape) {
                 _shapePrev = Shape;
-                LightVolumeSetup.GenerateLUTArray();
-                LightVolumeSetup.GenerateCubemapArray();
+                LightVolumeSetup.GenerateCustomTexturesArray();
             }
 #endif
         }
@@ -112,6 +128,10 @@ namespace VRCLightVolumes {
 
         private void OnDestroy() {
             if (LightVolumeSetup != null) {
+                FalloffLUT = null;
+                Cookie = null;
+                Cubemap = null;
+                LightVolumeSetup.GenerateCustomTexturesArray();
                 LightVolumeSetup.RefreshVolumesList();
                 LightVolumeSetup.SyncUdonScript();
             }
