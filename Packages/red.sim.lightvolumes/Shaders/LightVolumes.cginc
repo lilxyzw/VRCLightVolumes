@@ -227,7 +227,6 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
     bool isPointLight = !isSpotLight && color.w <= 1.5f;
     
     // Culling spotlight by radius
-    // TODO(pema99): Add culling for area lights? You currently hit the overdraw limit very quickly
     if ((isSpotLight || isPointLight) && invSqLen < invSqRange ) return;
     
     float angle = color.w;
