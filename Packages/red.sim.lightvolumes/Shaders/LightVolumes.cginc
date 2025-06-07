@@ -341,7 +341,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
         float4 rotationQuat = ldir;
         float2 size = float2(pos.w, color.w - 2.0f);
         
-        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color, L0, L1r, L1g, L1b, count);
+        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color.rgb, L0, L1r, L1g, L1b, count);
         return;
         
     }
@@ -444,7 +444,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
         float2 size = float2(pos.w, color.w - 2.0f);
 
         float3 unusedL1;
-        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color, L0, unusedL1, unusedL1, unusedL1, count);
+        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color.rgb, L0, unusedL1, unusedL1, unusedL1, count);
         return;
         
     }
