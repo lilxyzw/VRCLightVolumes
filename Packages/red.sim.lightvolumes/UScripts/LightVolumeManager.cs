@@ -36,12 +36,10 @@ namespace VRCLightVolumes {
         public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
         [Tooltip("All Point Light Volume instances. You can enable or disable point light volumes game objects at runtime. Manually disabling unnecessary point light volumes improves performance.")]
         public PointLightVolumeInstance[] PointLightVolumeInstances = new PointLightVolumeInstance[0];
-        [Tooltip("All Falloff LUT textures that can be used for spot lights.")]
-        public Texture2DArray LUT;
-        [Tooltip("All Cubemap textures that can be used for point lights.")]
-        public Texture2DArray Cubemap;
-        [Tooltip("All Cookie textures that can be used for point lights.")]
-        public Texture2DArray Cookie;
+        [Tooltip("All textures that can be used for as Cubemaps, LUT or Cookies")]
+        public Texture2DArray CustomTextures;
+        [Tooltip("Cubemaps count that stored in CustomTextures. Cubemap array elements starts from the beginning, 6 elements each.")]
+        public int CubemapsCount = 0;
 
         private bool _isInitialized = false;
 
@@ -92,8 +90,8 @@ namespace VRCLightVolumes {
         private int _pointLightDirectionID;
         private int _pointLightCustomIdID;
         private int _pointLightCountID;
-        private int _pointLightLutID;
-        private int _pointLightCubemapID;
+        private int _pointLightCubeCountID;
+        private int _pointLightTextureID;
         private int _areaLightBrightnessCutoffID;
         // Legacy support
         private int lightVolumeRotationID;
@@ -127,8 +125,8 @@ namespace VRCLightVolumes {
             _pointLightDirectionID = VRCShader.PropertyToID("_UdonPointLightVolumeDirection");
             _pointLightCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCount");
             _pointLightCustomIdID = VRCShader.PropertyToID("_UdonPointLightVolumeCustomID");
-            _pointLightLutID = VRCShader.PropertyToID("_UdonPointLightVolumeLUT");
-            _pointLightCubemapID = VRCShader.PropertyToID("_UdonPointLightVolumeCubemap");
+            _pointLightCubeCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCubeCount");
+            _pointLightTextureID = VRCShader.PropertyToID("_UdonPointLightVolumeTexture");
             _areaLightBrightnessCutoffID = VRCShader.PropertyToID("_UdonAreaLightBrightnessCutoff");
             // Legacy support
             lightVolumeRotationID = VRCShader.PropertyToID("_UdonLightVolumeRotation");
@@ -327,6 +325,7 @@ namespace VRCLightVolumes {
 
             // Point Lights
             VRCShader.SetGlobalFloat(_pointLightCountID, _pointLightCount);
+            VRCShader.SetGlobalFloat(_pointLightCubeCountID, CubemapsCount);
             if (_pointLightCount != 0) {
                 VRCShader.SetGlobalVectorArray(_pointLightColorID, _pointLightColor);
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
@@ -334,11 +333,8 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
                 VRCShader.SetGlobalFloat(_areaLightBrightnessCutoffID, AreaLightBrightnessCutoff);
             }
-            if(LUT != null) {
-                VRCShader.SetGlobalTexture(_pointLightLutID, LUT);
-            }
-            if (Cubemap != null) {
-                VRCShader.SetGlobalTexture(_pointLightCubemapID, Cubemap);
+            if(CustomTextures != null) {
+                VRCShader.SetGlobalTexture(_pointLightTextureID, CustomTextures);
             }
 
             // Defines if Light Volumes enabled in scene. 0 if disabled. And a version number if enabled

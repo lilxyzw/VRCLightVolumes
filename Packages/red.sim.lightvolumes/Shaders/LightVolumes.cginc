@@ -41,6 +41,9 @@ uniform float4 _UdonLightVolumeColor[32];
 // Point Lights count
 uniform float _UdonPointLightVolumeCount;
 
+// Cubemaps count in the custom textures array
+uniform float _UdonPointLightVolumeCubeCount;
+
 // For point light: XYZ = Position, W = Inverse squared range
 // For spot light: XYZ = Position, W = Inverse squared range, negated
 // For area light: XYZ = Position, W = Width
@@ -66,11 +69,8 @@ uniform float _UdonPointLightVolumeCustomID[128];
 // we cull the light.
 uniform float _UdonAreaLightBrightnessCutoff;
 
-UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeLUT);
-UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCubemap);
-UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeCookie);
-
-#define _UdonPointLightVolumeCookie _UdonPointLightVolumeLUT
+// First elements must be cubemap faces (6 face textures per cubemap). Then goes other textures
+UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeTexture);
 
 // Smoothstep to 0, 1 but cheaper
 float LV_Smoothstep01(float x) {
@@ -83,29 +83,23 @@ float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     return v + q.w * t + cross(q.xyz, t);
 }
 
+// Samples a cubemap from _UdonPointLightVolumeTexture array
 float4 LV_SampleCubemapArray(uint id, float3 dir) {
-    
     float3 absDir = abs(dir);
     float2 uv;
     uint face;
-
     if (absDir.x >= absDir.y && absDir.x >= absDir.z) {
         face = dir.x > 0 ? 0 : 1;
         uv = float2((dir.x > 0 ? -dir.z : dir.z), -dir.y) * rcp(absDir.x);
-    }
-    else if (absDir.y >= absDir.z) {
+    } else if (absDir.y >= absDir.z) {
         face = dir.y > 0 ? 2 : 3;
         uv = float2(dir.x, (dir.y > 0 ? dir.z : -dir.z)) * rcp(absDir.y);
-    }
-    else {
+    } else {
         face = dir.z > 0 ? 4 : 5;
         uv = float2((dir.z > 0 ? dir.x : -dir.x), -dir.y) * rcp(absDir.z);
     }
-    
-    
     float3 uvid = float3(uv * 0.5 + 0.5, id * 6 + face);
-    return UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCubemap, uvid);
-    
+    return UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeTexture, uvid);
 }
 
 // Projects irradiance from a planar quad with uniform radiant exitance into L1 spherical harmonics.
@@ -246,8 +240,9 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             float spotMask = dot(ldir.xyz, -dirN) - angle;
             if(spotMask < 0) return;
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
-            float3 uvid = float3(sqrt(float2(spot, dirRadius)), customId - 1);
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
+            float3 uvid = float3(sqrt(float2(spot, dirRadius)), id);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else if (customId < 0) { // If uses cookie
             
@@ -255,8 +250,9 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             if (localDir.z <= 0.0) return;
             float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
-            float3 uvid = float3(uv * 0.5 + 0.5, -customId - 1);
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCookie, uvid).xyz;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId;
+            float3 uvid = float3(uv * 0.5 + 0.5, id);
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -270,12 +266,14 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
         
         if (customId < 0) { // If it uses a cubemap
             
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SampleCubemapArray(-customId - 1, LV_MultiplyVectorByQuaternion(dirN, ldir)).xyz;
+            uint id = -customId - 1; // Cubemap ID starts from zero and should not take in count texture array slices count.
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SampleCubemapArray(id, LV_MultiplyVectorByQuaternion(dirN, ldir)).xyz;
             
         } else if (customId > 0) { // Using LUT
             
-            float3 uvid = float3(sqrt(float2(0, dirRadius)), customId - 1);
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
+            float3 uvid = float3(sqrt(float2(0, dirRadius)), id);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -377,8 +375,9 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
             float spotMask = dot(ldir.xyz, -dirN) - angle;
             if(spotMask < 0) return;
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
-            float3 uvid = float3(sqrt(float2(spot, dirRadius)), customId - 1);
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
+            float3 uvid = float3(sqrt(float2(spot, dirRadius)), id);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else if (customId < 0) { // If uses cookie
             
@@ -386,8 +385,9 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
             if (localDir.z <= 0.0) return;
             float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
-            float3 uvid = float3(uv * 0.5 + 0.5, -customId - 1);
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeCookie, uvid).xyz;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId;
+            float3 uvid = float3(uv * 0.5 + 0.5, id);
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -403,12 +403,14 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
         if (customId < 0) { // If it uses a cubemap
             
             float3 dirN = dir * rsqrt(sqlen);
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SampleCubemapArray(-customId - 1, LV_MultiplyVectorByQuaternion(dirN, ldir)).xyz;
+            uint id = -customId - 1; // Cubemap ID starts from zero and should not take in count texture array slices count.
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SampleCubemapArray(id, LV_MultiplyVectorByQuaternion(dirN, ldir)).xyz;
             
         } else if (customId > 0) { // Using LUT
             
-            float3 uvid = float3(sqrt(float2(0, dirRadius)), customId - 1);
-            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeLUT, uvid).xyz;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
+            float3 uvid = float3(sqrt(float2(0, dirRadius)), id);
+            att *= UNITY_SAMPLE_TEX2DARRAY(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             

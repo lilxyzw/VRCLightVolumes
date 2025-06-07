@@ -20,10 +20,8 @@ namespace VRCLightVolumes {
         [SerializeField] public List<PointLightVolume> PointLightVolumes = new List<PointLightVolume>();
 
         [Header("Point Light Volumes")]
-        public TextureArrayResolution LUTResolution = TextureArrayResolution._128x128;
-        public TextureArrayResolution TextureResolution = TextureArrayResolution._128x128;
-        public TextureArrayResolution CubemapResolution = TextureArrayResolution._128x128;
-        public TextureArrayFormat Format = TextureArrayFormat.RGBA32;
+        public TextureArrayResolution Resolution = TextureArrayResolution._128x128;
+        public TextureArrayFormat Format = TextureArrayFormat.RGBAHalf;
 
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
@@ -57,6 +55,8 @@ namespace VRCLightVolumes {
 
         public bool IsLegacyUVWConverted = false; // Is legacy UVW fix applied. Only need to do it once, so it's a flag for that
 
+        private TextureArrayResolution _resolutionPrev = TextureArrayResolution._128x128;
+        private TextureArrayFormat _formatPrev = TextureArrayFormat.RGBAHalf;
 
         public void RefreshVolumesList() {
             // Searching for all light volumes in scene
@@ -107,64 +107,51 @@ namespace VRCLightVolumes {
             }
         }
 
-
-
         // Generates LUT array based on all the LUT Textures2D provided in PointLightVolumes
         List<PointLightVolume> _customTexPointVolumes = new List<PointLightVolume>();
+        public void GenerateCustomTexturesArray() {
 
-        public void GenerateLUTArray() {
+            // Cubemap Textures - store first
+            List<Texture> cubeTextures = new List<Texture>(); 
+            List<PointLightVolume> cubePLVs = new List<PointLightVolume>();
 
-            _customTexPointVolumes.Clear();
-            List<Texture> lutTextures = new List<Texture>();
+            // Other texture goes next
+            List<Texture> singleTextures = new List<Texture>();
+            List<PointLightVolume> singlePLVs = new List<PointLightVolume>();
 
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
-                if (((PointLightVolumes[i].Shape != PointLightVolume.LightShape.Parametric && PointLightVolumes[i].Type == PointLightVolume.LightType.SpotLight) ||
-                    (PointLightVolumes[i].Shape == PointLightVolume.LightShape.LUT && PointLightVolumes[i].Type == PointLightVolume.LightType.PointLight)) &&
-                    PointLightVolumes[i].FalloffLUT != null) {
-                    _customTexPointVolumes.Add(PointLightVolumes[i]);
-                    lutTextures.Add(PointLightVolumes[i].FalloffLUT);
+                Texture tex = PointLightVolumes[i].GetCustomTexture();
+                if (tex == null) continue;
+                if(tex.GetType() == typeof(Cubemap)) {
+                    cubeTextures.Add(PointLightVolumes[i].Cubemap);
+                    cubePLVs.Add(PointLightVolumes[i]);
+                } else if(tex.GetType() == typeof(Texture2D)) {
+                    singleTextures.Add(PointLightVolumes[i].FalloffLUT);
+                    singlePLVs.Add(PointLightVolumes[i]);
                 }
             }
-            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(lutTextures, (int)LUTResolution, (TextureFormat)Format, (texArray, ids) => {
+
+            // Merging lists
+            List<Texture> textures = new List<Texture>();
+            textures.AddRange(cubeTextures);
+            textures.AddRange(singleTextures);
+            _customTexPointVolumes.Clear();
+            _customTexPointVolumes.AddRange(cubePLVs);
+            _customTexPointVolumes.AddRange(singlePLVs);
+
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
+
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
                         _customTexPointVolumes[i].CustomID = ids[i];
                         _customTexPointVolumes[i].SyncUdonScript();
                     }
                 }
-                LightVolumeManager.LUT = texArray;
-                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightFalloffLUTArray.asset");
-            }), this);
+                LightVolumeManager.CustomTextures = texArray;
+                LightVolumeManager.CubemapsCount = cubeTextures.Count;
+                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/PointLightVolumeArray.asset");
 
-        }
-
-
-
-        // Generates Cubemap array based on all the Cubemap textures provided in PointLightVolumes
-        List<PointLightVolume> _customCubePointVolumes = new List<PointLightVolume>();
-
-        public void GenerateCubemapArray() {
-
-            _customCubePointVolumes.Clear();
-            List<Texture> cubeTextures = new List<Texture>();
-
-            int count = PointLightVolumes.Count;
-            for (int i = 0; i < count; i++) {
-                if (PointLightVolumes[i].Shape == PointLightVolume.LightShape.Custom && PointLightVolumes[i].Type == PointLightVolume.LightType.PointLight && PointLightVolumes[i].Cubemap != null) {
-                    _customCubePointVolumes.Add(PointLightVolumes[i]);
-                    cubeTextures.Add(PointLightVolumes[i].Cubemap);
-                }
-            }
-            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(cubeTextures, (int)CubemapResolution, (TextureFormat)Format, (texArray, ids) => {
-                if (texArray != null) {
-                    for (int i = 0; i < ids.Length; i++) {
-                        _customCubePointVolumes[i].CustomID = ids[i];
-                        _customCubePointVolumes[i].SyncUdonScript();
-                    }
-                }
-                LightVolumeManager.Cubemap = texArray;
-                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightCubemapArray.asset");
             }), this);
 
         }
@@ -294,6 +281,11 @@ namespace VRCLightVolumes {
                     volumes[i].SetupBakeryDependencies();
                 }
                 SyncUdonScript();
+            }
+            if (_resolutionPrev != Resolution || _formatPrev != Format) {
+                _resolutionPrev = Resolution;
+                _formatPrev = Format;
+                GenerateCustomTexturesArray();
             }
         }
 
