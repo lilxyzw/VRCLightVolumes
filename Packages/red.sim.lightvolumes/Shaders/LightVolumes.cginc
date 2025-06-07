@@ -105,8 +105,7 @@ float4 LV_SampleCubemapArray(uint id, float3 dir) {
 // Projects irradiance from a planar quad with uniform radiant exitance into L1 spherical harmonics.
 // Based on "Analytic Spherical Harmonic Coefficients for Polygonal Area Lights" by Wang and Ramamoorthi.
 // https://cseweb.ucsd.edu/~ravir/ash.pdf. Assumes that shadingPosition is not behind the quad.
-float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4])
-{
+float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4]) {
     // Transform the vertices into local space centered on the shading position,
     // project, the polygon onto the unit sphere.
     for (uint edge = 0; edge < 4; edge++)
@@ -190,8 +189,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
 // is less than 'minSolidAngle'. This is done by isolating distance in the solid angle formula,
 // assuming the light is pointing directly towards the receiving point, and solving the
 // resulting quadratic equation.
-float LV_ComputeAreaLightSquaredBoundingSphere(float width, float height, float minSolidAngle)
-{
+float LV_ComputeAreaLightSquaredBoundingSphere(float width, float height, float minSolidAngle) {
     float A = width * height;
     float w2 = width * width;
     float h2 = height * height;
