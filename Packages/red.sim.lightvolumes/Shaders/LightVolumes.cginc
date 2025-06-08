@@ -247,6 +247,12 @@ void LV_QuadLight(
 
     // Project irradiance from the area light
     float4 areaLightSH = LV_ProjectQuadLightIrradianceSH(worldPos, verts);
+
+    // If the magnitude of L1 is greater than L0, we may get negative values
+    // when reconstructing. To avoid, normalize L1. This is effectively de-ringing.
+    float lenL1 = length(areaLightSH.xyz);
+    if (lenL1 > areaLightSH.w)
+        areaLightSH.xyz *= areaLightSH.w / lenL1;
     
     // Accumulate SH coefficients
     L0 += areaLightSH.w * color.rgb;
