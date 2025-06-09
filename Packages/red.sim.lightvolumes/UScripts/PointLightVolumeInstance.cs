@@ -126,7 +126,7 @@ namespace VRCLightVolumes {
             if (IsAreaLight()) {
                 Quaternion rot = transform.rotation;
                 DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
-            } if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
+            } else if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
                 Vector3 dir = transform.forward;
                 DirectionData = new Vector4(dir.x, dir.y, dir.z, DirectionData.w);
             } else if (!IsParametric()) { // If Point Light with a cubemap or a spot light with cookie

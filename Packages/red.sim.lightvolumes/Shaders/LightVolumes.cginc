@@ -108,8 +108,7 @@ float4 LV_SampleCubemapArray(uint id, float3 dir) {
 float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4]) {
     // Transform the vertices into local space centered on the shading position,
     // project, the polygon onto the unit sphere.
-    for (uint edge = 0; edge < 4; edge++)
-    {
+    for (uint edge = 0; edge < 4; edge++) {
         lightVertices[edge] = normalize(lightVertices[edge] - shadingPosition);
     }
 
@@ -117,8 +116,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     // using Arvo's formula (5.1) https://dl.acm.org/doi/pdf/10.1145/218380.218467.
     // The L0 term is directly proportional to the solid angle.
     float solidAngle = 0;
-    for (uint edge = 0; edge < 4; edge++)
-    {
+    for (uint edge = 0; edge < 4; edge++) {
         uint next = (edge + 1) % 4;
         uint prev = (edge + 4 - 1) % 4;
         float3 a = cross(lightVertices[edge], lightVertices[prev]);
@@ -143,8 +141,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     // projected polygon for each zonal harmonic direction (S_l in the paper).
     // Computed as a sum of line integrals over the edges of the polygon.
     float3 surfaceIntegral = 0.0;
-    for (uint edge = 0; edge < 4; edge++)
-    {
+    for (uint edge = 0; edge < 4; edge++) {
         uint next = (edge + 1) % 4;
         float3 mu = normalize(cross(lightVertices[edge], lightVertices[next]));
         float cosGamma = dot(lightVertices[edge], lightVertices[next]);
@@ -225,8 +222,7 @@ void LV_QuadLight(
 
     // Calculate the bounding sphere of the area light given the cutoff irradiance
     // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
-    if (_UdonAreaLightBrightnessCutoff > 0.0f)
-    {
+    if (_UdonAreaLightBrightnessCutoff > 0.0f) {
         float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
         float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
         float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
