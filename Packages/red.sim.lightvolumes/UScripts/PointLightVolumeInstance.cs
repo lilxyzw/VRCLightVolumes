@@ -106,9 +106,9 @@ namespace VRCLightVolumes {
         }
         
         // Sets light into the area light type
-        public void SetAreaLight(float width, float height) {
-            PositionData.w = width;
-            ColorData.w = 2 + height; // Add 2 to get out of [-1; 1] codomain of cosine
+        public void SetAreaLight() {
+            PositionData.w = Mathf.Max(Mathf.Abs(transform.lossyScale.x), 0.001f);
+            ColorData.w = 2 + Mathf.Max(Mathf.Abs(transform.lossyScale.y), 0.001f); // Add 2 to get out of [-1; 1] codomain of cosine
         }
 
         // Sets color
@@ -126,6 +126,7 @@ namespace VRCLightVolumes {
             if (IsAreaLight()) {
                 Quaternion rot = transform.rotation;
                 DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
+                SetAreaLight();
             } else if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
                 Vector3 dir = transform.forward;
                 DirectionData = new Vector4(dir.x, dir.y, dir.z, DirectionData.w);

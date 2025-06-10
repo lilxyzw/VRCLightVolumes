@@ -15,8 +15,6 @@ namespace VRCLightVolumes {
         public LightShape Shape = LightShape.Parametric;
         [Range(0.1f, 360)] public float Angle = 60f;
         [Range(0.001f, 1)] public float Falloff = 1f;
-        [Min(0.001f)] public float AreaLightWidth = 1f;
-        [Min(0.001f)] public float AreaLightHeight = 1f;
         public Texture2D FalloffLUT = null;
         public Texture2D Cookie = null;
         public Cubemap Cubemap = null;
@@ -30,6 +28,7 @@ namespace VRCLightVolumes {
         private Texture2D _cookiePrev = null;
         private Cubemap _cubemapPrev = null;
         private LightShape _shapePrev = LightShape.Parametric;
+        private LightType _typePrev = LightType.PointLight;
 
         // Looks for LightVolumeSetup and LightVolumeInstance udon script and setups them if needed
         public void SetupDependencies() {
@@ -48,7 +47,7 @@ namespace VRCLightVolumes {
 
         // Returns currently used custom texture depending on the light parameters
         public Texture GetCustomTexture() {
-            if (Shape == LightShape.Parametric) {
+            if (Shape == LightShape.Parametric || Type == LightType.AreaLight) {
                 return null;
             } else if (Type == LightType.PointLight) {
                 if(Shape == LightShape.LUT) {
@@ -69,11 +68,12 @@ namespace VRCLightVolumes {
         private void Update() {
             SetupDependencies();
 #if UNITY_EDITOR
-            if (_falloffLUTPrev != FalloffLUT || Cookie != _cookiePrev || _cubemapPrev != Cubemap || _shapePrev != Shape) {
+            if (_falloffLUTPrev != FalloffLUT || _cookiePrev != Cookie || _cubemapPrev != Cubemap || _shapePrev != Shape || _typePrev != Type) {
                 _falloffLUTPrev = FalloffLUT;
                 _cookiePrev = Cookie;
                 _cubemapPrev = Cubemap;
                 _shapePrev = Shape;
+                _typePrev = Type;
                 LightVolumeSetup.GenerateCustomTexturesArray();
             }
 #endif
@@ -96,8 +96,8 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance.SetPointLight(); // Use it as Point Light
             } else if (Type == LightType.SpotLight) { // Spot Light
                 PointLightVolumeInstance.SetRange(Range);
-                if (Shape == LightShape.Custom && FalloffLUT != null) {
-                    PointLightVolumeInstance.SetCustomTexture(CustomID); // Use Custom Projection Texture
+                if (Shape == LightShape.Custom && Cookie != null) {
+                    PointLightVolumeInstance.SetCustomTexture(CustomID); // Use Cookie Texture
                 } else if (Shape == LightShape.LUT && FalloffLUT != null) {
                     PointLightVolumeInstance.SetLut(CustomID); // Use LUT
                 } else {
@@ -105,7 +105,7 @@ namespace VRCLightVolumes {
                 }
                 PointLightVolumeInstance.SetSpotLight(Angle, Falloff); // Don't use custom tex
             } else if (Type == LightType.AreaLight) { // Area light
-                PointLightVolumeInstance.SetAreaLight(AreaLightWidth, AreaLightHeight);
+                PointLightVolumeInstance.SetAreaLight();
             }
 
             LVUtils.MarkDirty(PointLightVolumeInstance);

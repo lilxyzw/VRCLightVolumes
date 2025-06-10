@@ -33,9 +33,9 @@ namespace VRCLightVolumes {
                 hiddenFields.Add("Falloff");
                 hiddenFields.Add("Shape");
                 hiddenFields.Add("Range");
-            } else {
-                hiddenFields.Add("AreaLightWidth");
-                hiddenFields.Add("AreaLightHeight");
+                hiddenFields.Add("FalloffLUT");
+                hiddenFields.Add("Cubemap");
+                hiddenFields.Add("Cookie");
             }
 
             if (PointLightVolume.Shape == PointLightVolume.LightShape.Parametric) {
@@ -107,14 +107,17 @@ namespace VRCLightVolumes {
                 DrawSpotLight(origin, diskCenter, forward, radius, dirs);
 
             } else { // Area light
-                
+
+                float x = Mathf.Max(Mathf.Abs(pointLightVolume.transform.lossyScale.x), 0.001f);
+                float y = Mathf.Max(Mathf.Abs(pointLightVolume.transform.lossyScale.y), 0.001f);
+
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
                 Handles.color = new Color(1f, 1f, 0f, 0.6f);
-                DrawAreaLight(origin, t.rotation, pointLightVolume.AreaLightWidth, pointLightVolume.AreaLightHeight);
+                DrawAreaLight(origin, t.rotation, x, y);
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
-                DrawAreaLight(origin, t.rotation, pointLightVolume.AreaLightWidth, pointLightVolume.AreaLightHeight);
+                DrawAreaLight(origin, t.rotation, x, y);
                 
             }
 

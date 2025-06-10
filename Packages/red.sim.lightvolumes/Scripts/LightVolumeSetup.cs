@@ -22,6 +22,8 @@ namespace VRCLightVolumes {
         [Header("Point Light Volumes")]
         public TextureArrayResolution Resolution = TextureArrayResolution._128x128;
         public TextureArrayFormat Format = TextureArrayFormat.RGBAHalf;
+        [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but light the cutoff edge will be visually noticable.")]
+        [Range(0.0f, 1f)] public float AreaLightBrightnessCutoff = 0.35f;
 
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
@@ -43,8 +45,7 @@ namespace VRCLightVolumes {
         public bool AutoUpdateVolumes = false;
         [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         [Min(1)]public int AdditiveMaxOverdraw = 4;
-        [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but may cause artifacts. Setting this to 0 disables distance-based culling for area lights.")]
-        [Range(0.0f, 0.1f)] public float AreaLightBrightnessCutoff = 0.005f;
+        
         
         [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
@@ -124,10 +125,10 @@ namespace VRCLightVolumes {
                 Texture tex = PointLightVolumes[i].GetCustomTexture();
                 if (tex == null) continue;
                 if(tex.GetType() == typeof(Cubemap)) {
-                    cubeTextures.Add(PointLightVolumes[i].Cubemap);
+                    cubeTextures.Add(tex);
                     cubePLVs.Add(PointLightVolumes[i]);
                 } else if(tex.GetType() == typeof(Texture2D)) {
-                    singleTextures.Add(PointLightVolumes[i].FalloffLUT);
+                    singleTextures.Add(tex);
                     singlePLVs.Add(PointLightVolumes[i]);
                 }
             }
@@ -139,6 +140,11 @@ namespace VRCLightVolumes {
             _customTexPointVolumes.Clear();
             _customTexPointVolumes.AddRange(cubePLVs);
             _customTexPointVolumes.AddRange(singlePLVs);
+
+            if(_customTexPointVolumes.Count == 0) {
+                LightVolumeManager.CustomTextures = null;
+                LightVolumeManager.CubemapsCount = 0;
+            }
 
             EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
 
@@ -408,7 +414,7 @@ namespace VRCLightVolumes {
             LightVolumeManager.LightProbesBlending = LightProbesBlending;
             LightVolumeManager.SharpBounds = SharpBounds;
             LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
-            LightVolumeManager.AreaLightBrightnessCutoff = AreaLightBrightnessCutoff;
+            LightVolumeManager.AreaLightBrightnessCutoff = AreaLightBrightnessCutoff + 0.05f;
 
             if (LightVolumes.Count != 0) {
                 LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));

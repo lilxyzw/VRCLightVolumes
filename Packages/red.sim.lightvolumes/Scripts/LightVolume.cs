@@ -17,8 +17,10 @@ namespace VRCLightVolumes {
         [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
         public bool Additive;
         [Tooltip("Multiplies the volume’s color by this value.")]
-        [ColorUsage(showAlpha: false, hdr: true)]
+        [ColorUsage(showAlpha: false)]
         public Color Color = Color.white;
+        [Tooltip("Brightness of the volume.")]
+        public float Intensity = 1f;
         [Tooltip("Size in meters of this Light Volume's overlapping regions for smooth blending with other volumes.")]
         [Range(0, 1)] public float SmoothBlending = 0.25f;
 
@@ -331,7 +333,7 @@ namespace VRCLightVolumes {
             SetupDependencies();
             LightVolumeInstance.IsDynamic = Dynamic;
             LightVolumeInstance.IsAdditive = Additive;
-            LightVolumeInstance.Color = Color;
+            LightVolumeInstance.Color = Color * Intensity;
             LightVolumeInstance.SetSmoothBlending(SmoothBlending);
             LVUtils.MarkDirty(LightVolumeInstance);
         }

@@ -248,15 +248,22 @@ namespace VRCLightVolumes {
 
             GUILayout.Space(10);
 
-            if(_lightVolumeSetup.LightVolumes.Count > 0)
+            List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "PointLightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev", "IsLegacyUVWConverted" };
+
+            if (_lightVolumeSetup.LightVolumes.Count > 0)
                 _lightVolumesList.DoLayoutList();
 
-            if (_lightVolumeSetup.PointLightVolumes.Count > 0)
+            if (_lightVolumeSetup.PointLightVolumes.Count > 0) {
                 _pointLightVolumesList.DoLayoutList();
+            } else {
+                hiddenFields.Add("Resolution");
+                hiddenFields.Add("Format");
+                hiddenFields.Add("AreaLightBrightnessCutoff");
+            }
 
             GUILayout.Space(-15);
 
-            List<string> hiddenFields = new List<string>() { "m_Script", "LightVolumes", "PointLightVolumes", "LightVolumesWeights", "LightVolumeAtlas", "LightVolumeDataList", "LightVolumeManager", "_bakingModePrev", "IsLegacyUVWConverted" };
+            
             if (_lightVolumeSetup.BakingMode != LightVolumeSetup.Baking.Bakery) {
                 hiddenFields.Add("FixLightProbesL1");
             }
