@@ -112,21 +112,6 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
         lightVertices[edge] = normalize(lightVertices[edge] - shadingPosition);
     }
 
-    // Compute the solid angle subtended by the polygon at the shading position,
-    // using Arvo's formula (5.1) https://dl.acm.org/doi/pdf/10.1145/218380.218467.
-    // The L0 term is directly proportional to the solid angle.
-    float solidAngle = 0;
-    for (uint edge = 0; edge < 4; edge++) {
-        uint next = (edge + 1) % 4;
-        uint prev = (edge + 4 - 1) % 4;
-        float3 a = cross(lightVertices[edge], lightVertices[prev]);
-        float3 b = cross(lightVertices[edge], lightVertices[next]);
-        solidAngle += acos(clamp(dot(a, b) / (length(a) * length(b)), -1, 1));
-    }
-    solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
-    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f); // Constant part of L0 basis function.
-    float l0 = normalizationL0 * solidAngle; // Project solid angle to L0 SH.
-
     // Precomputed directions of rotated zonal harmonics,
     // and associated weights for each basis function.
     // I.E. \omega_{l,d} and \alpha_{l,d}^m in the paper respectively.
@@ -137,28 +122,46 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     const float3 zhWeightL1z = float3(-1.82572523f, -2.08165037f, 0.00000000f);
     const float3 zhWeightL1x = float3(2.42459869f, 1.44790525f, 0.90397552f);
 
-    // Compute the integral of the legendre polynomials over the surface of the
-    // projected polygon for each zonal harmonic direction (S_l in the paper).
-    // Computed as a sum of line integrals over the edges of the polygon.
+    float solidAngle = 0.0;
     float3 surfaceIntegral = 0.0;
     for (uint edge = 0; edge < 4; edge++) {
         uint next = (edge + 1) % 4;
-        float3 mu = normalize(cross(lightVertices[edge], lightVertices[next]));
-        float cosGamma = dot(lightVertices[edge], lightVertices[next]);
+        uint prev = (edge + 4 - 1) % 4;
+        float3 prevVert = lightVertices[prev];
+        float3 thisVert = lightVertices[edge];
+        float3 nextVert = lightVertices[next];
+
+        // Compute the solid angle subtended by the polygon at the shading position,
+        // using Arvo's formula (5.1) https://dl.acm.org/doi/pdf/10.1145/218380.218467.
+        // The L0 term is directly proportional to the solid angle.
+        float3 a = cross(thisVert, prevVert);
+        float3 b = cross(thisVert, nextVert);
+        solidAngle += acos(clamp(dot(a, b) / (length(a) * length(b)), -1, 1));
+
+        // Compute the integral of the legendre polynomials over the surface of the
+        // projected polygon for each zonal harmonic direction (S_l in the paper).
+        // Computed as a sum of line integrals over the edges of the polygon.
+        float3 mu = normalize(b);
+        float cosGamma = dot(thisVert, nextVert);
         float gamma = acos(clamp(cosGamma, -1, 1));
         surfaceIntegral.x += gamma * dot(zhDir0, mu);
         surfaceIntegral.y += gamma * dot(zhDir1, mu);
         surfaceIntegral.z += gamma * dot(zhDir2, mu);
     }
+    solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
     surfaceIntegral *= 0.5;
 
+    // The L0 term is just the projection of the solid angle onto the L0 basis function.
+    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f);
+    float l0 = normalizationL0 * solidAngle;
+    
     // Combine each surface (sub)integral with the associated weights to get
-    // full surface integral for each SH basis function.
+    // full surface integral for each L1 SH basis function.
     float l1y = dot(zhWeightL1y, surfaceIntegral);
     float l1z = dot(zhWeightL1z, surfaceIntegral);
     float l1x = dot(zhWeightL1x, surfaceIntegral);
 
-    // The l1y, l1z, l1x are raw SH coefficients for radiance from the polygon.
+    // The l0, l1y, l1z, l1x are raw SH coefficients for radiance from the polygon.
     // We need to apply some more transformations before we are done:
     // (1) We want the coefficients for irradiance, so we need to convolve with the
     //     clamped cosine kernel, as detailed in https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf.
