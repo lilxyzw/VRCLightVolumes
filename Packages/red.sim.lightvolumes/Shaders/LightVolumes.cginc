@@ -136,12 +136,14 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
         // The L0 term is directly proportional to the solid angle.
         float3 a = cross(thisVert, prevVert);
         float3 b = cross(thisVert, nextVert);
-        solidAngle += acos(clamp(dot(a, b) / (length(a) * length(b)), -1, 1));
+        float lenA = length(a);
+        float lenB = length(b);
+        solidAngle += acos(clamp(dot(a, b) / (lenA * lenB), -1, 1));
 
         // Compute the integral of the legendre polynomials over the surface of the
         // projected polygon for each zonal harmonic direction (S_l in the paper).
         // Computed as a sum of line integrals over the edges of the polygon.
-        float3 mu = normalize(b);
+        float3 mu = b * rcp(lenB);
         float cosGamma = dot(thisVert, nextVert);
         float gamma = acos(cosGamma);
         surfaceIntegral.x += gamma * dot(zhDir0, mu);
