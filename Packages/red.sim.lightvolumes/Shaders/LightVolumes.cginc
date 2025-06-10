@@ -83,6 +83,15 @@ float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     return v + q.w * t + cross(q.xyz, t);
 }
 
+// Fast approximate inverse cosine. Max absolute error = 0.009.
+// From https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
+float LV_FastAcos(float x) {
+    float absX = abs(x); 
+    float res = -0.156583f * absX + (3.141592653589793f * 0.5f); 
+    res *= sqrt(1.0f - absX); 
+    return (x >= 0) ? res : 3.141592653589793f - res; 
+}
+
 // Samples a cubemap from _UdonPointLightVolumeTexture array
 float4 LV_SampleCubemapArray(uint id, float3 dir) {
     float3 absDir = abs(dir);
@@ -138,14 +147,14 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
         float3 b = cross(thisVert, nextVert);
         float lenA = length(a);
         float lenB = length(b);
-        solidAngle += acos(clamp(dot(a, b) / (lenA * lenB), -1, 1));
+        solidAngle += LV_FastAcos(clamp(dot(a, b) / (lenA * lenB), -1, 1));
 
         // Compute the integral of the legendre polynomials over the surface of the
         // projected polygon for each zonal harmonic direction (S_l in the paper).
         // Computed as a sum of line integrals over the edges of the polygon.
         float3 mu = b * rcp(lenB);
         float cosGamma = dot(thisVert, nextVert);
-        float gamma = acos(cosGamma);
+        float gamma = LV_FastAcos(cosGamma);
         surfaceIntegral.x += gamma * dot(zhDir0, mu);
         surfaceIntegral.y += gamma * dot(zhDir1, mu);
         surfaceIntegral.z += gamma * dot(zhDir2, mu);
