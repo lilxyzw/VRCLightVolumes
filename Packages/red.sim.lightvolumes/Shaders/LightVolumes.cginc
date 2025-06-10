@@ -124,7 +124,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
 
     float solidAngle = 0.0;
     float3 surfaceIntegral = 0.0;
-    for (uint edge1 = 0; edge1 < 4; edge1++) {
+    [loop] for (uint edge1 = 0; edge1 < 4; edge1++) {
         uint next = (edge1 + 1) % 4;
         uint prev = (edge1 + 4 - 1) % 4;
         float3 prevVert = lightVertices[prev];
@@ -220,12 +220,12 @@ void LV_QuadLight(
     
     // Get normal to cull the light early
     float3 normal = LV_MultiplyVectorByQuaternion(float3(0, 0, 1), rotationQuat);
-    if (dot(normal, lightToWorldPos) < 0.0)
+    [branch] if (dot(normal, lightToWorldPos) < 0.0)
         return;
 
     // Calculate the bounding sphere of the area light given the cutoff irradiance
     // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
-    if (_UdonAreaLightBrightnessCutoff > 0.0f) {
+    [branch] if (_UdonAreaLightBrightnessCutoff > 0.0f) {
         float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
         float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
         float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
