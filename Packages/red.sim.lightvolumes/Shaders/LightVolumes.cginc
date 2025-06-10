@@ -143,7 +143,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
         // Computed as a sum of line integrals over the edges of the polygon.
         float3 mu = normalize(b);
         float cosGamma = dot(thisVert, nextVert);
-        float gamma = acos(clamp(cosGamma, -1, 1));
+        float gamma = acos(cosGamma);
         surfaceIntegral.x += gamma * dot(zhDir0, mu);
         surfaceIntegral.y += gamma * dot(zhDir1, mu);
         surfaceIntegral.z += gamma * dot(zhDir2, mu);
