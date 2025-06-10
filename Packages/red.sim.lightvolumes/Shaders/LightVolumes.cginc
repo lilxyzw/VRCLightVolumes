@@ -108,8 +108,8 @@ float4 LV_SampleCubemapArray(uint id, float3 dir) {
 float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4]) {
     // Transform the vertices into local space centered on the shading position,
     // project, the polygon onto the unit sphere.
-    for (uint edge = 0; edge < 4; edge++) {
-        lightVertices[edge] = normalize(lightVertices[edge] - shadingPosition);
+    for (uint edge0 = 0; edge0 < 4; edge0++) {
+        lightVertices[edge0] = normalize(lightVertices[edge0] - shadingPosition);
     }
 
     // Precomputed directions of rotated zonal harmonics,
@@ -124,11 +124,11 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
 
     float solidAngle = 0.0;
     float3 surfaceIntegral = 0.0;
-    for (uint edge = 0; edge < 4; edge++) {
-        uint next = (edge + 1) % 4;
-        uint prev = (edge + 4 - 1) % 4;
+    for (uint edge1 = 0; edge1 < 4; edge1++) {
+        uint next = (edge1 + 1) % 4;
+        uint prev = (edge1 + 4 - 1) % 4;
         float3 prevVert = lightVertices[prev];
-        float3 thisVert = lightVertices[edge];
+        float3 thisVert = lightVertices[edge1];
         float3 nextVert = lightVertices[next];
 
         // Compute the solid angle subtended by the polygon at the shading position,
