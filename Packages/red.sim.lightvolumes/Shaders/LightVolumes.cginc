@@ -235,7 +235,7 @@ void LV_QuadLight(
     
     // Compute the vertices of the quad
     float3 xAxis = LV_MultiplyVectorByQuaternion(float3(1, 0, 0), rotationQuat);
-    float3 yAxis = LV_MultiplyVectorByQuaternion(float3(0, 1, 0), rotationQuat);
+    float3 yAxis = cross(normal, xAxis);
     float3 verts[4];
     verts[0] = centroidPos + (-halfSize.x * xAxis) + ( halfSize.y * yAxis);
     verts[1] = centroidPos + ( halfSize.x * xAxis) + ( halfSize.y * yAxis);
