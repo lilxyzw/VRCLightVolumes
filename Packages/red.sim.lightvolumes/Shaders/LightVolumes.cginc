@@ -225,15 +225,13 @@ void LV_QuadLight(
 
     // Calculate the bounding sphere of the area light given the cutoff irradiance
     // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
-    [branch] if (_UdonAreaLightBrightnessCutoff > 0.0f) {
-        float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
-        float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
-        float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
-        if (sqCutoffDist < 0)
-            return;
-        // Attenuate the light based on distance to the bounding sphere, so we don't get hard seam at the edge.
-        color.rgb *= saturate(sqCutoffDist / sqMaxDist);
-    }
+    float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
+    float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
+    float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
+    [branch] if (sqCutoffDist < 0)
+        return;
+    // Attenuate the light based on distance to the bounding sphere, so we don't get hard seam at the edge.
+    color.rgb *= saturate(sqCutoffDist / sqMaxDist);
     
     // Compute the vertices of the quad
     float3 xAxis = LV_MultiplyVectorByQuaternion(float3(1, 0, 0), rotationQuat);
