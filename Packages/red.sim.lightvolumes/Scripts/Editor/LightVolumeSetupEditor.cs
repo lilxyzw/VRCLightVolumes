@@ -112,7 +112,7 @@ namespace VRCLightVolumes {
 
                 if (volumeElement.objectReferenceValue != null && volumeElement.objectReferenceValue.GetType() == typeof(LightVolume)) {
                     var volume = (LightVolume)volumeElement.objectReferenceValue;
-                    GUIContent icon = volume.Additive ? EditorGUIUtility.IconContent("d_AreaLight Icon") : EditorGUIUtility.IconContent("d_PreMatLight1@2x");
+                    GUIContent icon = volume.Additive ? EditorGUIUtility.IconContent("d_LightProbes Icon") : EditorGUIUtility.IconContent("d_PreMatLight1@2x");
                     icon.tooltip = volume.Additive ? "Additive Volume" : "Regular Volume";
                     EditorGUI.LabelField(iconRect, icon);
                 }
@@ -190,8 +190,17 @@ namespace VRCLightVolumes {
 
                 if (volumeElement.objectReferenceValue != null && volumeElement.objectReferenceValue.GetType() == typeof(PointLightVolume)) {
                     var volume = (PointLightVolume)volumeElement.objectReferenceValue;
-                    GUIContent icon = volume.Type == PointLightVolume.LightType.SpotLight ? EditorGUIUtility.IconContent("d_Spotlight Icon") : EditorGUIUtility.IconContent("d_Light Icon");
-                    icon.tooltip = volume.Type == PointLightVolume.LightType.SpotLight ? "Spot Light Volume" : "Point Light Volume";
+                    GUIContent icon; 
+                    if(volume.Type == PointLightVolume.LightType.SpotLight) {
+                        icon = EditorGUIUtility.IconContent("d_Spotlight Icon");
+                        icon.tooltip = "Spot Light Volume";
+                    } else if (volume.Type == PointLightVolume.LightType.AreaLight) {
+                        icon = EditorGUIUtility.IconContent("d_AreaLight Icon");
+                        icon.tooltip = "Area Light Volume";
+                    } else {
+                        icon = EditorGUIUtility.IconContent("d_Light Icon");
+                        icon.tooltip = "Point Light Volume";
+                    }
                     EditorGUI.LabelField(iconRect, icon);
                 }
 
