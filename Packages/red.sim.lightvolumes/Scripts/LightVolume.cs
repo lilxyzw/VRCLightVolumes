@@ -219,7 +219,7 @@ namespace VRCLightVolumes {
                 const int z = 2;
                 const float coeff = 1.65f; // To transform to bakery non-linear data format. Should be 1.7699115f actually
 
-                // Separating data for denoising
+                // Separating data for dilation and denoising
                 Vector3[] L0 = new Vector3[vCount];
                 Vector3[] L1r = new Vector3[vCount];
                 Vector3[] L1g = new Vector3[vCount];
@@ -229,6 +229,75 @@ namespace VRCLightVolumes {
                     L1r[i] = new Vector3(probes[i][r, x], probes[i][r, y], probes[i][r, z]);
                     L1g[i] = new Vector3(probes[i][g, x], probes[i][g, y], probes[i][g, z]);
                     L1b[i] = new Vector3(probes[i][b, x], probes[i][b, y], probes[i][b, z]);
+                }
+                
+                // Dilation
+                if (LightVolumeSetup.DilateInvalidProbes)
+                {
+                    float[] validity = probesValidity.ToArray();
+                    
+                    // Outputs
+                    float[] validityDilated = new float[vCount];
+                    Vector3[] L0Dilated = new Vector3[vCount];
+                    Vector3[] L1rDilated = new Vector3[vCount];
+                    Vector3[] L1gDilated = new Vector3[vCount];
+                    Vector3[] L1bDilated = new Vector3[vCount];
+                    
+                    // Initialize outputs with source data
+                    System.Array.Copy(validity, validityDilated, vCount);
+                    System.Array.Copy(L0, L0Dilated, vCount);
+                    System.Array.Copy(L1r, L1rDilated, vCount);
+                    System.Array.Copy(L1g, L1gDilated, vCount);
+                    System.Array.Copy(L1b, L1bDilated, vCount);
+                    
+                    for (int iter = 0; iter < LightVolumeSetup.DilationIterations; iter++) {
+                        for (int voxelZ = 0; voxelZ < d; voxelZ++)
+                            for (int voxelY = 0; voxelY < h; voxelY++)
+                                for (int voxelX = 0; voxelX < w; voxelX++) {
+                                    int centerIdx = voxelX + voxelY * w + voxelZ * w * h;
+
+                                    if (validity[centerIdx] < LightVolumeSetup.BackfaceTolerance) continue;
+                                    
+                                    Vector3 L0Sum = Vector3.zero;
+                                    Vector3 L1rSum = Vector3.zero;
+                                    Vector3 L1gSum = Vector3.zero;
+                                    Vector3 L1bSum = Vector3.zero;
+                                    int validCount = 0;
+                                    for (int dz = -1; dz <= 1; dz++)
+                                        for (int dy = -1; dy <= 1; dy++)
+                                            for (int dx = -1; dx <= 1; dx++) {
+                                                int xx = voxelX + dx;
+                                                int yy = voxelY + dy;
+                                                int zz = voxelZ + dz;
+                                                if (xx < 0 || yy < 0 || zz < 0 || xx >= w || yy >= h || zz >= d) continue;
+
+                                                int nIdx = xx + yy * w + zz * w * h;
+                                                float neighborValidity = validity[nIdx];
+                                                if (neighborValidity < LightVolumeSetup.BackfaceTolerance) {
+                                                    validCount++;
+                                                    L0Sum += L0[nIdx];
+                                                    L1rSum += L1r[nIdx];
+                                                    L1gSum += L1g[nIdx];
+                                                    L1bSum += L1b[nIdx];
+                                                }
+                                            }
+
+                                    if (validCount > 0) {
+                                        L0Dilated[centerIdx] = L0Sum / validCount;
+                                        L1rDilated[centerIdx] = L1rSum / validCount;
+                                        L1gDilated[centerIdx] = L1gSum / validCount;
+                                        L1bDilated[centerIdx] = L1bSum / validCount;
+                                        validityDilated[centerIdx] = 0.0f;
+                                    }
+                                }
+                        
+                        // Copy outputs back to source data after each iteration
+                        System.Array.Copy(validityDilated, validity, vCount);
+                        System.Array.Copy(L0Dilated, L0, vCount);
+                        System.Array.Copy(L1rDilated, L1r, vCount);
+                        System.Array.Copy(L1gDilated, L1g, vCount);
+                        System.Array.Copy(L1bDilated, L1b, vCount);
+                    }
                 }
 
                 // Denoising
