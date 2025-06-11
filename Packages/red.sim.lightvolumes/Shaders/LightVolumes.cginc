@@ -154,7 +154,7 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
         // Computed as a sum of line integrals over the edges of the polygon.
         float3 mu = b * rcp(lenB);
         float cosGamma = dot(thisVert, nextVert);
-        float gamma = LV_FastAcos(cosGamma);
+        float gamma = LV_FastAcos(clamp(cosGamma, -1, 1));
         surfaceIntegral.x += gamma * dot(zhDir0, mu);
         surfaceIntegral.y += gamma * dot(zhDir1, mu);
         surfaceIntegral.z += gamma * dot(zhDir2, mu);
@@ -578,19 +578,14 @@ float LV_DistributionGGX(float NoH, float roughness) {
     return (roughness * roughness) / ((float) 3.141592653589793f * f * f);
 }
 
-// Faster normalize
-float3 LV_Normalize(float3 v) {
-    return rsqrt(dot(v, v)) * v;
-}
-
 // Calculates speculars for light volumes or any SH L1 data
 float3 LightVolumeSpecular(float3 f0, float smoothness, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
     
     float3 specColor = max(float3(dot(reflect(-L1r, worldNormal), viewDir), dot(reflect(-L1g, worldNormal), viewDir), dot(reflect(-L1b, worldNormal), viewDir)), 0);
     
-    float3 rDir = LV_Normalize(LV_Normalize(L1r) + viewDir);
-    float3 gDir = LV_Normalize(LV_Normalize(L1g) + viewDir);
-    float3 bDir = LV_Normalize(LV_Normalize(L1b) + viewDir);
+    float3 rDir = normalize(normalize(L1r) + viewDir);
+    float3 gDir = normalize(normalize(L1g) + viewDir);
+    float3 bDir = normalize(normalize(L1b) + viewDir);
     
     float rNh = saturate(dot(worldNormal, rDir));
     float gNh = saturate(dot(worldNormal, gDir));
@@ -622,7 +617,7 @@ float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, floa
 float3 LightVolumeSpecularDominant(float3 f0, float smoothness, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
     
     float3 dominantDir = L1r + L1g + L1b;
-    float3 dir = LV_Normalize(LV_Normalize(dominantDir) + viewDir);
+    float3 dir = normalize(normalize(dominantDir) + viewDir);
     float nh = saturate(dot(worldNormal, dir));
     
     float roughness = 1 - smoothness;
