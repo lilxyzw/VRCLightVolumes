@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 #if UNITY_EDITOR
+using Unity.EditorCoroutines.Editor;
 using System.IO;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
@@ -15,15 +16,33 @@ namespace VRCLightVolumes {
 
         [SerializeField] public List<LightVolume> LightVolumes = new List<LightVolume>();
         [SerializeField] public List<float> LightVolumesWeights = new List<float>();
+
+        [SerializeField] public List<PointLightVolume> PointLightVolumes = new List<PointLightVolume>();
+
+        [Header("Point Light Volumes")]
+        public TextureArrayResolution Resolution = TextureArrayResolution._128x128;
+        public TextureArrayFormat Format = TextureArrayFormat.RGBAHalf;
+        [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but light the cutoff edge will be visually noticable.")]
+        [Range(0.0f, 1f)] public float AreaLightBrightnessCutoff = 0.35f;
+
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
 #if BAKERY_INCLUDED
-    public Baking BakingMode = Baking.Bakery;
+        public Baking BakingMode = Baking.Bakery;
 #else
         public Baking BakingMode = Baking.Progressive;
 #endif
         [Tooltip("Removes baked noise in Light Volumes but may slightly reduce sharpness. Recommended to keep it enabled.")]
         public bool Denoise = true;
+        [Header("Dilation")]
+        [Tooltip("Whether to dilate valid probe data into invalid probes, such as probes that are inside geometry. Helps mitigate light leaking.")]
+        public bool DilateInvalidProbes = true;
+        [Tooltip("How many iterations to run dilation for. Higher values will result in less leaking, but will also cause longer bakes.")]
+        [Range(1, 8)]
+        public int DilationIterations = 1;
+        [Tooltip("The percentage of rays shot from a probe that should hit backfaces before the probe is considered invalid for the purpose of dilation. 0 means every probe is invalid, 1 means every probe is valid.")] 
+        [Range(0, 1)]
+        public float BackfaceTolerance = 0.1f;
         [Tooltip("Automatically fixes Bakery's \"burned\" light probes after a scene bake. But decreases their contrast slightly.")]
         public bool FixLightProbesL1 = true;
         [Header("Visuals")]
@@ -33,9 +52,10 @@ namespace VRCLightVolumes {
         public bool SharpBounds = true;
         [Tooltip("Automatically updates any volumes data in runtime: Enabling/Disabling, Color, Edge Smoothing, all the global settings and more. Position, Rotation and Scale gets updated only for volumes that are marked dynamic.")]
         public bool AutoUpdateVolumes = false;
-        [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
-        public int AdditiveMaxOverdraw = 4;
-
+        [Tooltip("Limits the maximum number of additive volumes and point light volumes that can affect a single pixel. If you have many dynamic additive or point light volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
+        [Min(1)]public int AdditiveMaxOverdraw = 4;
+        
+        
         [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
         public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
@@ -43,19 +63,14 @@ namespace VRCLightVolumes {
 
         public Baking _bakingModePrev;
 
-#if UNITY_EDITOR
+        public bool IsLegacyUVWConverted = false; // Is legacy UVW fix applied. Only need to do it once, so it's a flag for that
 
-#if BAKERY_INCLUDED
-    private bool _subscribedToBakery = false;
-#endif
-    private bool _subscribedToUnityLightmapper = false;
+        private TextureArrayResolution _resolutionPrev = TextureArrayResolution._128x128;
+        private TextureArrayFormat _formatPrev = TextureArrayFormat.RGBAHalf;
 
-    private void OnSelectionChanged() {
-
-        if (Selection.activeObject == gameObject) {
-            // Searching for all volumes in scene
+        public void RefreshVolumesList() {
+            // Searching for all light volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);
-
             for (int i = 0; i < volumes.Length; i++) {
                 if (volumes[i].CompareTag("EditorOnly")) continue;
                 if (!LightVolumes.Contains(volumes[i])) {
@@ -63,7 +78,6 @@ namespace VRCLightVolumes {
                     LightVolumesWeights.Add(0.0f);
                 }
             }
-
             // Removing volumes that no more exists
             for (int i = 0; i < LightVolumes.Count; i++) {
                 if (LightVolumes[i] == null || LightVolumes[i].CompareTag("EditorOnly")) {
@@ -72,213 +86,357 @@ namespace VRCLightVolumes {
                     i--;
                 }
             }
-        }
 
-    }
-
-    // Subscribing to OnBaked events
-    private void OnEnable() {
-#if BAKERY_INCLUDED
-        if (!Application.isPlaying && !_subscribedToBakery) {
-            ftRenderLightmap.OnFinishedFullRender += OnBakeryFinishedRender;
-            ftRenderLightmap.OnPreFullRender += OnBakeryStartedRender;
-            _subscribedToBakery = true;
-        }
-#endif
-        if (!Application.isPlaying && !_subscribedToUnityLightmapper) {
-            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += OnAdditionalProbesCompleted;
-            Lightmapping.bakeStarted += OnUnityBakingStarted;
-            _subscribedToUnityLightmapper = true;
-        }
-
-        Selection.selectionChanged += OnSelectionChanged;
-
-    }
-
-    // Unsubscribing from OnBaked events
-    private void OnDisable() {
-#if BAKERY_INCLUDED
-        if (!Application.isPlaying && _subscribedToBakery) {
-            ftRenderLightmap.OnFinishedFullRender -= OnBakeryFinishedRender;
-            ftRenderLightmap.OnPreFullRender -= OnBakeryStartedRender;
-            _subscribedToBakery = false;
-        }
-#endif
-        if (!Application.isPlaying && _subscribedToUnityLightmapper) {
-            UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted -= OnAdditionalProbesCompleted;
-            Lightmapping.bakeStarted -= OnUnityBakingStarted;
-            _subscribedToUnityLightmapper = false;
-            
-        }
-
-        Selection.selectionChanged -= OnSelectionChanged;
-
-    }
-
-
-#if BAKERY_INCLUDED
-
-    // On Bakery Started baking
-    private void OnBakeryStartedRender(object sender, EventArgs e) {
-        // Attempt to fix a bakery bug
-        var volumes = FindObjectsOfType<LightVolume>(true);
-        for (int i = 0; i < volumes.Length; i++) {
-            volumes[i].SetupBakeryDependencies();
-        }
-    }
-
-    // On Bakery Finished baking
-    private void OnBakeryFinishedRender(object sender, EventArgs e) {
-        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < volumes.Length; i++) {
-            if (volumes[i].Bake && volumes[i].LightVolumeInstance != null) {
-                volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
-                if (IsBakeryMode && volumes[i].BakeryVolume != null) {
-                    volumes[i].Texture0 = volumes[i].BakeryVolume.bakedTexture0;
-                    volumes[i].Texture1 = volumes[i].BakeryVolume.bakedTexture1;
-                    volumes[i].Texture2 = volumes[i].BakeryVolume.bakedTexture2;
+            // Searching for all point light volumes in scene
+            var pointVolumes = FindObjectsOfType<PointLightVolume>(true);
+            for (int i = 0; i < pointVolumes.Length; i++) {
+                if (pointVolumes[i].CompareTag("EditorOnly")) continue;
+                if (!PointLightVolumes.Contains(pointVolumes[i])) {
+                    PointLightVolumes.Add(pointVolumes[i]);
+                }
+            }
+            // Removing point light volumes that no more exists
+            for (int i = 0; i < PointLightVolumes.Count; i++) {
+                if (PointLightVolumes[i] == null || PointLightVolumes[i].CompareTag("EditorOnly")) {
+                    PointLightVolumes.RemoveAt(i);
+                    i--;
                 }
             }
         }
-        if (FixLightProbesL1) FixLightProbes();
-        GenerateAtlas();
-        Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
-    }
 
+#if UNITY_EDITOR
+
+#if BAKERY_INCLUDED
+        private bool _subscribedToBakery = false;
 #endif
+        private bool _subscribedToUnityLightmapper = false;
 
-    // On Unity Lightmapper started baking
-    private void OnUnityBakingStarted() {
-        if (BakingMode == Baking.Bakery) {
-            return;
-        }
-        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < volumes.Length; i++) {
-            if (volumes[i].Bake) {
-                Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
-                volumes[i].SetAdditionalProbes(i);
+        private void OnSelectionChanged() {
+            if (Selection.activeObject == gameObject) {
+                RefreshVolumesList();
             }
         }
-    }
 
-    // On Unity Lightmapper baked additional probes
-    private void OnAdditionalProbesCompleted() {
-        if (BakingMode == Baking.Bakery) {
-            return;
-        }
-        LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < volumes.Length; i++) {
-            if (volumes[i].Bake) {
-                volumes[i].Save3DTextures(i);
-                volumes[i].RemoveAdditionalProbes(i);
-                if (volumes[i].LightVolumeInstance != null) volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
+        // Generates LUT array based on all the LUT Textures2D provided in PointLightVolumes
+        List<PointLightVolume> _customTexPointVolumes = new List<PointLightVolume>();
+        public void GenerateCustomTexturesArray() {
+
+            // Cubemap Textures - store first
+            List<Texture> cubeTextures = new List<Texture>(); 
+            List<PointLightVolume> cubePLVs = new List<PointLightVolume>();
+
+            // Other texture goes next
+            List<Texture> singleTextures = new List<Texture>();
+            List<PointLightVolume> singlePLVs = new List<PointLightVolume>();
+
+            int count = PointLightVolumes.Count;
+            for (int i = 0; i < count; i++) {
+                Texture tex = PointLightVolumes[i].GetCustomTexture();
+                if (tex == null) continue;
+                if(tex.GetType() == typeof(Cubemap)) {
+                    cubeTextures.Add(tex);
+                    cubePLVs.Add(PointLightVolumes[i]);
+                } else if(tex.GetType() == typeof(Texture2D)) {
+                    singleTextures.Add(tex);
+                    singlePLVs.Add(PointLightVolumes[i]);
+                }
             }
+
+            // Merging lists
+            List<Texture> textures = new List<Texture>();
+            textures.AddRange(cubeTextures);
+            textures.AddRange(singleTextures);
+            _customTexPointVolumes.Clear();
+            _customTexPointVolumes.AddRange(cubePLVs);
+            _customTexPointVolumes.AddRange(singlePLVs);
+
+            if(_customTexPointVolumes.Count == 0) {
+                LightVolumeManager.CustomTextures = null;
+                LightVolumeManager.CubemapsCount = 0;
+            }
+
+            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
+
+                if (texArray != null) {
+                    for (int i = 0; i < ids.Length; i++) {
+                        _customTexPointVolumes[i].CustomID = ids[i];
+                        _customTexPointVolumes[i].SyncUdonScript();
+                    }
+                }
+                LightVolumeManager.CustomTextures = texArray;
+                LightVolumeManager.CubemapsCount = cubeTextures.Count;
+                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/PointLightVolumeArray.asset");
+
+            }), this);
+
         }
-        Debug.Log($"[LightVolumeSetup] Additional probes baking finished! Generating 3D Atlas...");
-        GenerateAtlas();
-        Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
 
-    }
 
-    private void Update() {
-        SetupDependencies();
-        // Resetup required game objects and components for light volumes in new baking mode
-        if (_bakingModePrev != BakingMode) {
-            _bakingModePrev = BakingMode;
-            var volumes = FindObjectsOfType<LightVolume>();
+        // Subscribing to OnBaked events
+        private void OnEnable() {
+#if BAKERY_INCLUDED
+            if (!Application.isPlaying && !_subscribedToBakery) {
+                ftRenderLightmap.OnFinishedFullRender += OnBakeryFinishedRender;
+                ftRenderLightmap.OnPreFullRender += OnBakeryStartedRender;
+                _subscribedToBakery = true;
+            }
+#endif
+            if (!Application.isPlaying && !_subscribedToUnityLightmapper) {
+                UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted += OnAdditionalProbesCompleted;
+                Lightmapping.bakeStarted += OnUnityBakingStarted;
+                _subscribedToUnityLightmapper = true;
+            }
+
+            Selection.selectionChanged += OnSelectionChanged;
+
+        }
+
+        // Unsubscribing from OnBaked events
+        private void OnDisable() {
+#if BAKERY_INCLUDED
+            if (!Application.isPlaying && _subscribedToBakery) {
+                ftRenderLightmap.OnFinishedFullRender -= OnBakeryFinishedRender;
+                ftRenderLightmap.OnPreFullRender -= OnBakeryStartedRender;
+                _subscribedToBakery = false;
+            }
+#endif
+            if (!Application.isPlaying && _subscribedToUnityLightmapper) {
+                UnityEditor.Experimental.Lightmapping.additionalBakedProbesCompleted -= OnAdditionalProbesCompleted;
+                Lightmapping.bakeStarted -= OnUnityBakingStarted;
+                _subscribedToUnityLightmapper = false;
+
+            }
+
+            Selection.selectionChanged -= OnSelectionChanged;
+
+        }
+
+
+#if BAKERY_INCLUDED
+
+        // On Bakery Started baking
+        private void OnBakeryStartedRender(object sender, EventArgs e) {
+            // Attempt to fix a bakery bug
+            var volumes = FindObjectsOfType<LightVolume>(true);
             for (int i = 0; i < volumes.Length; i++) {
                 volumes[i].SetupBakeryDependencies();
             }
+        }
+
+        // On Bakery Finished baking
+        private void OnBakeryFinishedRender(object sender, EventArgs e) {
+            LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < volumes.Length; i++) {
+                if (volumes[i].Bake && volumes[i].LightVolumeInstance != null) {
+                    volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
+                    if (IsBakeryMode && volumes[i].BakeryVolume != null) {
+                        volumes[i].Texture0 = volumes[i].BakeryVolume.bakedTexture0;
+                        volumes[i].Texture1 = volumes[i].BakeryVolume.bakedTexture1;
+                        volumes[i].Texture2 = volumes[i].BakeryVolume.bakedTexture2;
+                    }
+                }
+            }
+            if (FixLightProbesL1) FixLightProbes();
+            GenerateAtlas();
+            Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
+        }
+
+#endif
+
+        // On Unity Lightmapper started baking
+        private void OnUnityBakingStarted() {
+            if (BakingMode == Baking.Bakery) {
+                return;
+            }
+            LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < volumes.Length; i++) {
+                if (volumes[i].Bake) {
+                    Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
+                    volumes[i].SetAdditionalProbes(i);
+                }
+            }
+        }
+
+        // On Unity Lightmapper baked additional probes
+        private void OnAdditionalProbesCompleted() {
+
+            if (BakingMode == Baking.Bakery) {
+                return;
+            }
+            LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < volumes.Length; i++) {
+                if (volumes[i].Bake) {
+                    volumes[i].Save3DTextures(i);
+                    volumes[i].RemoveAdditionalProbes(i);
+                    if (volumes[i].LightVolumeInstance != null) volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
+                }
+            }
+            Debug.Log($"[LightVolumeSetup] Additional probes baking finished! Generating 3D Atlas...");
+            GenerateAtlas();
+            Debug.Log($"[LightVolumeSetup] Generating 3D Atlas finished!");
+
+        }
+
+        private void Update() {
+            SetupDependencies();
+            ConvertLegacyUVW();
+            // Resetup required game objects and components for light volumes in new baking mode
+            if (_bakingModePrev != BakingMode) {
+                _bakingModePrev = BakingMode;
+                var volumes = FindObjectsOfType<LightVolume>();
+                for (int i = 0; i < volumes.Length; i++) {
+                    volumes[i].SetupBakeryDependencies();
+                }
+                SyncUdonScript();
+            }
+            if (_resolutionPrev != Resolution || _formatPrev != Format) {
+                _resolutionPrev = Resolution;
+                _formatPrev = Format;
+                GenerateCustomTexturesArray();
+            }
+        }
+
+        // Try to convert Legacy UVW data into a new compact data format
+        private void ConvertLegacyUVW() {
+
+            if (IsLegacyUVWConverted || LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
+
+            for (int i = 0; i < LightVolumes.Count; i++) {
+
+                if (LightVolumes[i] == null) continue;
+                var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
+                if (lightVolumeInstance == null) continue;
+                if(lightVolumeInstance.BoundsUvwMin0.w != 0 && lightVolumeInstance.BoundsUvwMin1.w != 0 && lightVolumeInstance.BoundsUvwMin2.w != 0) {
+                    continue; // This is already NOT Legacy UVW, skip
+                }
+
+                Vector3 scale = lightVolumeInstance.BoundsUvwMax0 - lightVolumeInstance.BoundsUvwMin0;
+                Vector3 uvwMin0 = lightVolumeInstance.BoundsUvwMin0;
+                Vector3 uvwMin1 = lightVolumeInstance.BoundsUvwMin1;
+                Vector3 uvwMin2 = lightVolumeInstance.BoundsUvwMin2;
+
+                lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
+                lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
+                lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+
+                LVUtils.MarkDirty(lightVolumeInstance);
+            }
+
+            IsLegacyUVWConverted = true;
+
+        }
+
+        // Generates atlas and setups udon script
+        public void GenerateAtlas() {
+
+            if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
+
+            SetupDependencies();
+
+            var atlas = Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray());
+            if (atlas.Texture == null) return; // Return if atlas packing failed
+
+            LightVolumeManager.LightVolumeAtlas = atlas.Texture;
+
+            LightVolumeDataList.Clear();
+
+            for (int i = 0; i < LightVolumes.Count; i++) {
+
+                if (LightVolumes[i] == null) continue;
+                var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
+
+                if (lightVolumeInstance == null) continue;
+
+                Vector3 scale = atlas.BoundsUvwMax[i * 3] - atlas.BoundsUvwMin[i * 3];
+                Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 3];
+                Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
+                Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
+
+                lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
+                lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
+                lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+
+                // Legacy
+                lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
+                lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
+                lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
+
+                LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
+
+                LVUtils.MarkDirty(lightVolumeInstance);
+            }
+
+            LVUtils.SaveAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
+
             SyncUdonScript();
+
         }
 
-    }
-
-    // Generates atlas and setups udon script
-    public void GenerateAtlas() {
-
-        if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
-
-        SetupDependencies();
-
-        var atlas = Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray());
-        if(atlas.Texture == null) return; // Return if atlas packing failed
-
-        LightVolumeManager.LightVolumeAtlas = atlas.Texture;
-
-        LightVolumeDataList.Clear();
-
-        for (int i = 0; i < LightVolumes.Count; i++) {
-
-            if (LightVolumes[i] == null) continue;
-            var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
-
-            if (lightVolumeInstance == null) continue;
-
-            lightVolumeInstance.BoundsUvwMin0 = atlas.BoundsUvwMin[i * 3];
-            lightVolumeInstance.BoundsUvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
-            lightVolumeInstance.BoundsUvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
-
-            lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
-            lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
-            lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
-
-            LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
-
-            LVUtils.MarkDirty(lightVolumeInstance);
+        // Looks for LightVolumeManager udon script and setups it if needed
+        public void SetupDependencies() {
+            if (LightVolumeManager == null && !TryGetComponent(out LightVolumeManager)) {
+                LightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
+            }
         }
 
-        LVUtils.SaveTexture3DAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
+        // Fixes light probes baked with Bakery L1
+        private static void FixLightProbes() {
 
-        SyncUdonScript();
+            var probes = LightmapSettings.lightProbes;
+            if (probes == null || probes.count == 0) {
+                Debug.LogWarning("[LightVolumeSetup] No Light Probes found to fix.");
+                return;
+            }
 
-    }
+            var shs = probes.bakedProbes;
+            for (int i = 0; i < shs.Length; ++i) {
+                shs[i] = LVUtils.LinearizeSH(shs[i]);
+            }
 
-    // Looks for LightVolumeManager udon script and setups it if needed
-    public void SetupDependencies() {
-        if (LightVolumeManager == null && !TryGetComponent(out LightVolumeManager)) {
-            LightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
+            probes.bakedProbes = shs;
+            EditorUtility.SetDirty(probes);
+            EditorSceneManager.MarkAllScenesDirty();
+
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.SaveOpenScenes();
+
+            Debug.Log($"[LightVolumeSetup] {shs.Length} Light Probes fixed!");
+
         }
-    }
-
-    // Fixes light probes baked with Bakery L1
-    private static void FixLightProbes() {
-
-        var probes = LightmapSettings.lightProbes;
-        if (probes == null || probes.count == 0) {
-            Debug.LogWarning("[LightVolumeSetup] No Light Probes found to fix.");
-            return;
-        }
-
-        var shs = probes.bakedProbes;
-        for (int i = 0; i < shs.Length; ++i) {
-            shs[i] = LVUtils.LinearizeSH(shs[i]);
-        }
-
-        probes.bakedProbes = shs;
-        EditorUtility.SetDirty(probes);
-        EditorSceneManager.MarkAllScenesDirty();
-
-        AssetDatabase.SaveAssets();
-        EditorSceneManager.SaveOpenScenes();
-
-        Debug.Log($"[LightVolumeSetup] {shs.Length} Light Probes fixed!");
-
-    }
 
 #endif
 
         // Syncs udon LightVolumeManager script with this script
         public void SyncUdonScript() {
+
             if (LightVolumeManager == null) return;
+
             LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
             LightVolumeManager.LightProbesBlending = LightProbesBlending;
             LightVolumeManager.SharpBounds = SharpBounds;
             LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
+            LightVolumeManager.AreaLightBrightnessCutoff = AreaLightBrightnessCutoff + 0.05f;
 
-            if (LightVolumes.Count == 0) return;
-            LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+            if (LightVolumes.Count != 0) {
+                LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+            }
+
+            if (PointLightVolumes.Count != 0) {
+                LightVolumeManager.PointLightVolumeInstances = GetPointLightVolumeInstances();
+            }
+
             LightVolumeManager.UpdateVolumes();
+
+        }
+
+        private PointLightVolumeInstance[] GetPointLightVolumeInstances() {
+            List<PointLightVolumeInstance> list = new List<PointLightVolumeInstance>();
+            int count = PointLightVolumes.Count;
+            for (int i = 0; i < count; i++) {
+                if(PointLightVolumes[i].PointLightVolumeInstance == null) continue;
+                list.Add(PointLightVolumes[i].PointLightVolumeInstance);
+            }
+            return list.ToArray();
         }
 
         // Delete self in play mode
@@ -291,6 +449,23 @@ namespace VRCLightVolumes {
         public enum Baking {
             Progressive,
             Bakery
+        }
+
+        public enum TextureArrayFormat {
+            RGBA32 = 4,
+            RGBAHalf = 17,
+            RGBAFloat = 20
+        }
+
+        public enum TextureArrayResolution {
+            _16x16 = 16,
+            _32x32 = 32,
+            _64x64 = 64,
+            _128x128 = 128,
+            _256x256 = 256,
+            _512x512 = 512,
+            _1024x1024 = 1024,
+            _2048x2048 = 2048
         }
 
     }
