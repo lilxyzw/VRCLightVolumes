@@ -83,6 +83,15 @@ float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     return v + q.w * t + cross(q.xyz, t);
 }
 
+// Fast approximate inverse cosine. Max absolute error = 0.009.
+// From https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
+float LV_FastAcos(float x) {
+    float absX = abs(x); 
+    float res = -0.156583f * absX + (3.141592653589793f * 0.5f); 
+    res *= sqrt(1.0f - absX); 
+    return (x >= 0) ? res : 3.141592653589793f - res; 
+}
+
 // Samples a cubemap from _UdonPointLightVolumeTexture array
 float4 LV_SampleCubemapArray(uint id, float3 dir) {
     float3 absDir = abs(dir);
@@ -108,24 +117,9 @@ float4 LV_SampleCubemapArray(uint id, float3 dir) {
 float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4]) {
     // Transform the vertices into local space centered on the shading position,
     // project, the polygon onto the unit sphere.
-    for (uint edge = 0; edge < 4; edge++) {
-        lightVertices[edge] = normalize(lightVertices[edge] - shadingPosition);
+    for (uint edge0 = 0; edge0 < 4; edge0++) {
+        lightVertices[edge0] = normalize(lightVertices[edge0] - shadingPosition);
     }
-
-    // Compute the solid angle subtended by the polygon at the shading position,
-    // using Arvo's formula (5.1) https://dl.acm.org/doi/pdf/10.1145/218380.218467.
-    // The L0 term is directly proportional to the solid angle.
-    float solidAngle = 0;
-    for (uint edge = 0; edge < 4; edge++) {
-        uint next = (edge + 1) % 4;
-        uint prev = (edge + 4 - 1) % 4;
-        float3 a = cross(lightVertices[edge], lightVertices[prev]);
-        float3 b = cross(lightVertices[edge], lightVertices[next]);
-        solidAngle += acos(clamp(dot(a, b) / (length(a) * length(b)), -1, 1));
-    }
-    solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
-    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f); // Constant part of L0 basis function.
-    float l0 = normalizationL0 * solidAngle; // Project solid angle to L0 SH.
 
     // Precomputed directions of rotated zonal harmonics,
     // and associated weights for each basis function.
@@ -137,28 +131,48 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     const float3 zhWeightL1z = float3(-1.82572523f, -2.08165037f, 0.00000000f);
     const float3 zhWeightL1x = float3(2.42459869f, 1.44790525f, 0.90397552f);
 
-    // Compute the integral of the legendre polynomials over the surface of the
-    // projected polygon for each zonal harmonic direction (S_l in the paper).
-    // Computed as a sum of line integrals over the edges of the polygon.
+    float solidAngle = 0.0;
     float3 surfaceIntegral = 0.0;
-    for (uint edge = 0; edge < 4; edge++) {
-        uint next = (edge + 1) % 4;
-        float3 mu = normalize(cross(lightVertices[edge], lightVertices[next]));
-        float cosGamma = dot(lightVertices[edge], lightVertices[next]);
-        float gamma = acos(clamp(cosGamma, -1, 1));
+    [loop] for (uint edge1 = 0; edge1 < 4; edge1++) {
+        uint next = (edge1 + 1) % 4;
+        uint prev = (edge1 + 4 - 1) % 4;
+        float3 prevVert = lightVertices[prev];
+        float3 thisVert = lightVertices[edge1];
+        float3 nextVert = lightVertices[next];
+
+        // Compute the solid angle subtended by the polygon at the shading position,
+        // using Arvo's formula (5.1) https://dl.acm.org/doi/pdf/10.1145/218380.218467.
+        // The L0 term is directly proportional to the solid angle.
+        float3 a = cross(thisVert, prevVert);
+        float3 b = cross(thisVert, nextVert);
+        float lenA = length(a);
+        float lenB = length(b);
+        solidAngle += LV_FastAcos(clamp(dot(a, b) / (lenA * lenB), -1, 1));
+
+        // Compute the integral of the legendre polynomials over the surface of the
+        // projected polygon for each zonal harmonic direction (S_l in the paper).
+        // Computed as a sum of line integrals over the edges of the polygon.
+        float3 mu = b * rcp(lenB);
+        float cosGamma = dot(thisVert, nextVert);
+        float gamma = LV_FastAcos(cosGamma);
         surfaceIntegral.x += gamma * dot(zhDir0, mu);
         surfaceIntegral.y += gamma * dot(zhDir1, mu);
         surfaceIntegral.z += gamma * dot(zhDir2, mu);
     }
+    solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
     surfaceIntegral *= 0.5;
 
+    // The L0 term is just the projection of the solid angle onto the L0 basis function.
+    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f);
+    float l0 = normalizationL0 * solidAngle;
+    
     // Combine each surface (sub)integral with the associated weights to get
-    // full surface integral for each SH basis function.
+    // full surface integral for each L1 SH basis function.
     float l1y = dot(zhWeightL1y, surfaceIntegral);
     float l1z = dot(zhWeightL1z, surfaceIntegral);
     float l1x = dot(zhWeightL1x, surfaceIntegral);
 
-    // The l1y, l1z, l1x are raw SH coefficients for radiance from the polygon.
+    // The l0, l1y, l1z, l1x are raw SH coefficients for radiance from the polygon.
     // We need to apply some more transformations before we are done:
     // (1) We want the coefficients for irradiance, so we need to convolve with the
     //     clamped cosine kernel, as detailed in https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf.
@@ -217,24 +231,22 @@ void LV_QuadLight(
     
     // Get normal to cull the light early
     float3 normal = LV_MultiplyVectorByQuaternion(float3(0, 0, 1), rotationQuat);
-    if (dot(normal, lightToWorldPos) < 0.0)
+    [branch] if (dot(normal, lightToWorldPos) < 0.0)
         return;
 
     // Calculate the bounding sphere of the area light given the cutoff irradiance
     // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
-    if (_UdonAreaLightBrightnessCutoff > 0.0f) {
-        float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
-        float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
-        float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
-        if (sqCutoffDist < 0)
-            return;
-        // Attenuate the light based on distance to the bounding sphere, so we don't get hard seam at the edge.
-        color.rgb *= saturate(sqCutoffDist / sqMaxDist);
-    }
+    float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
+    float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
+    float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
+    [branch] if (sqCutoffDist < 0)
+        return;
+    // Attenuate the light based on distance to the bounding sphere, so we don't get hard seam at the edge.
+    color.rgb *= saturate(sqCutoffDist / sqMaxDist);
     
     // Compute the vertices of the quad
     float3 xAxis = LV_MultiplyVectorByQuaternion(float3(1, 0, 0), rotationQuat);
-    float3 yAxis = LV_MultiplyVectorByQuaternion(float3(0, 1, 0), rotationQuat);
+    float3 yAxis = cross(normal, xAxis);
     float3 verts[4];
     verts[0] = centroidPos + (-halfSize.x * xAxis) + ( halfSize.y * yAxis);
     verts[1] = centroidPos + ( halfSize.x * xAxis) + ( halfSize.y * yAxis);
