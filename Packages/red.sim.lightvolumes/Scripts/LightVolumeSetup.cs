@@ -29,7 +29,7 @@ namespace VRCLightVolumes {
         public bool DilateInvalidProbes = true;
         [Tooltip("How many iterations to run dilation for. Higher values will result in less leaking, but will also cause longer bakes.")]
         [Range(1, 8)]
-        public int DilationIterations = 2;
+        public int DilationIterations = 1;
         [Tooltip("The percentage of rays shot from a probe that should hit backfaces before the probe is considered invalid for the purpose of dilation. 0 means every probe is invalid, 1 means every probe is valid.")] 
         [Range(0, 1)]
         public float BackfaceTolerance = 0.1f;
