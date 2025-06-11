@@ -71,6 +71,8 @@ namespace VRCLightVolumes {
 
             if (pointLightVolume.Type == PointLightVolume.LightType.PointLight) { // Point Light Visualization
 
+                if(!pointLightVolume.DebugRange) return;
+
                 // Drawing
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
@@ -102,9 +104,15 @@ namespace VRCLightVolumes {
                 Handles.color = new Color(1f, 1f, 0f, 0.6f);
                 DrawSpotLight(origin, diskCenter, forward, radius, dirs);
 
+                if(pointLightVolume.DebugRange)
+                    DrawPointLight(origin, range);
+
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
                 DrawSpotLight(origin, diskCenter, forward, radius, dirs);
+
+                if (pointLightVolume.DebugRange)
+                    DrawPointLight(origin, range);
 
             } else { // Area light
 
@@ -115,10 +123,16 @@ namespace VRCLightVolumes {
                 Handles.color = new Color(1f, 1f, 0f, 0.6f);
                 DrawAreaLight(origin, t.rotation, x, y);
 
+                if(pointLightVolume.DebugRange)
+                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff);
+
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
                 DrawAreaLight(origin, t.rotation, x, y);
-                
+
+                if (pointLightVolume.DebugRange)
+                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff);
+
             }
 
         }
@@ -168,5 +182,37 @@ namespace VRCLightVolumes {
             Handles.DrawLine(center, center + rotation * Vector3.forward * 0.5f);
         }
 
+        private void DrawAreaLightDebug(Vector3 center, Quaternion rotation, float width, float height, Color color, float intensity, float cutoff) {
+
+            // Light normal
+            Vector3 up = rotation * Vector3.up;
+            Vector3 right = rotation * Vector3.right;
+            Vector3 forward = rotation * Vector3.forward;
+
+            // Calculate the bounding sphere of the area light given the cutoff irradiance
+            float minSolidAngle = cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity);
+            float sqMaxDist = ComputeAreaLightSquaredBoundingSphere(width, height, minSolidAngle);
+            float radius = Mathf.Sqrt(sqMaxDist);
+
+            Handles.DrawWireDisc(center, forward, radius);
+            Handles.DrawWireArc(center, right, up * radius, 180f, radius);
+            Handles.DrawWireArc(center, up, -right * radius, 180f, radius);
+
+        }
+
+        float ComputeAreaLightSquaredBoundingSphere(float width, float height, float minSolidAngle) {
+            float A = width * height;
+            float w2 = width * width;
+            float h2 = height * height;
+            float B = 0.25f * (w2 + h2);
+            float t = Mathf.Tan(0.25f * minSolidAngle);
+            float T = t * t;
+            float TB = T * B;
+            float discriminant = Mathf.Sqrt(TB * TB + 4.0f * T * A * A);
+            float d2 = (discriminant - TB) * 0.125f / T;
+            return d2;
+        }
+
     }
+
 }

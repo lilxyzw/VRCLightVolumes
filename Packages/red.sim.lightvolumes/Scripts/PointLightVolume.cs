@@ -1,23 +1,34 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRCLightVolumes {
 
     [ExecuteAlways]
     public class PointLightVolume : MonoBehaviour {
-        
+
+        [Tooltip("Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance.")]
         public bool Dynamic = false;
+        [Tooltip("Point light is the most performant type. Area light is the heaviest and best suited for dynamic, movable sources. For static lighting, it's recommended to bake regular additive light volumes instead.")]
         public LightType Type = LightType.PointLight;
+        [Tooltip("Radius in meters beyond which point and spot lights are culled. Fewer overlapping lights result in better performance.")]
         [Min(0.0001f)] public float Range = 5f;
+        [Tooltip("Multiplies the point light volume’s color by this value.")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
+        [Tooltip("Brightness of the point light volume.")]
         public float Intensity = 1f;
+        [Tooltip("Parametric uses settings to compute light falloff. LUT uses a texture: X - cone falloff, Y - attenuation (Y only for point lights). Cookie projects a texture for spot lights. Cubemap projects a cubemap for point lights.")]
         public LightShape Shape = LightShape.Parametric;
+        [Tooltip("Angle of a spotlight cone in degrees.")]
         [Range(0.1f, 360)] public float Angle = 60f;
+        [Tooltip("Cone falloff.")]
         [Range(0.001f, 1)] public float Falloff = 1f;
+        [Tooltip("X - cone falloff, Y - attenuation. No compression and RGBA Float or RGBA Half format is recommended.")]
         public Texture2D FalloffLUT = null;
+        [Tooltip("Projects a square texture for spot lights.")]
         public Texture2D Cookie = null;
+        [Tooltip("Projects a cubemap for point lights.")]
         public Cubemap Cubemap = null;
+        [Tooltip("Shows overdrawing range gizmo. Less point light volumes intersections - more performance!")]
+        public bool DebugRange = false;
 
         public int CustomID = -1;
 

@@ -15,11 +15,17 @@ namespace VRCLightVolumes {
     public class PointLightVolumeInstance : MonoBehaviour
 #endif
     {
+        [Tooltip("Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance.")]
         public bool IsDynamic = false;
+        [Tooltip("For point light: XYZ = Position, W = Inverse squared range.\nFor spot light: XYZ = Position, W = Inverse squared range, negated.\nFor area light: XYZ = Position, W = Width.")]
         public Vector4 PositionData;
+        [Tooltip("For point light: XYZ = Color, W = Cos of angle (for LUT).\nFor spot light: XYZ = Color, W = Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: XYZ = Color, W = 2 + Height.")]
         public Vector4 ColorData;
+        [Tooltip("For point light: XYZW = Rotation quaternion.\nFor spot light: XYZ = Direction, W = Cone falloff.\nFor area light: XYZW = Rotation quaternion.")]
         public Vector4 DirectionData;
+        [Tooltip("If parametric: Stores 0.\nIf uses custom lut: Stores LUT ID with positive sign.\nIf uses custom texture: Stores texture ID with negative sign.")]
         public float CustomID;
+        [Tooltip("Half-angle of the spotlight cone, in radians.")]
         public float angle;
 
         // Checks if it's a spotlight
