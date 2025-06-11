@@ -234,7 +234,21 @@ namespace VRCLightVolumes {
                 {
                     float[] validity = probesValidity.ToArray();
                     
-                    for (int iter = 0; iter < LightVolumeSetup.DilationIterations; iter++)
+                    // Outputs
+                    float[] validityDilated = new float[vCount];
+                    Vector3[] L0Dilated = new Vector3[vCount];
+                    Vector3[] L1rDilated = new Vector3[vCount];
+                    Vector3[] L1gDilated = new Vector3[vCount];
+                    Vector3[] L1bDilated = new Vector3[vCount];
+                    
+                    // Initialize outputs with source data
+                    System.Array.Copy(validity, validityDilated, vCount);
+                    System.Array.Copy(L0, L0Dilated, vCount);
+                    System.Array.Copy(L1r, L1rDilated, vCount);
+                    System.Array.Copy(L1g, L1gDilated, vCount);
+                    System.Array.Copy(L1b, L1bDilated, vCount);
+                    
+                    for (int iter = 0; iter < LightVolumeSetup.DilationIterations; iter++) {
                         for (int voxelZ = 0; voxelZ < d; voxelZ++)
                             for (int voxelY = 0; voxelY < h; voxelY++)
                                 for (int voxelX = 0; voxelX < w; voxelX++) {
@@ -267,13 +281,21 @@ namespace VRCLightVolumes {
                                             }
 
                                     if (validCount > 0) {
-                                        L0[centerIdx] = L0Sum / validCount;
-                                        L1r[centerIdx] = L1rSum / validCount;
-                                        L1g[centerIdx] = L1gSum / validCount;
-                                        L1b[centerIdx] = L1bSum / validCount;
-                                        validity[centerIdx] = 0.0f;
+                                        L0Dilated[centerIdx] = L0Sum / validCount;
+                                        L1rDilated[centerIdx] = L1rSum / validCount;
+                                        L1gDilated[centerIdx] = L1gSum / validCount;
+                                        L1bDilated[centerIdx] = L1bSum / validCount;
+                                        validityDilated[centerIdx] = 0.0f;
                                     }
                                 }
+                        
+                        // Copy outputs back to source data after each iteration
+                        System.Array.Copy(validityDilated, validity, vCount);
+                        System.Array.Copy(L0Dilated, L0, vCount);
+                        System.Array.Copy(L1rDilated, L1r, vCount);
+                        System.Array.Copy(L1gDilated, L1g, vCount);
+                        System.Array.Copy(L1bDilated, L1b, vCount);
+                    }
                 }
 
                 // Denoising
