@@ -2,7 +2,7 @@
 #define VRC_LIGHT_VOLUMES_INCLUDED
 #define VRCLV_VERSION 2
 
-// Are Light Volumes enabled on scene?
+// Are Light Volumes enabled on scene? Returns 0 if not, returns 1, 2 or other number if there are light volumes. Number represents the light volumes system internal version number.
 uniform float _UdonLightVolumeEnabled;
 
 // All volumes count in scene
@@ -71,6 +71,11 @@ uniform float _UdonAreaLightBrightnessCutoff;
 
 // First elements must be cubemap faces (6 face textures per cubemap). Then goes other textures
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeTexture);
+
+// Checks if Light Volumes are used in this scene. Returns 0 if not, returns 1, 2 or other number if there are light volumes. Number represents the light volumes system internal version number.
+float LightVolumesEnabled() {
+    return _UdonLightVolumeEnabled;
+}
 
 // Smoothstep to 0, 1 but cheaper
 float LV_Smoothstep01(float x) {

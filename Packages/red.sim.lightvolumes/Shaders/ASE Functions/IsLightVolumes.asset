@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: IsLightVolumes
   m_EditorClassIdentifier: 
   m_functionInfo: "// Made with Amplify Shader Editor v1.9.9\n// Available at the
-    Unity Asset Store - http://u3d.as/y3X \n/*ASEBEGIN\nVersion=19900\nNode;AmplifyShaderEditor.RangedFloatNode,
-    AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1;-656,0;Inherit;False;Global;_UdonLightVolumeEnabled;_UdonLightVolumeEnabled;0;0;Create;True;0;0;0;False;0;False;0;2;0;0;0;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionOutput,
-    AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;0;-336,0;Inherit;False;True;-1;;0;False;1;0;FLOAT;0;False;1;FLOAT;0\nWireConnection;0;0;1;0\nASEEND*/\n//CHKSM=883BEF6D64F08293D2C0AC3E3CC4FFDAAB163A7D"
+    Unity Asset Store - http://u3d.as/y3X \n/*ASEBEGIN\nVersion=19900\nNode;AmplifyShaderEditor.CustomExpressionNode,
+    AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;2;-304,0;Inherit;False;
+    ;1;File;0;LightVolumesEnabled;False;False;0;4ae0b01e695ad7545a078e1e04d2e609;False;0;1;FLOAT;0\nNode;AmplifyShaderEditor.FunctionOutput,
+    AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;0;-96,0;Inherit;False;True;-1;;0;False;1;0;FLOAT;0;False;1;FLOAT;0\nWireConnection;0;0;2;0\nASEEND*/\n//CHKSM=F16F3708B893FDEE1EDE3D67814122A58238F5D3"
   m_functionName: 
   m_description: Checks if Light Volumes are used in this scene. Returns 0 if not,
     returns 1, 2 or other number if there are light volumes. Number represents the
