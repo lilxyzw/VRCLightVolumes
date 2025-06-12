@@ -11,6 +11,7 @@ namespace VRCLightVolumes {
             if (!BuildPipeline.isBuildingPlayer) return; // We only want to cleanup on build
             var roots = SceneManager.GetActiveScene().GetRootGameObjects();
             Cleanup<LightVolume>(roots);
+            Cleanup<PointLightVolume>(roots);
             Cleanup<LightVolumeSetup>(roots);
         }
 

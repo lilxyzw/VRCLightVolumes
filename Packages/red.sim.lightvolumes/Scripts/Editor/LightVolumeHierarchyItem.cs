@@ -5,7 +5,7 @@ namespace VRCLightVolumes {
     public static class HierarchyMenu {
 
         [MenuItem("GameObject/Light Volume", false, 9999)]
-        private static void CreateCustomGo(MenuCommand cmd) {
+        private static void CreateLightVolume(MenuCommand cmd) {
 
             var go = new GameObject(GetUniqueName("Light Volume"));
 
@@ -16,6 +16,21 @@ namespace VRCLightVolumes {
             volume.Reset();
 
             Undo.RegisterCreatedObjectUndo(go, $"Create new Light Volume");
+
+            Selection.activeObject = go;
+
+        }
+
+        [MenuItem("GameObject/Point Light Volume", false, 9999)]
+        private static void CreatePointLightVolume(MenuCommand cmd) {
+
+            var go = new GameObject(GetUniqueName("Point Light Volume"));
+
+            PointLightVolume volume = go.AddComponent<PointLightVolume>();
+
+            GameObjectUtility.SetParentAndAlign(go, cmd.context as GameObject);
+
+            Undo.RegisterCreatedObjectUndo(go, $"Create new Point Light Volume");
 
             Selection.activeObject = go;
 

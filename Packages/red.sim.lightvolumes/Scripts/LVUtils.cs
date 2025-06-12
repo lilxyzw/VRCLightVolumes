@@ -41,10 +41,10 @@ namespace VRCLightVolumes {
         // Check if it's previewed as a prefab, or it's a part of a scene
         public static bool IsInPrefabAsset(Object obj) {
 #if UNITY_EDITOR
-        var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
-        var prefabType = PrefabUtility.GetPrefabAssetType(obj);
-        var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
-        return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            var prefabType = PrefabUtility.GetPrefabAssetType(obj);
+            var prefabStatus = PrefabUtility.GetPrefabInstanceStatus(obj);
+            return prefabStatus == PrefabInstanceStatus.NotAPrefab && prefabType != PrefabAssetType.NotAPrefab && prefabStage == null;
 #else
             return false;
 #endif
@@ -81,45 +81,37 @@ namespace VRCLightVolumes {
             return (value - MinOld) / (MaxOld - MinOld);
         }
 
-        // Saves 3D Texture to Assets
-        public static bool SaveTexture3DAsAsset(Texture3D textureToSave, string assetPath) {
+        public static void SaveAsAsset(Object asset, string assetPath, System.Action<bool> callback = null) {
 #if UNITY_EDITOR
-        if (textureToSave == null) {
-            Debug.LogError("[LightVolumeUtils] Error saving Texture3D: texture is null");
-            return false;
-        }
 
-        if (string.IsNullOrEmpty(assetPath)) {
-            Debug.LogError("[LightVolumeUtils] Error saving Texture3D: Saving path is null");
-            return false;
-        }
-
-        try {
-            string directoryPath = Path.GetDirectoryName(assetPath);
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
-                Directory.CreateDirectory(directoryPath);
-                AssetDatabase.Refresh();
+            if (asset == null || string.IsNullOrEmpty(assetPath)) {
+                Debug.LogError("[LightVolumeUtils] Invalid input for saving asset.");
+                callback?.Invoke(false);
+                return;
             }
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeUtils] Error while creating folders '{assetPath}': {e.Message}");
-            return false;
-        }
 
-        try {
-            AssetDatabase.CreateAsset(textureToSave, assetPath);
-            EditorUtility.SetDirty(textureToSave);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log($"[LightVolumeUtils] Texture3D saved at path: '{assetPath}'");
-            return true;
-        } catch (System.Exception e) {
-            Debug.LogError($"[LightVolumeUtils] Error saving Texture3D at path: '{assetPath}': {e.Message}");
-            return false;
-        }
+            void DelayedSave() {
+                EditorApplication.update -= DelayedSave;
+
+                try {
+                    string dir = Path.GetDirectoryName(assetPath);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    AssetDatabase.CreateAsset(asset, assetPath);
+                    EditorUtility.SetDirty(asset);
+
+                    callback?.Invoke(true);
+                } catch (System.Exception e) {
+                    Debug.LogError($"[LightVolumeUtils] Save failed: {e.Message}");
+                    callback?.Invoke(false);
+                }
 #else
-            Debug.LogError($"[LightVolumeUtils] You can only save Texture3D in editor!");
-            return false;
+                Debug.LogError($"[LightVolumeUtils] You can only save asset in editor!");
 #endif
+            }
+
+            EditorApplication.update += DelayedSave;
         }
 
         // Simple 3D denoiser
@@ -241,7 +233,7 @@ namespace VRCLightVolumes {
 
         // Fixes bakery L1 probe channel
         public static Vector3 LinearizeSingleSH(float L0, Vector3 L1) {
-            L1 = L1 / 2;
+            L1 = L1 * 0.5f;
             float L1length = L1.magnitude;
             if (L1length > 0.0 && L0 > 0.0) {
                 L1 *= Mathf.Min(L0 / L1length, 1.13f);
@@ -282,6 +274,29 @@ namespace VRCLightVolumes {
             sh[b, z] = L1b.z;
 
             return sh;
+        }
+
+        public static void TextureSetReadWrite(Texture texture, bool enabled) {
+#if UNITY_EDITOR
+            if (texture == null) {
+                return;
+            }
+
+            string path = AssetDatabase.GetAssetPath(texture);
+            if (string.IsNullOrEmpty(path)) {
+                return;
+            }
+
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null) {
+                return;
+            }
+
+            if (importer.isReadable != enabled) {
+                importer.isReadable = enabled;
+                importer.SaveAndReimport();
+            }
+#endif
         }
 
     }
