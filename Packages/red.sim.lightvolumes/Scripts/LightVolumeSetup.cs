@@ -34,7 +34,6 @@ namespace VRCLightVolumes {
 #endif
         [Tooltip("Removes baked noise in Light Volumes but may slightly reduce sharpness. Recommended to keep it enabled.")]
         public bool Denoise = true;
-        [Header("Dilation")]
         [Tooltip("Whether to dilate valid probe data into invalid probes, such as probes that are inside geometry. Helps mitigate light leaking.")]
         public bool DilateInvalidProbes = true;
         [Tooltip("How many iterations to run dilation for. Higher values will result in less leaking, but will also cause longer bakes.")]
@@ -42,7 +41,7 @@ namespace VRCLightVolumes {
         public int DilationIterations = 1;
         [Tooltip("The percentage of rays shot from a probe that should hit backfaces before the probe is considered invalid for the purpose of dilation. 0 means every probe is invalid, 1 means every probe is valid.")] 
         [Range(0, 1)]
-        public float BackfaceTolerance = 0.1f;
+        public float DilationBackfaceBias = 0.1f;
         [Tooltip("Automatically fixes Bakery's \"burned\" light probes after a scene bake. But decreases their contrast slightly.")]
         public bool FixLightProbesL1 = true;
         [Header("Visuals")]
@@ -266,7 +265,7 @@ namespace VRCLightVolumes {
             LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < volumes.Length; i++) {
                 if (volumes[i].Bake) {
-                    volumes[i].Save3DTextures(i);
+                    volumes[i].Save3DTexturesProgressive(i);
                     volumes[i].RemoveAdditionalProbes(i);
                     if (volumes[i].LightVolumeInstance != null) volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
                 }

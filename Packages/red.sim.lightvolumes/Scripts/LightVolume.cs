@@ -181,7 +181,8 @@ namespace VRCLightVolumes {
                 RecalculateProbesPositions();
         }
 #if UNITY_EDITOR
-        public void Save3DTextures(int id) {
+        // Saves additional probes data baked with Progressive Lightmapper
+        public void Save3DTexturesProgressive(int id) {
 
             SetupDependencies();
 
@@ -256,7 +257,7 @@ namespace VRCLightVolumes {
                                 for (int voxelX = 0; voxelX < w; voxelX++) {
                                     int centerIdx = voxelX + voxelY * w + voxelZ * w * h;
 
-                                    if (validity[centerIdx] < LightVolumeSetup.BackfaceTolerance) continue;
+                                    if (validity[centerIdx] < LightVolumeSetup.DilationBackfaceBias) continue;
                                     
                                     Vector3 L0Sum = Vector3.zero;
                                     Vector3 L1rSum = Vector3.zero;
@@ -273,7 +274,7 @@ namespace VRCLightVolumes {
 
                                                 int nIdx = xx + yy * w + zz * w * h;
                                                 float neighborValidity = validity[nIdx];
-                                                if (neighborValidity < LightVolumeSetup.BackfaceTolerance) {
+                                                if (neighborValidity < LightVolumeSetup.DilationBackfaceBias) {
                                                     validCount++;
                                                     L0Sum += L0[nIdx];
                                                     L1rSum += L1r[nIdx];

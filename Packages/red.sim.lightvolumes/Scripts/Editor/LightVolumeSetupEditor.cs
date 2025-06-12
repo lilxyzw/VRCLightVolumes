@@ -275,6 +275,14 @@ namespace VRCLightVolumes {
             
             if (_lightVolumeSetup.BakingMode != LightVolumeSetup.Baking.Bakery) {
                 hiddenFields.Add("FixLightProbesL1");
+                if (!_lightVolumeSetup.DilateInvalidProbes) {
+                    hiddenFields.Add("DilationIterations");
+                    hiddenFields.Add("DilationBackfaceBias");
+                }
+            } else {
+                hiddenFields.Add("DilateInvalidProbes");
+                hiddenFields.Add("DilationIterations");
+                hiddenFields.Add("DilationBackfaceBias");
             }
 
             DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());
