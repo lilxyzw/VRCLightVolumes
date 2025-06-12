@@ -99,6 +99,11 @@ namespace VRCLightVolumes {
         private int lightVolumeInvWorldMatrixID;
         private int lightVolumeUvwID;
 
+        private void OnDisable() {
+            TryInitialize();
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
+        }
+
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
 
@@ -171,6 +176,11 @@ namespace VRCLightVolumes {
         public void UpdateVolumes() {
 
             TryInitialize();
+
+            if (!enabled || !gameObject.activeInHierarchy) {
+                VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
+                return;
+            }
 
             // Searching for enabled volumes. Counting Additive volumes.
             _enabledCount = 0;

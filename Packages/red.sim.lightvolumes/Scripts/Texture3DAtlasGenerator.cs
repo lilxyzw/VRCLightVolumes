@@ -36,8 +36,8 @@ namespace VRCLightVolumes {
             for (int i = 0; i < textures.Length / 3; ++i) {
                 Texture3D[] bundle = { textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2] };
 
-                float dark = - volumes[i].DarkLights * 0.5f;
-                float bright = 1 - volumes[i].BrightLights * 0.5f;
+                float dark = - volumes[i].Shadows * 0.5f;
+                float bright = 1 - volumes[i].Highlights * 0.5f;
 
                 bundle = PostProcessSphericalHarmonics(bundle, dark, bright, volumes[i].Exposure);
                 texs[i * 3] = bundle[0];
