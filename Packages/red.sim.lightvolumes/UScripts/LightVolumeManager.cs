@@ -1,4 +1,3 @@
-﻿
 using UnityEngine;
 using System;
 
@@ -45,7 +44,9 @@ namespace VRCLightVolumes {
 
         // Light Volumes Data
         private int _enabledCount = 0;
+        private int _lastEnabledCount = -1;
         private int _additiveCount = 0;
+
         private Vector4[] _invLocalEdgeSmooth = new Vector4[0];
         private Vector4[] _colors = new Vector4[0];
         private Vector4[] _invWorldMatrix3x4 = new Vector4[0];
@@ -190,16 +191,18 @@ namespace VRCLightVolumes {
             }
 
             // Initializing required arrays
-            _invLocalEdgeSmooth = new Vector4[_enabledCount];
-            _invWorldMatrix3x4 = new Vector4[_enabledCount * 3];
-            _relativeRotationQuaternion = new Vector4[_enabledCount];
-            _boundsUvwScale = new Vector4[_enabledCount * 3];
-            _colors = new Vector4[_enabledCount];
+            if (_enabledCount != _lastEnabledCount) {
+              _invLocalEdgeSmooth = new Vector4[_enabledCount];
+              _invWorldMatrix3x4 = new Vector4[_enabledCount * 3];
+              _relativeRotationQuaternion = new Vector4[_enabledCount];
+              _boundsUvwScale = new Vector4[_enabledCount * 3];
+              _colors = new Vector4[_enabledCount];
 
-            // Legacy data arrays
-            _invWorldMatrix = new Matrix4x4[_enabledCount];
-            _relativeRotation = new Vector4[_enabledCount * 2];
-            _boundsUvw = new Vector4[_enabledCount * 6];;
+              // Legacy data arrays
+              _invWorldMatrix = new Matrix4x4[_enabledCount];
+              _relativeRotation = new Vector4[_enabledCount * 2];
+              _boundsUvw = new Vector4[_enabledCount * 6];;
+            }
 
             // Filling arrays with enabled volumes
             for (int i = 0; i < _enabledCount; i++) {
