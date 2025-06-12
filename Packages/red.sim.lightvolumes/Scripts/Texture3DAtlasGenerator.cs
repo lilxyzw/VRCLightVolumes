@@ -10,6 +10,9 @@ namespace VRCLightVolumes {
     }
 
     public static class Texture3DAtlasGenerator {
+
+        const int maxAtlasSize = 2048;
+
         public static Atlas3D CreateAtlas(LightVolume[] volumes) {
 
             // Stacking textures into array
@@ -107,6 +110,10 @@ namespace VRCLightVolumes {
                             int newW = Mathf.Max(atlasW, x + bw);
                             int newH = Mathf.Max(atlasH, y + bh);
                             int newD = Mathf.Max(atlasD, z + bd);
+
+                            if (newW > maxAtlasSize || newH > maxAtlasSize || newD > maxAtlasSize)
+                                continue;
+
                             int vol = newW * newH * newD;
 
                             if (vol < bestVol) { bestVol = vol; bestPos = new Vector3Int(x, y, z); }
