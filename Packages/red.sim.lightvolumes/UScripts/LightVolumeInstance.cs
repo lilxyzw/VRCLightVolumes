@@ -89,6 +89,10 @@ namespace VRCLightVolumes {
         public void SetSmoothBlending(float radius) {
             Vector3 scl = transform.lossyScale;
             InvLocalEdgeSmoothing = scl / Mathf.Max(radius, 0.00001f);
+
+#if COMPILER_UDONSHARP
+            if (Utilities.IsValid(UpdateNotifier)) UpdateNotifier.RequestUpdateVolumes();
+#endif
         }
 
         // Recalculates inv TRS matrix and Relative L1 rotation

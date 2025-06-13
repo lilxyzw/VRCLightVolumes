@@ -314,7 +314,9 @@ namespace VRCLightVolumes {
             int pointMaxLength = Mathf.Min(PointLightVolumeInstances.Length, 128);
             for (int i = 0; i < pointMaxLength; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[i];
-                if (instance != null && instance.gameObject.activeInHierarchy) {
+                if (instance == null) continue;
+                instance.UpdateNotifier = this; // Setting update notifier for the instance
+                if (instance.gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
