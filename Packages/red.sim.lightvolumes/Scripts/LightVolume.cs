@@ -36,9 +36,9 @@ namespace VRCLightVolumes {
         [Tooltip("Makes volume brighter or darker.\nUpdates volume color after atlas packing only!")]
         public float Exposure = 0;
         [Tooltip("Makes dark volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
-        [Range(-1, 1)] public float DarkLights = 0;
+        [Range(-1, 1)] public float Shadows = 0;
         [Tooltip("Makes bright volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
-        [Range(-1, 1)] public float BrightLights = 0;
+        [Range(-1, 1)] public float Highlights = 0;
 
         [Header("Baking Setup")]
         [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
@@ -325,7 +325,7 @@ namespace VRCLightVolumes {
                 LVUtils.Apply3DTextureData(tex2, c2);
 
                 // Saving 3D Texture assets
-                string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}";
+                string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/Temp";
                 LVUtils.SaveAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
                 LVUtils.SaveAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
                 LVUtils.SaveAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
@@ -405,7 +405,6 @@ namespace VRCLightVolumes {
             LightVolumeInstance.IsAdditive = Additive;
             LightVolumeInstance.Color = Color * Intensity;
             LightVolumeInstance.SetSmoothBlending(SmoothBlending);
-            LVUtils.MarkDirty(LightVolumeInstance);
         }
 
 #if UNITY_EDITOR

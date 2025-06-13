@@ -118,6 +118,17 @@ namespace VRCLightVolumes {
             }
         }
 
+        private void OnDisable() {
+#if !UDONSHARP
+            if (_updateCoroutine != null) {
+                StopCoroutine(_updateCoroutine);
+                _updateCoroutine = null;
+            }
+#endif
+            TryInitialize();
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
+        }
+
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
 
@@ -187,15 +198,6 @@ namespace VRCLightVolumes {
             UpdateVolumes();
         }
 
-#if !UDONSHARP
-        private void OnDisable() {
-            if (_updateCoroutine != null) {
-                StopCoroutine(_updateCoroutine);
-                _updateCoroutine = null;
-            }
-        }
-#endif
-
         public void RequestUpdateVolumes() {
 #if UDONSHARP
             if (_isUpdateRequested) return; // Prevent multiple requests
@@ -229,6 +231,11 @@ namespace VRCLightVolumes {
         public void UpdateVolumes() {
 
             TryInitialize();
+
+            if (!enabled || !gameObject.activeInHierarchy) {
+                VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
+                return;
+            }
 
             // Searching for enabled volumes. Counting Additive volumes.
             int enabledCount = 0;

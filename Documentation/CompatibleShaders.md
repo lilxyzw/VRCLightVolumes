@@ -10,6 +10,8 @@
 - [Moriohs Toon Shader](https://gitlab.com/xMorioh/moriohs-toon-shader) (v.2.1.0)
 - [Unity Baked Volumetrics - Fork by Ikeiwa](https://github.com/Ikeiwa/Unity-Baked-Volumetrics)
 - [Cottonfox Fur Shader](https://github.com/jamestruhlar/cottonfoxfur/)
+- [ACLS Shader](https://aciil.booth.pm/items/1779615) (v3.50.5)
+- [Unity Shaders Plus](https://github.com/ShingenPizza/UnityShadersPlus/)
 - [Orels Unity Shaders (Toon and PBR)](https://github.com/orels1/orels-Unity-Shaders) (dev.12) (To access it you will need to enable "Show Pre-Release Packages" in VCC Settings)
 
 *More shaders yet to be added*

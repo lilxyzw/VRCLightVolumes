@@ -164,7 +164,7 @@ namespace VRCLightVolumes {
                 }
                 LightVolumeManager.CustomTextures = texArray;
                 LightVolumeManager.CubemapsCount = cubeTextures.Count;
-                if (texArray != null) LVUtils.SaveAsAsset(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/PointLightVolumeArray.asset");
+                if (texArray != null) LVUtils.SaveAsAssetDelayed(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/PointLightVolumeArray.asset");
 
             }), this);
 
@@ -365,7 +365,7 @@ namespace VRCLightVolumes {
                 LVUtils.MarkDirty(lightVolumeInstance);
             }
 
-            LVUtils.SaveAsAsset(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/LightVolumeAtlas.asset");
+            LVUtils.SaveAsAssetDelayed(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/LightVolumeAtlas.asset");
 
             SyncUdonScript();
 
