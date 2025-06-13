@@ -1,0 +1,62 @@
+#pragma kernel CountUnoccludedPixels
+#pragma kernel ComputeOcclusionRatio
+
+#define KERNEL_SIZE_X 8
+#define KERNEL_SIZE_Y 8
+
+uint _TextureWidth;
+uint _TextureHeight;
+Texture2D _Texture;
+
+uint _Pass; // 0 = Before occlusion, 1 = After occlusion
+RWStructuredBuffer<uint> _Count; // First element is count before occlusion, second is after occlusion
+
+groupshared uint _GroupSum[KERNEL_SIZE_X * KERNEL_SIZE_Y];
+
+[numthreads(KERNEL_SIZE_X, KERNEL_SIZE_Y, 1)]
+void CountUnoccludedPixels(uint3 tid : SV_DispatchThreadID, uint3 gid : SV_GroupThreadID)
+{
+    uint value = _Texture[tid.xy].r > 0.0;
+    _GroupSum[gid.y * KERNEL_SIZE_X + gid.x] = value;
+    
+    GroupMemoryBarrierWithGroupSync();
+    
+    if (gid.x == 0 && gid.y == 0)
+    {
+        uint sum = 0;
+        for (uint i = 0; i < KERNEL_SIZE_X * KERNEL_SIZE_Y; ++i)
+        {
+            sum += _GroupSum[i];
+        }
+        InterlockedAdd(_Count[_Pass], sum);
+    }
+}
+
+uint _OcclusionIndex;
+RWStructuredBuffer<float> _Occlusion;
+
+[numthreads(KERNEL_SIZE_X, KERNEL_SIZE_Y, 1)]
+void ComputeOcclusionRatio(uint3 tid : SV_DispatchThreadID)
+{
+    if (tid.x > 0 || tid.y > 0)
+        return;
+
+    _Occlusion[_OcclusionIndex] = float(_Count[1]) / float(_Count[0]);
+}
+
+//#pragma kernel DownsampleOcclusion
+// [numthreads(KERNEL_SIZE_X, KERNEL_SIZE_Y, 1)]
+// void DownsampleOcclusion(uint3 id : SV_DispatchThreadID)
+// {
+//     if (id.x >= _TextureWidth / 2 || id.y >= _TextureHeight / 2)
+//         return;
+//
+//     uint2 location = uint2(id.x * 2, id.y * 2);
+//     uint tl = _Texture[location];
+//     uint tr = _Texture[location + uint2(1, 0)];
+//     uint bl = _Texture[location + uint2(0, 1)];
+//     uint br = _Texture[location + uint2(1, 1)];
+//     uint sum = tl + tr + bl + br;
+//
+//     _Texture[location] = sum;
+// }

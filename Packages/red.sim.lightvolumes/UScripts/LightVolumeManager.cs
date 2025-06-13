@@ -60,6 +60,7 @@ namespace VRCLightVolumes {
         private Vector4[] _pointLightColor;
         private Vector4[] _pointLightDirection;
         private float[] _pointLightCustomId;
+        private sbyte[] _pointLightShadowmaskIndices;
 
         // Legacy support Data
         private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
@@ -68,7 +69,7 @@ namespace VRCLightVolumes {
 
         // Other
         private int[] _enabledIDs = new int[32];
-        private Vector4[] _boundsScale = new Vector4[3];
+        private Vector4[] _boundsScale = new Vector4[4];
         private Vector4[] _bounds = new Vector4[6]; // Legacy
 
         #region Shader Property IDs
@@ -93,6 +94,18 @@ namespace VRCLightVolumes {
         private int _pointLightCountID;
         private int _pointLightCubeCountID;
         private int _pointLightTextureID;
+        private int _pointLightShadowmaskIndices0ID;
+        private int _pointLightShadowmaskIndices1ID;
+        private int _pointLightShadowmaskIndices2ID;
+        private int _pointLightShadowmaskIndices3ID;
+        private int _pointLightShadowmaskIndices4ID;
+        private int _pointLightShadowmaskIndices5ID;
+        private int _pointLightShadowmaskIndices6ID;
+        private int _pointLightShadowmaskIndices7ID;
+        private int _pointLightShadowmaskIndices8ID;
+        private int _pointLightShadowmaskIndices9ID;
+        private int _pointLightShadowmaskIndices10ID;
+        private int _pointLightShadowmaskIndices11ID;
         private int _areaLightBrightnessCutoffID;
         // Legacy support
         private int lightVolumeRotationID;
@@ -133,6 +146,18 @@ namespace VRCLightVolumes {
             _pointLightCustomIdID = VRCShader.PropertyToID("_UdonPointLightVolumeCustomID");
             _pointLightCubeCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCubeCount");
             _pointLightTextureID = VRCShader.PropertyToID("_UdonPointLightVolumeTexture");
+            _pointLightShadowmaskIndices0ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices0");
+            _pointLightShadowmaskIndices1ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices1");
+            _pointLightShadowmaskIndices2ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices2");
+            _pointLightShadowmaskIndices3ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices3");
+            _pointLightShadowmaskIndices4ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices4");
+            _pointLightShadowmaskIndices5ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices5");
+            _pointLightShadowmaskIndices6ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices6");
+            _pointLightShadowmaskIndices7ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices7");
+            _pointLightShadowmaskIndices8ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices8");
+            _pointLightShadowmaskIndices9ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices9");
+            _pointLightShadowmaskIndices10ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices10");
+            _pointLightShadowmaskIndices11ID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices11");
             _areaLightBrightnessCutoffID = VRCShader.PropertyToID("_UdonAreaLightBrightnessCutoff");
             // Legacy support
             lightVolumeRotationID = VRCShader.PropertyToID("_UdonLightVolumeRotation");
@@ -203,9 +228,9 @@ namespace VRCLightVolumes {
             // Initializing required arrays
             if (_enabledCount != _lastEnabledCount) {
               _invLocalEdgeSmooth = new Vector4[_enabledCount];
-              _invWorldMatrix3x4 = new Vector4[_enabledCount * 3];
+              _invWorldMatrix3x4 = new Vector4[_enabledCount * 4];
               _relativeRotationQuaternion = new Vector4[_enabledCount];
-              _boundsUvwScale = new Vector4[_enabledCount * 3];
+              _boundsUvwScale = new Vector4[_enabledCount * 4];
               _colors = new Vector4[_enabledCount];
 
               // Legacy data arrays
@@ -246,6 +271,7 @@ namespace VRCLightVolumes {
                 _boundsScale[0] = instance.BoundsUvwMin0;
                 _boundsScale[1] = instance.BoundsUvwMin1;
                 _boundsScale[2] = instance.BoundsUvwMin2;
+                _boundsScale[3] = instance.BoundsUvwMinOcclusion;
                 // Legacy
                 _bounds[0] = instance.BoundsUvwMin0;
                 _bounds[1] = instance.BoundsUvwMax0;
@@ -254,7 +280,7 @@ namespace VRCLightVolumes {
                 _bounds[4] = instance.BoundsUvwMin2;
                 _bounds[5] = instance.BoundsUvwMax2;
 
-                Array.Copy(_boundsScale, 0, _boundsUvwScale, i3, 3);
+                Array.Copy(_boundsScale, 0, _boundsUvwScale, i3, 4);
                 Array.Copy(_bounds, 0, _boundsUvw, i6, 6); // Legacy
 
             }
@@ -280,6 +306,7 @@ namespace VRCLightVolumes {
             _pointLightColor = new Vector4[_pointLightCount];
             _pointLightDirection = new Vector4[_pointLightCount];
             _pointLightCustomId = new float[_pointLightCount];
+            _pointLightShadowmaskIndices = new sbyte[_pointLightCount];
 
             // Filling arrays with enabled point light volumes
             for (int i = 0; i < _pointLightCount; i++) {
@@ -288,6 +315,7 @@ namespace VRCLightVolumes {
                 _pointLightColor[i] = instance.ColorData;
                 _pointLightDirection[i] = instance.DirectionData;
                 _pointLightCustomId[i] = instance.CustomID;
+                _pointLightShadowmaskIndices[i] = instance.ShadowmaskIndex;
             }
 
             bool isAtlas = LightVolumeAtlas != null;
@@ -345,6 +373,58 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
                 VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
                 VRCShader.SetGlobalFloat(_areaLightBrightnessCutoffID, AreaLightBrightnessCutoff);
+                
+                // Bitpack shadowmask indices
+                // TODO(pema99):This bitpacking pretty broken
+                bool[] shadowmaskIndicesBits = new bool[256];
+                bool[] shadowmaskEnabledBits = new bool[128];
+                for (int i = 0; i < _pointLightShadowmaskIndices.Length; i++)
+                {
+                    sbyte shadowmaskIndex = _pointLightShadowmaskIndices[i];
+                    if (shadowmaskIndex < 0)
+                        continue;
+                    
+                    shadowmaskEnabledBits[i] = true;
+                    shadowmaskIndicesBits[i * 2 + 0] = (shadowmaskIndex & 0b10) != 0;
+                    shadowmaskIndicesBits[i * 2 + 1] = (shadowmaskIndex & 0b01) != 0;
+                }
+                uint[] packedUints = new uint[12];
+                for (int i = 0; i < 8; i++) // 12 uints
+                {
+                    uint packed = 0;
+                    for (int j = 0; j < 32; j++) // 32 bit per uint
+                    {
+                        if (shadowmaskIndicesBits[i * 32 + j])
+                        {
+                            packed |= 1u << (31 - j);
+                        }
+                    }
+                    packedUints[i] = packed;
+                }
+                for (int i = 0; i < 4; i++) // 4 uints for enabled bits
+                {
+                    uint packed = 0;
+                    for (int j = 0; j < 32; j++)
+                    {
+                        if (shadowmaskEnabledBits[i * 32 + j])
+                        {
+                            packed |= 1u << (31 - j);
+                        }
+                    }
+                    packedUints[i + 8] = packed;
+                }
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices0ID, (int)packedUints[0]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices1ID, (int)packedUints[1]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices2ID, (int)packedUints[2]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices3ID, (int)packedUints[3]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices4ID, (int)packedUints[4]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices5ID, (int)packedUints[5]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices6ID, (int)packedUints[6]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices7ID, (int)packedUints[7]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices8ID, (int)packedUints[8]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices9ID, (int)packedUints[9]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices10ID, (int)packedUints[10]);
+                VRCShader.SetGlobalInteger(_pointLightShadowmaskIndices11ID, (int)packedUints[11]);
             }
             if(CustomTextures != null) {
                 VRCShader.SetGlobalTexture(_pointLightTextureID, CustomTextures);

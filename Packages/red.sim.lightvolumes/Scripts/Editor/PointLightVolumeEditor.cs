@@ -23,6 +23,10 @@ namespace VRCLightVolumes {
 
             List<string> hiddenFields = new List<string> { "m_Script", "CustomID", "PointLightVolumeInstance", "LightVolumeSetup" };
 
+            if (PointLightVolume.Dynamic) {
+                hiddenFields.Add("BakedShadows");
+            }
+            
             if(PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
                 hiddenFields.Add("Angle");
                 hiddenFields.Add("Falloff");

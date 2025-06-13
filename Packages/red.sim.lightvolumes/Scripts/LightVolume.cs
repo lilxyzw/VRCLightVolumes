@@ -31,6 +31,8 @@ namespace VRCLightVolumes {
         public Texture3D Texture1;
         [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
         public Texture3D Texture2;
+        [Tooltip("Optional Texture3D with baked occlusion data for future atlas packing. It won't be uploaded to VRChat. Stores occlusion for up to 4 nearby lights.")]
+        public Texture3D OcclusionTexture;
 
         [Header("Color Correction")]
         [Tooltip("Makes volume brighter or darker.\nUpdates volume color after atlas packing only!")]
@@ -210,6 +212,25 @@ namespace VRCLightVolumes {
                 Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
                 Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
 
+                // Occlusion data is optional
+                Texture3D occ = null;
+                bool needOcclusion = true; // TODO(pema99): Check if we need it
+                if (needOcclusion) {
+                    // TODO(pema99): This doesn't seem like the best place to do baking... but not sure where to put it.
+                    // Compute shadowmask indices and apply them to lights
+                    sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
+                    for (int lightIdx = 0; lightIdx < LightVolumeSetup.PointLightVolumes.Count; lightIdx++) {
+                        var instance = LightVolumeSetup.PointLightVolumes[lightIdx].PointLightVolumeInstance;
+                        if (instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
+                            continue;
+                        instance.ShadowmaskIndex = shadowmaskIndices[lightIdx];
+                        LVUtils.MarkDirty(instance);
+                    }
+                    
+                    // Bake occlusion
+                    occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
+                }
+
                 // Quick shortcuts to SH L1 components
                 const int r = 0;
                 const int g = 1;
@@ -329,12 +350,14 @@ namespace VRCLightVolumes {
                 LVUtils.SaveAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
                 LVUtils.SaveAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
                 LVUtils.SaveAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
+                if (occ != null)
+                    LVUtils.SaveAsAsset(occ, $"{path}/{gameObject.name}_occ.asset");
 
                 // Applying textures to volume
                 Texture0 = tex0;
                 Texture1 = tex1;
                 Texture2 = tex2;
-
+                OcclusionTexture = occ;
             }
 
             LVUtils.MarkDirty(this);

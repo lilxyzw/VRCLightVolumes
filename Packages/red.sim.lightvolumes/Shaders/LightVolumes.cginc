@@ -33,7 +33,7 @@ uniform float4 _UdonLightVolumeRotationQaternion[32];
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[32];
 
 // AABB Bounds of islands on the 3D Texture atlas. XYZ: UvwMin, W: Scale per axis
-uniform float4 _UdonLightVolumeUvwScale[96];
+uniform float4 _UdonLightVolumeUvwScale[128];
 
 // Color multiplier (RGB) | If we actually need to rotate L1 components at all (A)
 uniform float4 _UdonLightVolumeColor[32];
@@ -68,6 +68,25 @@ uniform float _UdonPointLightVolumeCustomID[128];
 // is guaranteed lower than the threshold defined by this value,
 // we cull the light.
 uniform float _UdonAreaLightBrightnessCutoff;
+
+// First 256 bits (8 uints) are used for shadowmask indices,
+// with 2 bits per light. Last 128 bits indicate for each light,
+// whether the light uses a shadowmask or not.
+cbuffer UdonPointLightShadowmaskIndices {
+    uniform uint _UdonPointLightShadowmaskIndices[12] : packoffset(c0); // Can't set uint arrays, so work around it
+    uniform uint _UdonPointLightShadowmaskIndices0  : packoffset(c0.x);
+    uniform uint _UdonPointLightShadowmaskIndices1  : packoffset(c0.y);
+    uniform uint _UdonPointLightShadowmaskIndices2  : packoffset(c0.z);
+    uniform uint _UdonPointLightShadowmaskIndices3  : packoffset(c0.w);
+    uniform uint _UdonPointLightShadowmaskIndices4  : packoffset(c1.x);
+    uniform uint _UdonPointLightShadowmaskIndices5  : packoffset(c1.y);
+    uniform uint _UdonPointLightShadowmaskIndices6  : packoffset(c1.z);
+    uniform uint _UdonPointLightShadowmaskIndices7  : packoffset(c1.w);
+    uniform uint _UdonPointLightShadowmaskIndices8  : packoffset(c2.x);
+    uniform uint _UdonPointLightShadowmaskIndices9  : packoffset(c2.y);
+    uniform uint _UdonPointLightShadowmaskIndices10 : packoffset(c2.z);
+    uniform uint _UdonPointLightShadowmaskIndices11 : packoffset(c2.w);
+}
 
 // First elements must be cubemap faces (6 face textures per cubemap). Then goes other textures
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeTexture);
@@ -536,7 +555,7 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
 void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     
     // Additive UVW
-    uint uvwID = id * 3;
+    uint uvwID = id * 4;
     float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
     float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
     float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
@@ -567,9 +586,29 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
                 
 }
 
+// Samples a Volume with ID and Local UVW
+float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
+    
+    // Additive UVW
+    uint uvwID = id * 4;
+    float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
+    float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
+    float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
+    float4 uvwPos3 = _UdonLightVolumeUvwScale[uvwID + 3];
+    float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
+    
+    float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
+    float3 uvw = uvwPos3.xyz + uvwScaled;
+                
+    // Sample additive
+    float4 tex0 = tex3Dlod(_UdonLightVolume, float4(uvw, 0));
+    return tex0;
+    
+}
+
 // Samples a Volume with ID and Local UVW, but L0 component only
 float3 LV_SampleVolume_L0(uint id, float3 localUVW) {
-    uint uvwID = id * 3;
+    uint uvwID = id * 4;
     float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
     float3 uvwScale = float3(uvwPos0.w, _UdonLightVolumeUvwScale[uvwID + 1].w, _UdonLightVolumeUvwScale[uvwID + 2].w);
     float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
@@ -673,7 +712,13 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     uint pcount = 0;
     [loop]
     for (uint pid = 0; pid < pointCount; pid++) {
+        float3 localPos = LV_LocalFromVolume(0, worldPos);
+        float4 col = LV_SampleVolumeOcclusion(pid, localPos);
         LV_PointLight(pid, worldPos, L0, L1r, L1g, L1b, pcount);
+        L0 *= col.r;
+        L1r *= col.r;
+        L1g *= col.r;
+        L1b *= col.r;
         if (pcount >= maxOverdraw) break;
     }
     

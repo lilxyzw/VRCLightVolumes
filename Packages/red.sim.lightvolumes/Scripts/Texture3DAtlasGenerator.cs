@@ -16,7 +16,7 @@ namespace VRCLightVolumes {
         public static Atlas3D CreateAtlas(LightVolume[] volumes) {
 
             // Stacking textures into array
-            Texture3D[] textures = new Texture3D[volumes.Length * 3];
+            Texture3D[] textures = new Texture3D[volumes.Length * 4];
             for (int i = 0; i < volumes.Length; i++) {
                 if (volumes[i] == null) {
                     Debug.LogError("[LightVolumeSetup] One of the light volumes is not setuped!");
@@ -26,23 +26,26 @@ namespace VRCLightVolumes {
                     Debug.LogError($"[LightVolumeSetup] Light volume \"{volumes[i].gameObject.name}\" is not baked!");
                     return new Atlas3D();
                 }
-                textures[i * 3] = volumes[i].Texture0;
-                textures[i * 3 + 1] = volumes[i].Texture1;
-                textures[i * 3 + 2] = volumes[i].Texture2;
+                textures[i * 4] = volumes[i].Texture0;
+                textures[i * 4 + 1] = volumes[i].Texture1;
+                textures[i * 4 + 2] = volumes[i].Texture2;
+                textures[i * 4 + 3] = volumes[i].OcclusionTexture; // Optional
+                // TODO(pema99): Don't have gaps in the textures array!
             }
 
             // Linearizing SH
             Texture3D[] texs = new Texture3D[textures.Length];
-            for (int i = 0; i < textures.Length / 3; ++i) {
-                Texture3D[] bundle = { textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2] };
+            for (int i = 0; i < textures.Length / 4; ++i) {
+                Texture3D[] bundle = { textures[i * 4], textures[i * 4 + 1], textures[i * 4 + 2] };
 
                 float dark = - volumes[i].Shadows * 0.5f;
                 float bright = 1 - volumes[i].Highlights * 0.5f;
 
                 bundle = PostProcessSphericalHarmonics(bundle, dark, bright, volumes[i].Exposure);
-                texs[i * 3] = bundle[0];
-                texs[i * 3 + 1] = bundle[1];
-                texs[i * 3 + 2] = bundle[2];
+                texs[i * 4] = bundle[0];
+                texs[i * 4 + 1] = bundle[1];
+                texs[i * 4 + 2] = bundle[2];
+                texs[i * 4 + 3] = textures[i * 4 + 3]; // Occlusion texture remains unchanged
             }
 
             int padding = 1;
@@ -69,7 +72,7 @@ namespace VRCLightVolumes {
 
             int uniqueCount = uniqueTexs.Count;
 
-            // Urique islands packing
+            // Unique islands packing
             var blocks = new List<(int index, int w, int h, int d)>();
             for (int i = 0; i < uniqueCount; ++i)
                 blocks.Add((i, uniqueTexs[i].width, uniqueTexs[i].height, uniqueTexs[i].depth));

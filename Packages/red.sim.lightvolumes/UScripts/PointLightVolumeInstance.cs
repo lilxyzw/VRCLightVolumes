@@ -27,6 +27,8 @@ namespace VRCLightVolumes {
         public float CustomID;
         [Tooltip("Half-angle of the spotlight cone, in radians.")]
         public float angle;
+        [Tooltip("Index of the shadowmask channel used by this light. -1 means no shadowmask.")]
+        public sbyte ShadowmaskIndex = -1;
 
         // Checks if it's a spotlight
         public bool IsSpotLight() {

@@ -346,19 +346,22 @@ namespace VRCLightVolumes {
 
                 if (lightVolumeInstance == null) continue;
 
+                // TODO(pema99): No holes in data!
                 Vector3 scale = atlas.BoundsUvwMax[i * 3] - atlas.BoundsUvwMin[i * 3];
-                Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 3];
-                Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
-                Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
+                Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 4];
+                Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 4 + 1];
+                Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 4 + 2];
+                Vector4 uvwMinOcclusion = atlas.BoundsUvwMin[i * 4 + 3];
 
                 lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
                 lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
                 lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+                lightVolumeInstance.BoundsUvwMinOcclusion = new Vector4(uvwMinOcclusion.x, uvwMinOcclusion.y, uvwMinOcclusion.z, 0);
 
                 // Legacy
-                lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
-                lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
-                lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
+                lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 4];
+                lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 4 + 1];
+                lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 4 + 2];
 
                 LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
 
