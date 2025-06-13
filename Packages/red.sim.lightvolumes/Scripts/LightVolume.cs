@@ -112,9 +112,14 @@ namespace VRCLightVolumes {
             return Matrix4x4.TRS(GetPosition(), GetRotation(), GetScale());
         }
 
-        // Returns volume voxel count
-        public int GetVoxelCount() {
-            return Resolution.x * Resolution.y * Resolution.z;
+        // Returns volume voxel count. Returns -1 if a wrong voxels count
+        public int GetVoxelCount(int padding = 0) {
+            ulong voxels = (ulong)(Resolution.x + padding * 2) * (ulong)(Resolution.y + padding * 2) * (ulong)(Resolution.z + padding * 2);
+            if (voxels > int.MaxValue || voxels < 0) {
+                return -1;
+            } else {
+                return (int)voxels;
+            }
         }
 
         // Looks for LightVolumeSetup and LightVolumeInstance udon script and setups them if needed
@@ -184,13 +189,18 @@ namespace VRCLightVolumes {
         // Saves additional probes data baked with Progressive Lightmapper
         public void Save3DTexturesProgressive(int id) {
 
+            int vCount = GetVoxelCount();
+            if (vCount < 0) {
+                Debug.LogError($"[LightVolume] Can't save light volume {gameObject.name} 3D texture. Voxels count is too large!");
+                return;
+            }
+
             SetupDependencies();
 
             // Atlas Sizes
             int w = Resolution.x;
             int h = Resolution.y;
             int d = Resolution.z;
-            int vCount = GetVoxelCount();
 
             // SH data output
             using (NativeArray<SphericalHarmonicsL2> probes = new NativeArray<SphericalHarmonicsL2>(vCount, Allocator.Temp))

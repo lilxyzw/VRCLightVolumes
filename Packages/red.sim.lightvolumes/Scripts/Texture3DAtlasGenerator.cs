@@ -125,8 +125,14 @@ namespace VRCLightVolumes {
                 atlasD = Mathf.Max(atlasD, bestPos.z + bd);
             }
 
+            ulong vCount = (ulong)atlasW * (ulong)atlasH * (ulong)atlasD;
+            if (vCount > int.MaxValue) {
+                Debug.LogError($"[LightVolumeSetup] Light Volume voxel count is too large and can't be saved!");
+                return new Atlas3D();
+            }
+
             // Copying pixels
-            var atlasPixels = new Color[atlasW * atlasH * atlasD];
+            var atlasPixels = new Color[(int)vCount];
             var uniqueBoundsMin = new Vector3[uniqueCount];
             var uniqueBoundsMax = new Vector3[uniqueCount];
 

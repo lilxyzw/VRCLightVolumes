@@ -246,10 +246,10 @@ namespace VRCLightVolumes {
                 GUILayout.Space(10);
             }
 
-            int vCount = 0;
+            ulong vCount = 0;
             if (_lightVolumeSetup.LightVolumeManager != null && _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas != null) {
                 var tex = _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas;
-                vCount = tex.width * tex.height * tex.depth;
+                vCount = (ulong)tex.width * (ulong)tex.height * (ulong)tex.depth;
             }
 
             GUILayout.Label($"Atlas size in VRAM: {SizeInVRAM(vCount)} MB");
@@ -298,14 +298,14 @@ namespace VRCLightVolumes {
         }
 
         // Real size in VRAM
-        string SizeInVRAM(int vCount) {
-            float mb = vCount * 8 / (float)(1024 * 1024);
+        string SizeInVRAM(ulong vCount) {
+            double mb = vCount * 8 / (double)(1024 * 1024);
             return mb.ToString("0.00");
         }
 
         // Approximate size in Asset bundle
-        string SizeInBundle(int vCount) {
-            float mb = vCount * 8 * 0.315f / (float)(1024 * 1024);
+        string SizeInBundle(ulong vCount) {
+            double mb = vCount * 8 * 0.315f / (double)(1024 * 1024);
             return mb.ToString("0.00");
         }
 
