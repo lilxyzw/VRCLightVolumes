@@ -13,7 +13,7 @@ namespace VRCLightVolumes {
         public LightType Type = LightType.PointLight;
         [Tooltip("Radius in meters beyond which point and spot lights are culled. Fewer overlapping lights result in better performance.")]
         [Min(0.0001f)] public float Range = 5f;
-        [Tooltip("Multiplies the point light volume�s color by this value.")]
+        [Tooltip("Multiplies the point light volume’s color by this value.")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Tooltip("Brightness of the point light volume.")]
         public float Intensity = 1f;
