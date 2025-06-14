@@ -53,12 +53,16 @@ namespace VRCLightVolumes {
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            int vCount = LightVolume.GetVoxelCount();
+            int vCount = LightVolume.GetVoxelCount(1);
 
             GUILayout.Space(10);
 
-            GUILayout.Label($"Size in VRAM: {SizeInVRAM(vCount)} MB");
-            GUILayout.Label($"Size in bundle: {SizeInBundle(vCount)} MB (Approximately)");
+            if (vCount < 0) {
+                EditorGUILayout.HelpBox("Volume density is too high and impossible to calculate and store! Consider using lower density.", MessageType.Error);
+            } else {
+                GUILayout.Label($"Size in VRAM: {SizeInVRAM(vCount)} MB");
+                GUILayout.Label($"Size in bundle: {SizeInBundle(vCount)} MB (Approximately)");
+            }
 
 #if BAKERY_INCLUDED
 
@@ -150,11 +154,9 @@ namespace VRCLightVolumes {
 
         }
 
-        private void OnSceneGUI() {
-
-            Transform transform = LightVolume.transform;
-
-            Handles.matrix = LightVolume.GetMatrixTRS();
+        // Drowing bounds for a light volume
+        private void DrawVolumeBounds(LightVolume volume) {
+            Handles.matrix = volume.GetMatrixTRS();
             Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
             Handles.color = Color.white;
             Handles.DrawWireCube(Vector3.zero, Vector3.one);
@@ -162,6 +164,19 @@ namespace VRCLightVolumes {
             Handles.color = new Color(1, 1, 1, 0.2f);
             Handles.DrawWireCube(Vector3.zero, Vector3.one);
             Handles.matrix = Matrix4x4.identity;
+        }
+
+        private void OnSceneGUI() {
+
+            // Drawing bounds for each of selected light volumes
+            foreach (var obj in Selection.gameObjects) {
+                var volume = obj.GetComponent<LightVolume>();
+                if (volume != null) {
+                    DrawVolumeBounds(volume);
+                }
+            }
+
+            Transform transform = LightVolume.transform;
 
             if (!_isEditMode) return;
 
@@ -248,13 +263,13 @@ namespace VRCLightVolumes {
 
         // Real size in VRAM
         string SizeInVRAM(int vCount) {
-            float mb = vCount * 8 * 3 / (float)(1024 * 1024);
+            double mb = (ulong)vCount * 8 * 3 / (double)(1024 * 1024);
             return mb.ToString("0.00");
         }
 
         // Approximate size in Asset bundle
         string SizeInBundle(int vCount) {
-            float mb = vCount * 8 * 3 * 0.315f / (float)(1024 * 1024);
+            double mb = (ulong)vCount * 8 * 3 * 0.315f / (double)(1024 * 1024);
             return mb.ToString("0.00");
         }
 

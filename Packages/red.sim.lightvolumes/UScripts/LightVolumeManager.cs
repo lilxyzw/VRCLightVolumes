@@ -18,7 +18,6 @@ namespace VRCLightVolumes {
     {
 
         public const float Version = 2; // VRC Light Volumes Current version. This value used in shaders (_UdonLightVolumeEnabled) to determine which features are can be used
-
         [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
         public Texture3D LightVolumeAtlas;
         [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
@@ -55,6 +54,7 @@ namespace VRCLightVolumes {
 
         // Point Lights Data
         private int _pointLightCount = 0;
+        private int _lastPointLightCount = -1;
         private int[] _enabledPointIDs = new int[128];
         private Vector4[] _pointLightPosition;
         private Vector4[] _pointLightColor;
@@ -227,16 +227,17 @@ namespace VRCLightVolumes {
 
             // Initializing required arrays
             if (_enabledCount != _lastEnabledCount) {
-              _invLocalEdgeSmooth = new Vector4[_enabledCount];
-              _invWorldMatrix3x4 = new Vector4[_enabledCount * 4];
-              _relativeRotationQuaternion = new Vector4[_enabledCount];
-              _boundsUvwScale = new Vector4[_enabledCount * 4];
-              _colors = new Vector4[_enabledCount];
+                _invLocalEdgeSmooth = new Vector4[_enabledCount];
+                _invWorldMatrix3x4 = new Vector4[_enabledCount * 4];
+                _relativeRotationQuaternion = new Vector4[_enabledCount];
+                _boundsUvwScale = new Vector4[_enabledCount * 4];
+                _colors = new Vector4[_enabledCount];
 
-              // Legacy data arrays
-              _invWorldMatrix = new Matrix4x4[_enabledCount];
-              _relativeRotation = new Vector4[_enabledCount * 2];
-              _boundsUvw = new Vector4[_enabledCount * 6];;
+                // Legacy data arrays
+                _invWorldMatrix = new Matrix4x4[_enabledCount];
+                _relativeRotation = new Vector4[_enabledCount * 2];
+                _boundsUvw = new Vector4[_enabledCount * 6];
+                _lastEnabledCount = _enabledCount;
             }
 
             // Filling arrays with enabled volumes
@@ -302,11 +303,14 @@ namespace VRCLightVolumes {
             }
 
             // Initializing required arrays
-            _pointLightPosition = new Vector4[_pointLightCount];
-            _pointLightColor = new Vector4[_pointLightCount];
-            _pointLightDirection = new Vector4[_pointLightCount];
-            _pointLightCustomId = new float[_pointLightCount];
-            _pointLightShadowmaskIndices = new sbyte[_pointLightCount];
+            if (_pointLightCount != _lastPointLightCount) {
+                _pointLightPosition = new Vector4[_pointLightCount];
+                _pointLightColor = new Vector4[_pointLightCount];
+                _pointLightDirection = new Vector4[_pointLightCount];
+                _pointLightCustomId = new float[_pointLightCount];
+                _pointLightShadowmaskIndices = new sbyte[_pointLightCount];
+                _lastPointLightCount = _pointLightCount;
+            }
 
             // Filling arrays with enabled point light volumes
             for (int i = 0; i < _pointLightCount; i++) {

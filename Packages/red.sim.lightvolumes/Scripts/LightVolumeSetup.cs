@@ -120,6 +120,8 @@ namespace VRCLightVolumes {
         List<PointLightVolume> _customTexPointVolumes = new List<PointLightVolume>();
         public void GenerateCustomTexturesArray() {
 
+            if (LightVolumeManager == null) return;
+
             // Cubemap Textures - store first
             List<Texture> cubeTextures = new List<Texture>(); 
             List<PointLightVolume> cubePLVs = new List<PointLightVolume>();
