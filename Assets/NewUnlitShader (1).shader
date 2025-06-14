@@ -3,6 +3,7 @@ Shader "Unlit/NewUnlitShader"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _Bias ("Bias", Float) = 0.1
     }
     SubShader
     {
@@ -77,11 +78,12 @@ Shader "Unlit/NewUnlitShader"
                 
                 return R0 * (a + (1.0f - a) * (p + 1.0f) * pow(q, p));
             }
-            
+
+            float _Bias;
             float4 frag (v2f i) : SV_Target
             {
                 float3 L0, L1r, L1g, L1b;
-                LightVolumeSH(i.wpos, L0, L1r, L1g, L1b);
+                LightVolumeSH(i.wpos + i.normal *_Bias, L0, L1r, L1g, L1b);
                 unity_SHAr = float4(L1r, L0.r);
                 unity_SHAg = float4(L1g, L0.g);
                 unity_SHAb = float4(L1b, L0.b);
