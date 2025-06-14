@@ -120,8 +120,19 @@ namespace VRCLightVolumes
             int[] perProbeLightIndices,
             IList<PointLightVolume> pixelLights,
             float[] pixelLightRadii,
-            int resolution = 256)
-        {
+            int resolution = 256) {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            
+            // Check how many probes need occlusion so we can report progress.
+            int totalProbesNeedingOcclusion = 0;
+            for (int probeIdx = 0; probeIdx < probePositions.Length; probeIdx++) {
+                for (int channel = 0; channel < 4; channel++) {
+                    if (perProbeLightIndices[probeIdx * 4 + channel] >= 0) {
+                        totalProbesNeedingOcclusion++;
+                    }
+                }
+            }
+            
             // Get required assets
             Mesh sphereMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
             Shader occlusionShader = AssetDatabase.LoadAssetAtPath<Shader>("Packages/red.sim.lightvolumes/Shaders/OcclusionShader.shader");
@@ -137,7 +148,9 @@ namespace VRCLightVolumes
             var nullRT = new RenderTargetIdentifier();
             Debug.Assert(tempRT.width % countKernelX == 0 && tempRT.height % countKernelY == 0);
             using GraphicsBuffer occlusionBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, probePositions.Length * 4, sizeof(float));
-            occlusionBuffer.SetData(new float[occlusionBuffer.count]);
+            float[] occlusionBufferInit = new float[occlusionBuffer.count];
+            Array.Fill(occlusionBufferInit, 1.0f); // Initialize to 1.0f - unoccluded
+            occlusionBuffer.SetData(occlusionBufferInit);
             using GraphicsBuffer countBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 2, sizeof(uint));
             countBuffer.SetData(new uint[countBuffer.count]);
 
@@ -147,6 +160,7 @@ namespace VRCLightVolumes
                 .ToArray();
             Mesh[] occluderMeshes = occluders.Select(mr => mr.GetComponent<MeshFilter>().sharedMesh).ToArray();
             Matrix4x4[] occluderMatrices = occluders.Select(mr => Matrix4x4.TRS(mr.transform.position, mr.transform.rotation, mr.transform.lossyScale)).ToArray();
+            Bounds[] occluderBounds = occluders.Select(mr => mr.bounds).ToArray();
             
             // Set up command buffer with uniforms that don't change per probe
             using CommandBuffer cmd = new CommandBuffer();
@@ -160,11 +174,14 @@ namespace VRCLightVolumes
             cmd.SetComputeBufferParam(countCS, ratioKernel, "_Count", countBuffer);
             cmd.SetComputeBufferParam(countCS, ratioKernel, "_Occlusion", occlusionBuffer);
             
+            // Setup some state for culling and progress reporting
+            int probesProcessed = 0;
+            Plane[] cullingPlanes = new Plane[6];
+            List<int> occluderIndices = new List<int>(occluders.Length);
+            
             // Rasterize the scene from each probes perspective, for each light that affects the probe.
-            for (int probeIdx = 0; probeIdx < probePositions.Length; probeIdx++)
-            {
-                for (int channel = 0; channel < 4; channel++)
-                {
+            for (int probeIdx = 0; probeIdx < probePositions.Length; probeIdx++) {
+                for (int channel = 0; channel < 4; channel++) {
                     // Check if we ran out of lights affecting the probe
                     int lightIndex = perProbeLightIndices[probeIdx * 4 + channel];
                     if (lightIndex < 0)
@@ -184,10 +201,22 @@ namespace VRCLightVolumes
                     Matrix4x4 worldToProbe = yFlipMatrix * probeToWorld.inverse; // View
                     float fov = 2.0f * Mathf.Asin(lightRadius / distanceToLight) * Mathf.Rad2Deg;
                     Matrix4x4 probeToClip = Matrix4x4.Perspective(fov, 1, 0.01f, farClip); // Projection
-                    cmd.SetViewProjectionMatrices(worldToProbe, probeToClip);
+
+                    // Cull occluders
+                    GeometryUtility.CalculateFrustumPlanes(probeToClip * worldToProbe, cullingPlanes);
+                    occluderIndices.Clear();
+                    for (int occluderIdx = 0; occluderIdx < occluders.Length; occluderIdx++) {
+                        if (GeometryUtility.TestPlanesAABB(cullingPlanes, occluderBounds[occluderIdx])) {
+                            occluderIndices.Add(occluderIdx);
+                        }
+                    }
+                    // If no potential occluders - the probe is fully unoccluded, so skip doing any work.
+                    if (occluderIndices.Count == 0)
+                        continue;
                     
                     // Draw the light mesh first
                     // TODO(pema99): Other light types
+                    cmd.SetViewProjectionMatrices(worldToProbe, probeToClip);
                     cmd.SetRenderTarget(tempRT);
                     cmd.ClearRenderTarget(true, true, Color.black);
                     cmd.DrawMesh(sphereMesh, lightToWorld, whiteMat);
@@ -200,9 +229,8 @@ namespace VRCLightVolumes
                     
                     // Draw each occluder
                     cmd.SetRenderTarget(tempRT);
-                    for (int i = 0; i < occluders.Length; i++)
-                    {
-                        cmd.DrawMesh(occluderMeshes[i], occluderMatrices[i], blackMat);
+                    foreach (int occluderIdx in occluderIndices) {
+                        cmd.DrawMesh(occluderMeshes[occluderIdx], occluderMatrices[occluderIdx], blackMat);
                     }
                     cmd.SetRenderTarget(nullRT);
                     
@@ -213,24 +241,43 @@ namespace VRCLightVolumes
                     // Compute the ratio of unoccluded pixels to total pixels
                     cmd.SetComputeIntParam(countCS, "_OcclusionIndex", probeIdx * 4 + channel);
                     cmd.DispatchCompute(countCS, ratioKernel, 1,1,1); // TODO: Do the ratio calculation at the end instead.
+                    
+                    // Report progress and flush the command buffer. We don't want to do this too often, as it will hurt bake performance.
+                    // But doing flushing too rarely will cause CommandBuffer operations to become slow.
+                    if (probesProcessed++ % 1024 == 0) {
+                        float progress = (float)probesProcessed / totalProbesNeedingOcclusion;
+                        string progressTitle = "Light Volume Occlusion Baking (1/2)";
+                        string progressMessage = $"Dispatching probe bakes ({probesProcessed}/{totalProbesNeedingOcclusion})";
+                        if (EditorUtility.DisplayCancelableProgressBar(progressTitle, progressMessage, progress)) {
+                            EditorUtility.ClearProgressBar();
+                            return occlusionBufferInit;
+                        }
+                        Graphics.ExecuteCommandBuffer(cmd);
+                        cmd.Clear();
+                    }
                 }
             }
             
             // Read back the occlusion data
+            EditorUtility.DisplayProgressBar("Light Volume Occlusion Baking (2/2)", "Waiting for GPU to finish...", -1);
             float[] occlusion = new float[occlusionBuffer.count];
-            cmd.RequestAsyncReadback(occlusionBuffer, readback =>
-            {
+            cmd.RequestAsyncReadback(occlusionBuffer, readback => {
                 using NativeArray<float> occlusionReadback = readback.GetData<float>();
                 occlusionReadback.CopyTo(occlusion);
             });
             cmd.WaitAllAsyncReadbackRequests();
             Graphics.ExecuteCommandBuffer(cmd);
             
+            EditorUtility.ClearProgressBar();
+            
             // Cleanup
             RenderTexture.ReleaseTemporary(tempRT);
             Object.DestroyImmediate(blackMat);
             Object.DestroyImmediate(whiteMat);
 
+            stopwatch.Stop();
+            Debug.Log("[LightVolumeOcclusionBaker] Occlusion baking took " + stopwatch.ElapsedMilliseconds + " ms for " + probePositions.Length + " probes.");
+            
             return occlusion;
         }
 
