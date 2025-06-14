@@ -228,7 +228,7 @@ namespace VRCLightVolumes {
             // Initializing required arrays
             if (_enabledCount != _lastEnabledCount) {
                 _invLocalEdgeSmooth = new Vector4[_enabledCount];
-                _invWorldMatrix3x4 = new Vector4[_enabledCount * 4];
+                _invWorldMatrix3x4 = new Vector4[_enabledCount * 3];
                 _relativeRotationQuaternion = new Vector4[_enabledCount];
                 _boundsUvwScale = new Vector4[_enabledCount * 4];
                 _colors = new Vector4[_enabledCount];
