@@ -221,6 +221,7 @@ namespace VRCLightVolumes {
             var volumes = FindObjectsOfType<LightVolume>(true);
             for (int i = 0; i < volumes.Length; i++) {
                 volumes[i].SetupBakeryDependencies();
+                volumes[i].BakeOcclusionTexture();
             }
         }
 
@@ -254,6 +255,7 @@ namespace VRCLightVolumes {
                 if (volumes[i].Bake) {
                     Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
                     volumes[i].SetAdditionalProbes(i);
+                    volumes[i].BakeOcclusionTexture();
                 }
             }
         }

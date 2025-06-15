@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using Unity.Collections;
 using UnityEngine.Rendering;
@@ -45,6 +46,8 @@ namespace VRCLightVolumes {
         [Header("Baking Setup")]
         [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
         public bool Bake = true;
+        [Tooltip("Uncheck it if you don't want to rebake occlusion data required for baked point light shadows.")]
+        public bool BakeOcclusion = true;
         [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
         public bool AdaptiveResolution = true;
         [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
@@ -149,6 +152,37 @@ namespace VRCLightVolumes {
         public void RemoveAdditionalProbes(int id) {
             UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, new Vector3[0]);
         }
+
+        public void BakeOcclusionTexture() {
+            // Occlusion data is optional, check if requested and needed
+            bool needOcclusion = BakeOcclusion && LightVolumeSetup.PointLightVolumes.Any(l => l.BakedShadows && !l.Dynamic);
+            if (!needOcclusion) {
+                if (OcclusionTexture != null)
+                    LVUtils.MarkDirty(this);
+                OcclusionTexture = null;
+                return;
+            }
+            
+            // Compute shadowmask indices and apply them to lights
+            sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
+            for (int lightIdx = 0; lightIdx < LightVolumeSetup.PointLightVolumes.Count; lightIdx++) {
+                var instance = LightVolumeSetup.PointLightVolumes[lightIdx].PointLightVolumeInstance;
+                if (instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
+                    continue;
+                instance.ShadowmaskIndex = shadowmaskIndices[lightIdx];
+                LVUtils.MarkDirty(instance);
+            }
+                
+            // Bake occlusion
+            Texture3D occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, transform.lossyScale, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
+            
+            string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/Temp";
+            if (occ != null)
+                LVUtils.SaveAsAsset(occ, $"{path}/{gameObject.name}_occ.asset");
+            
+            OcclusionTexture = occ;
+            LVUtils.MarkDirty(this);
+        }
 #endif
 
         // Recalculates probes world positions
@@ -221,25 +255,6 @@ namespace VRCLightVolumes {
                 Texture3D tex0 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
                 Texture3D tex1 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
                 Texture3D tex2 = new Texture3D(w, h, d, format, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-
-                // Occlusion data is optional
-                Texture3D occ = null;
-                bool needOcclusion = true; // TODO(pema99): Check if we need it
-                if (needOcclusion) {
-                    // TODO(pema99): This doesn't seem like the best place to do baking... but not sure where to put it.
-                    // Compute shadowmask indices and apply them to lights
-                    sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
-                    for (int lightIdx = 0; lightIdx < LightVolumeSetup.PointLightVolumes.Count; lightIdx++) {
-                        var instance = LightVolumeSetup.PointLightVolumes[lightIdx].PointLightVolumeInstance;
-                        if (instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
-                            continue;
-                        instance.ShadowmaskIndex = shadowmaskIndices[lightIdx];
-                        LVUtils.MarkDirty(instance);
-                    }
-                    
-                    // Bake occlusion
-                    occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, transform.lossyScale, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
-                }
 
                 // Quick shortcuts to SH L1 components
                 const int r = 0;
@@ -360,14 +375,11 @@ namespace VRCLightVolumes {
                 LVUtils.SaveAsAsset(tex0, $"{path}/{gameObject.name}_0.asset");
                 LVUtils.SaveAsAsset(tex1, $"{path}/{gameObject.name}_1.asset");
                 LVUtils.SaveAsAsset(tex2, $"{path}/{gameObject.name}_2.asset");
-                if (occ != null)
-                    LVUtils.SaveAsAsset(occ, $"{path}/{gameObject.name}_occ.asset");
 
                 // Applying textures to volume
                 Texture0 = tex0;
                 Texture1 = tex1;
                 Texture2 = tex2;
-                OcclusionTexture = occ;
             }
 
             LVUtils.MarkDirty(this);
