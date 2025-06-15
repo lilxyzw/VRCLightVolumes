@@ -69,21 +69,13 @@ uniform float _UdonPointLightVolumeCustomID[128];
 // we cull the light.
 uniform float _UdonAreaLightBrightnessCutoff;
 
-// First 256 bits (8 uints) are used for shadowmask indices,
-// with 2 bits per light. Last 128 bits indicate for each light,
-// whether the light uses a shadowmask or not.
-uniform uint _UdonPointLightShadowmaskIndices0;
-uniform uint _UdonPointLightShadowmaskIndices1;
-uniform uint _UdonPointLightShadowmaskIndices2;
-uniform uint _UdonPointLightShadowmaskIndices3;
-uniform uint _UdonPointLightShadowmaskIndices4;
-uniform uint _UdonPointLightShadowmaskIndices5;
-uniform uint _UdonPointLightShadowmaskIndices6;
-uniform uint _UdonPointLightShadowmaskIndices7;
-uniform uint _UdonPointLightShadowmaskIndices8;
-uniform uint _UdonPointLightShadowmaskIndices9;
-uniform uint _UdonPointLightShadowmaskIndices10;
-uniform uint _UdonPointLightShadowmaskIndices11;
+// Shadowmask indices, 2 bits per lights.
+// Each float stores 24 bits, i.e. 12 lights
+uniform float _UdonPointLightShadowmaskIndices[11];
+
+// Shadowmask toggle, 1 bit per light.
+// Each float stores 24 bits, i.e. 24 lights
+uniform float _UdonPointLightShadowmaskEnabled[6];
 
 // First elements must be cubemap faces (6 face textures per cubemap). Then goes other textures
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeTexture);
@@ -553,35 +545,14 @@ bool LV_VolumeHasOcclusion(uint id) {
 }
 
 bool LV_LightHasShadowmask(uint id) {
-    uint bits = 0;
-    [forcecase]
-    switch (id / 32) {
-        case 0: bits = _UdonPointLightShadowmaskIndices8; break;
-        case 1: bits = _UdonPointLightShadowmaskIndices9; break;
-        case 2: bits = _UdonPointLightShadowmaskIndices10; break;
-        case 3: bits = _UdonPointLightShadowmaskIndices11; break;
-        default: return false;
-    }
-    return bits & (1u << (31u - (id % 32)));
+    uint bits = _UdonPointLightShadowmaskEnabled[id / 24u];
+    return bits & (1u << (23u - (id % 24u)));
 }
 
 float4 LV_GetLightShadowmaskSelector(uint id) {
-    uint bits = 0;
-    [forcecase]
-    switch (id / 16) {
-        case 0: bits = _UdonPointLightShadowmaskIndices0; break;
-        case 1: bits = _UdonPointLightShadowmaskIndices1; break;
-        case 2: bits = _UdonPointLightShadowmaskIndices2; break;
-        case 3: bits = _UdonPointLightShadowmaskIndices3; break;
-        case 4: bits = _UdonPointLightShadowmaskIndices4; break;
-        case 5: bits = _UdonPointLightShadowmaskIndices5; break;
-        case 6: bits = _UdonPointLightShadowmaskIndices6; break;
-        case 7: bits = _UdonPointLightShadowmaskIndices7; break;
-        default: return float4(1,0,0,0);
-    }
-    uint mask = 3u << (30u - (id * 2u));
-    uint masked = bits & mask;
-    masked >>= (30u - (id * 2u));
+    uint bits = _UdonPointLightShadowmaskIndices[id / 12u];
+    uint bitOffset = (22u - (id * 2u));
+    uint masked = (bits & (3u << bitOffset)) >> bitOffset;
     return float4(masked == 0, masked == 1, masked == 2, masked == 3);
 }
 
