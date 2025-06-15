@@ -8,10 +8,26 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
-namespace VRCLightVolumes
+namespace VRCLightVolumes 
 {
-    public static class LightVolumeOcclusionBaker
-    {
+    public static class LightVolumeOcclusionBaker {
+
+        private static class ShaderConstants {
+            public static readonly int Count = Shader.PropertyToID("_Count");
+            public static readonly int Texture = Shader.PropertyToID("_Texture");
+            public static readonly int TextureWidth = Shader.PropertyToID("_TextureWidth");
+            public static readonly int TextureHeight = Shader.PropertyToID("_TextureHeight");
+            public static readonly int Pass = Shader.PropertyToID("_Pass");
+            public static readonly int OcclusionIndex = Shader.PropertyToID("_OcclusionIndex");
+            public static readonly int Occlusion = Shader.PropertyToID("_Occlusion");
+
+            public const string UnlitShaderPath = "Packages/red.sim.lightvolumes/Shaders/OcclusionShader.shader";
+            public const string ComputeShaderPath = "Packages/red.sim.lightvolumes/Shaders/CountUnoccludedPixels.compute";
+            
+            public const string CountKernel = "CountUnoccludedPixels";
+            public const string RatioKernel = "ComputeOcclusionRatio";
+        }
+        
         private static float AreaLightFOV(
             Vector3 probePos,
             Vector3 lightPos,
@@ -60,13 +76,13 @@ namespace VRCLightVolumes
             // Get required assets
             Mesh sphereMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
             Mesh quadMesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
-            Shader occlusionShader = AssetDatabase.LoadAssetAtPath<Shader>("Packages/red.sim.lightvolumes/Shaders/OcclusionShader.shader");
+            Shader occlusionShader = AssetDatabase.LoadAssetAtPath<Shader>(ShaderConstants.UnlitShaderPath);
             Material whiteMat = new Material(occlusionShader) { color = Color.white };
             Material blackMat = new Material(occlusionShader) { color = Color.black };
-            ComputeShader countCS = AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/red.sim.lightvolumes/Shaders/CountUnoccludedPixels.compute");
-            int countKernel = countCS.FindKernel("CountUnoccludedPixels");
-            countCS.GetKernelThreadGroupSizes(countKernel, out uint countKernelX, out uint countKernelY, out _);
-            int ratioKernel = countCS.FindKernel("ComputeOcclusionRatio");
+            ComputeShader countShader = AssetDatabase.LoadAssetAtPath<ComputeShader>(ShaderConstants.ComputeShaderPath);
+            int countKernel = countShader.FindKernel(ShaderConstants.CountKernel);
+            countShader.GetKernelThreadGroupSizes(countKernel, out uint countKernelX, out uint countKernelY, out _);
+            int ratioKernel = countShader.FindKernel(ShaderConstants.RatioKernel);
             
             // Create and initialize GPU resources
             RenderTexture tempRT = RenderTexture.GetTemporary(resolution, resolution, 16, RenderTextureFormat.R8);
@@ -90,14 +106,12 @@ namespace VRCLightVolumes
             // Set up command buffer with uniforms that don't change per probe
             using CommandBuffer cmd = new CommandBuffer();
             cmd.name = "Light Volume Occlusion Baking";
-            
-            cmd.SetComputeBufferParam(countCS, countKernel, "_Count", countBuffer);
-            cmd.SetComputeTextureParam(countCS, countKernel, "_Texture", tempRT);
-            cmd.SetComputeIntParam(countCS, "_TextureWidth", tempRT.width);
-            cmd.SetComputeIntParam(countCS, "_TextureHeight", tempRT.height);
-            
-            cmd.SetComputeBufferParam(countCS, ratioKernel, "_Count", countBuffer);
-            cmd.SetComputeBufferParam(countCS, ratioKernel, "_Occlusion", occlusionBuffer);
+            cmd.SetComputeBufferParam(countShader, countKernel, ShaderConstants.Count, countBuffer);
+            cmd.SetComputeTextureParam(countShader, countKernel, ShaderConstants.Texture, tempRT);
+            cmd.SetComputeIntParam(countShader, ShaderConstants.TextureWidth, tempRT.width);
+            cmd.SetComputeIntParam(countShader, ShaderConstants.TextureHeight, tempRT.height);
+            cmd.SetComputeBufferParam(countShader, ratioKernel, ShaderConstants.Count, countBuffer);
+            cmd.SetComputeBufferParam(countShader, ratioKernel, ShaderConstants.Occlusion, occlusionBuffer);
             
             // Setup some state for culling and progress reporting
             int probesProcessed = 0;
@@ -160,8 +174,8 @@ namespace VRCLightVolumes
                     
                     // Count unocccluded pixels - this is the total area of the light
                     cmd.SetBufferData(countBuffer, new uint[2]);
-                    cmd.SetComputeIntParam(countCS, "_Pass", 0);
-                    cmd.DispatchCompute(countCS, countKernel, tempRT.width / (int)countKernelX, tempRT.height / (int)countKernelY, 1);
+                    cmd.SetComputeIntParam(countShader, ShaderConstants.Pass, 0);
+                    cmd.DispatchCompute(countShader, countKernel, tempRT.width / (int)countKernelX, tempRT.height / (int)countKernelY, 1);
                     
                     // Draw each occluder
                     cmd.SetRenderTarget(tempRT);
@@ -171,12 +185,12 @@ namespace VRCLightVolumes
                     cmd.SetRenderTarget(nullRT);
                     
                     // Count unoccluded pixels again - this is the area of the light that is not occluded
-                    cmd.SetComputeIntParam(countCS, "_Pass", 1);
-                    cmd.DispatchCompute(countCS, countKernel, tempRT.width / (int)countKernelX, tempRT.height / (int)countKernelY, 1);
+                    cmd.SetComputeIntParam(countShader, ShaderConstants.Pass, 1);
+                    cmd.DispatchCompute(countShader, countKernel, tempRT.width / (int)countKernelX, tempRT.height / (int)countKernelY, 1);
                     
                     // Compute the ratio of unoccluded pixels to total pixels
-                    cmd.SetComputeIntParam(countCS, "_OcclusionIndex", probeIdx * 4 + channel);
-                    cmd.DispatchCompute(countCS, ratioKernel, 1,1,1); // TODO(pema99): Do the ratio calculation at the end instead.
+                    cmd.SetComputeIntParam(countShader, ShaderConstants.OcclusionIndex, probeIdx * 4 + channel);
+                    cmd.DispatchCompute(countShader, ratioKernel, 1,1,1); // TODO(pema99): Do the ratio calculation at the end instead.
                     
                     // Report progress and flush the command buffer. We don't want to do this too often, as it will hurt bake performance.
                     // But doing flushing too rarely will cause CommandBuffer operations to become slow.
