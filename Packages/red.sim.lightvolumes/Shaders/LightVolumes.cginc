@@ -320,7 +320,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             float spotMask = dot(ldir.xyz, -dirN) - angle;
             if(spotMask < 0) return;
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
-            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId - 1;
             float3 uvid = float3(sqrt(float2(spot, dirRadius)), id);
             att *= UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
             
@@ -330,7 +330,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             if (localDir.z <= 0.0) return;
             float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
-            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId - 1;
             float3 uvid = float3(uv * 0.5 + 0.5, id);
             att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
             

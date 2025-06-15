@@ -30,7 +30,7 @@ namespace VRCLightVolumes {
         [Tooltip("Shows overdrawing range gizmo. Less point light volumes intersections - more performance!")]
         public bool DebugRange = false;
 
-        public int CustomID = -1;
+        public int CustomID = 0;
 
         public PointLightVolumeInstance PointLightVolumeInstance;
         public LightVolumeSetup LightVolumeSetup;
@@ -87,6 +87,7 @@ namespace VRCLightVolumes {
                 _typePrev = Type;
                 LightVolumeSetup.GenerateCustomTexturesArray();
             }
+            LightVolumeSetup.SyncUdonScript();
 #endif
         }
 
