@@ -1,73 +1,58 @@
 #pragma kernel CountUnoccludedPixels
 #pragma kernel ComputeOcclusionRatio
 
-#define KERNEL_SIZE_X 8
-#define KERNEL_SIZE_Y 8
+#define COUNT_KERNEL_SIZE_X 8
+#define COUNT_KERNEL_SIZE_Y 8
 
 uint _TextureWidth;
 uint _TextureHeight;
 Texture2D _Texture;
 
-uint _Pass; // 0 = Before occlusion, 1 = After occlusion
-RWStructuredBuffer<uint> _Count; // First element is count before occlusion, second is after occlusion
+uint _CountIndex;
+RWStructuredBuffer<uint> _Count; // 2 elements per probe, one for before and one for after occlusion
 
-groupshared uint _GroupSum[KERNEL_SIZE_X * KERNEL_SIZE_Y];
+groupshared uint _GroupSum[COUNT_KERNEL_SIZE_X * COUNT_KERNEL_SIZE_Y];
 
-[numthreads(KERNEL_SIZE_X, KERNEL_SIZE_Y, 1)]
+[numthreads(COUNT_KERNEL_SIZE_X, COUNT_KERNEL_SIZE_Y, 1)]
 void CountUnoccludedPixels(uint3 tid : SV_DispatchThreadID, uint3 gid : SV_GroupThreadID)
 {
     uint value = _Texture[tid.xy].r > 0.0;
-    _GroupSum[gid.y * KERNEL_SIZE_X + gid.x] = value;
+    _GroupSum[gid.y * COUNT_KERNEL_SIZE_X + gid.x] = value;
     
     GroupMemoryBarrierWithGroupSync();
     
     if (gid.x == 0 && gid.y == 0)
     {
         uint sum = 0;
-        for (uint i = 0; i < KERNEL_SIZE_X * KERNEL_SIZE_Y; ++i)
+        for (uint i = 0; i < COUNT_KERNEL_SIZE_X * COUNT_KERNEL_SIZE_Y; ++i)
         {
             sum += _GroupSum[i];
         }
-        InterlockedAdd(_Count[_Pass], sum);
+        InterlockedAdd(_Count[_CountIndex], sum);
     }
 }
 
-uint _OcclusionIndex;
+#define RATIO_KERNEL_SIZE 128
+
+uint _OcclusionCount;
 RWStructuredBuffer<float> _Occlusion;
 
-[numthreads(KERNEL_SIZE_X, KERNEL_SIZE_Y, 1)]
+[numthreads(RATIO_KERNEL_SIZE, 1, 1)]
 void ComputeOcclusionRatio(uint3 tid : SV_DispatchThreadID)
 {
-    if (tid.x > 0 || tid.y > 0)
+    if (tid.x >= _OcclusionCount)
         return;
 
-    uint after = _Count[1];
-    uint before = _Count[0];
+    uint after =  _Count[tid.x * 2 + 1];
+    uint before = _Count[tid.x * 2 + 0];
 
     // Don't divide by zero. This can happen if the probe is inside the light.
     if (before == 0)
     {
-        _Occlusion[_OcclusionIndex] = 1.0;
+        _Occlusion[tid.x] = 1.0;
         return;
     }
 
     // Soft occlusion is the ratio of unoccluded pixels before and after occluders
-    _Occlusion[_OcclusionIndex] = float(after) / float(before);
+    _Occlusion[tid.x] = float(after) / float(before);
 }
-
-//#pragma kernel DownsampleOcclusion
-// [numthreads(KERNEL_SIZE_X, KERNEL_SIZE_Y, 1)]
-// void DownsampleOcclusion(uint3 id : SV_DispatchThreadID)
-// {
-//     if (id.x >= _TextureWidth / 2 || id.y >= _TextureHeight / 2)
-//         return;
-//
-//     uint2 location = uint2(id.x * 2, id.y * 2);
-//     uint tl = _Texture[location];
-//     uint tr = _Texture[location + uint2(1, 0)];
-//     uint bl = _Texture[location + uint2(0, 1)];
-//     uint br = _Texture[location + uint2(1, 1)];
-//     uint sum = tl + tr + bl + br;
-//
-//     _Texture[location] = sum;
-// }
