@@ -895,7 +895,7 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
 }
 
 // Calculates L0 components based on the world position
-float3 LightVolumeSH_L0(float3 worldPos, out float4 occlusion) {
+float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
 
     // Clamping gloabal iteration counts
     uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
@@ -908,14 +908,6 @@ float3 LightVolumeSH_L0(float3 worldPos, out float4 occlusion) {
     bool lightProbesBlend = _UdonLightVolumeProbesBlend;
     
     float3 L0 = float3(0, 0, 0);
-    
-    // Process Point Lights
-    uint pcount = 0;
-    [loop]
-    for (uint pid = 0; pid < pointCount; pid++) {
-        LV_PointLight_L0(pid, worldPos, L0, pcount);
-        if (pcount >= maxOverdraw) break;
-    }
     
     uint volumeID_A = -1; // Main, dominant volume ID
     uint volumeID_B = -1; // Secondary volume ID to blend main with
@@ -999,6 +991,33 @@ float3 LightVolumeSH_L0(float3 worldPos, out float4 occlusion) {
     // Lerping L0
     return L0 + lerp(L0_B,  L0_A,  mask);
 
+}
+
+float3 LightVolumeSH_L0(float3 worldPos) {
+    float4 occlusion;
+    LightVolumeSHNoPointLights_L0(worldPos, occlusion);
+    
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
+
+    float3 L0 = 0;
+    
+    // Process Point Lights
+    uint pcount = 0;
+    [loop]
+    for (uint pid = 0; pid < pointCount; pid++) {
+        float3 _L0 = 0;
+        LV_PointLight_L0(pid, worldPos, _L0, pcount);
+        float lightOcclusion = 1;
+        if (LV_LightHasShadowmask(pid)) {
+            float4 selector = LV_GetLightShadowmaskSelector(pid);
+            lightOcclusion = dot(1, selector * occlusion);
+        }
+        L0 += _L0 * lightOcclusion;
+        if (pcount >= maxOverdraw) break;
+    }
+
+    return L0;
 }
 
 // Calculates L0 component based on the world position but for additive volumes only
