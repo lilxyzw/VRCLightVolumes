@@ -77,6 +77,7 @@ namespace VRCLightVolumes {
         }
 
         private void Update() {
+            if (gameObject == null) return;
             SetupDependencies();
 #if UNITY_EDITOR
             if (_falloffLUTPrev != FalloffLUT || _cookiePrev != Cookie || _cubemapPrev != Cubemap || _shapePrev != Shape || _typePrev != Type) {
@@ -92,6 +93,7 @@ namespace VRCLightVolumes {
         }
 
         public void SyncUdonScript() {
+            if (gameObject == null) return;
             SetupDependencies();
             PointLightVolumeInstance.IsDynamic = Dynamic;
             PointLightVolumeInstance.SetColor(Color, Intensity);
