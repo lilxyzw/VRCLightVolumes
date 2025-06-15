@@ -176,7 +176,7 @@ namespace VRCLightVolumes
                     
                     // Compute the ratio of unoccluded pixels to total pixels
                     cmd.SetComputeIntParam(countCS, "_OcclusionIndex", probeIdx * 4 + channel);
-                    cmd.DispatchCompute(countCS, ratioKernel, 1,1,1); // TODO: Do the ratio calculation at the end instead.
+                    cmd.DispatchCompute(countCS, ratioKernel, 1,1,1); // TODO(pema99): Do the ratio calculation at the end instead.
                     
                     // Report progress and flush the command buffer. We don't want to do this too often, as it will hurt bake performance.
                     // But doing flushing too rarely will cause CommandBuffer operations to become slow.
