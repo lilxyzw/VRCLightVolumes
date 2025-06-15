@@ -41,7 +41,18 @@ void ComputeOcclusionRatio(uint3 tid : SV_DispatchThreadID)
     if (tid.x > 0 || tid.y > 0)
         return;
 
-    _Occlusion[_OcclusionIndex] = float(_Count[1]) / float(_Count[0]);
+    uint after = _Count[1];
+    uint before = _Count[0];
+
+    // Don't divide by zero. This can happen if the probe is inside the light.
+    if (before == 0)
+    {
+        _Occlusion[_OcclusionIndex] = 1.0;
+        return;
+    }
+
+    // Soft occlusion is the ratio of unoccluded pixels before and after occluders
+    _Occlusion[_OcclusionIndex] = float(after) / float(before);
 }
 
 //#pragma kernel DownsampleOcclusion

@@ -9,6 +9,8 @@ namespace VRCLightVolumes {
         public bool Dynamic = false;
         [Tooltip("Enables baked shadows for this light. This setting is only available for static lights, which cannot move. You must re-bake your volumes after changing this setting. This incurs some runtime VRAM and performance overhead.")]
         public bool BakedShadows = false;
+        [Tooltip("Shadow radius for the baked shadows. Higher values will produce softer shadows.")]
+        [Min(0)] public float BakedShadowRadius = 0.1f;
         [Tooltip("Point light is the most performant type. Area light is the heaviest and best suited for dynamic, movable sources. For static lighting, it's recommended to bake regular additive light volumes instead.")]
         public LightType Type = LightType.PointLight;
         [Tooltip("Radius in meters beyond which point and spot lights are culled. Fewer overlapping lights result in better performance.")]

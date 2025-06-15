@@ -310,15 +310,17 @@ namespace VRCLightVolumes
                 if (light.Dynamic || !light.BakedShadows)
                     continue;
                 
-                float lightRadius = light.Range;
+                float lightInfluenceRadius = light.Range;
+                float lightRadius = light.BakedShadowRadius;
                 if (light.Type == PointLightVolume.LightType.AreaLight)
                 {
                     float width = Mathf.Max(Mathf.Abs(light.transform.lossyScale.x), 0.001f);
                     float height = Mathf.Max(Mathf.Abs(light.transform.lossyScale.y), 0.001f);
-                    lightRadius = ComputeAreaLightBoundingRadius(width, height, light.Color, areaLightBrightnessCutoff);
+                    lightInfluenceRadius = ComputeAreaLightBoundingRadius(width, height, light.Color, areaLightBrightnessCutoff);
+                    lightRadius = Mathf.Sqrt(width * width + height * height);
                 }
-                shadowLightInfluenceRadii[lightIdx] = lightRadius;
-                shadowLightRadii[lightIdx] = 0.5f; // TODO(pema99): Baked shadow radius
+                shadowLightInfluenceRadii[lightIdx] = lightInfluenceRadius;
+                shadowLightRadii[lightIdx] = lightRadius;
             }
             
             // For each probe, we need to find the lights that affect it. 4 entries per probe. -1 means no light affects this probe.
