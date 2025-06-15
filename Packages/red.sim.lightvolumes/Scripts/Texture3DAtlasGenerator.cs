@@ -29,8 +29,7 @@ namespace VRCLightVolumes {
                 textures[i * 4] = volumes[i].Texture0;
                 textures[i * 4 + 1] = volumes[i].Texture1;
                 textures[i * 4 + 2] = volumes[i].Texture2;
-                textures[i * 4 + 3] = volumes[i].OcclusionTexture; // Optional
-                // TODO(pema99): Don't have gaps in the textures array!
+                textures[i * 4 + 3] = volumes[i].OcclusionTexture;
             }
 
             // Linearizing SH

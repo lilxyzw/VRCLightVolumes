@@ -149,7 +149,6 @@ namespace VRCLightVolumes
                         continue;
                     
                     // Draw the light mesh first
-                    // TODO(pema99): Other light types
                     cmd.SetViewProjectionMatrices(worldToProbe, probeToClip);
                     cmd.SetRenderTarget(tempRT);
                     cmd.ClearRenderTarget(true, true, Color.black);

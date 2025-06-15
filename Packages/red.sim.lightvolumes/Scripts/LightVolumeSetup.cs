@@ -349,9 +349,8 @@ namespace VRCLightVolumes {
                 var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
 
                 if (lightVolumeInstance == null) continue;
-
-                // TODO(pema99): No holes in data!
-                Vector3 scale = atlas.BoundsUvwMax[i * 3] - atlas.BoundsUvwMin[i * 3];
+                
+                Vector3 scale = atlas.BoundsUvwMax[i * 4] - atlas.BoundsUvwMin[i * 4];
                 Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 4];
                 Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 4 + 1];
                 Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 4 + 2];
