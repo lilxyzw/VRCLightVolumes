@@ -742,8 +742,8 @@ void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, 
         if (LV_PointLocalAABB(localUVW)) { // Intersection test
             if (id < additiveCount) { // Sampling additive volumes
                 if (addVolumesCount < maxOverdraw) {
-                    float4 unused;
-                    LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_, unused);
+                    float4 unusedOcclusion;
+                    LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_, unusedOcclusion);
                     L0 += L0_;
                     L1r += L1r_;
                     L1g += L1g_;
@@ -891,8 +891,8 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            float4 unused;
-            LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_, unused);
+            float4 unusedOcclusion;
+            LV_SampleVolume(id, localUVW, L0_, L1r_, L1g_, L1b_, unusedOcclusion);
             L0 += L0_;
             L1r += L1r_;
             L1g += L1g_;
@@ -905,6 +905,9 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
 // Calculates L0 components based on the world position
 float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
 
+    // Default to unoccluded
+    occlusion = 1;
+    
     // Clamping gloabal iteration counts
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
@@ -938,8 +941,8 @@ float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
         if (LV_PointLocalAABB(localUVW)) { // Intersection test
             if (id < additiveCount) { // Sampling additive volumes
                 if (addVolumesCount < maxOverdraw) {
-                    float4 unused;
-                    L0 += LV_SampleVolume_L0(id, localUVW, unused);
+                    float4 unusedOcclusion;
+                    L0 += LV_SampleVolume_L0(id, localUVW, unusedOcclusion);
                     addVolumesCount++;
                 } 
             } else if (isNoA) { // First, searching for volume A
@@ -965,17 +968,18 @@ float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
     volumeID_A = isNoA ? volumesCount - 1 : volumeID_A;
 
     // Sampling Light Volume A
-    float4 occlusionA;
-    float3 L0_A = LV_SampleVolume_L0(volumeID_A, localUVW_A, occlusionA);
+    float4 occlusion_A;
+    float3 L0_A = LV_SampleVolume_L0(volumeID_A, localUVW_A, occlusion_A);
     
     float mask = LV_BoundsMask(localUVW_A, _UdonLightVolumeInvLocalEdgeSmooth[volumeID_A]);
     if (mask == 1 || isNoA || (_UdonLightVolumeSharpBounds && isNoB)) { // Returning SH A result if it's the center of mask or out of bounds
+        occlusion = occlusion_A;
         return L0 + L0_A;
     }
     
     // Volume B L0
     float3 L0_B  = float3(1, 1, 1);
-    float4 occlusionB = 1;
+    float4 occlusion_B = 1;
 
     if (isNoB && lightProbesBlend) { // No Volume found and light volumes blending enabled
 
@@ -989,12 +993,12 @@ float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
         volumeID_B = isNoB ? volumesCount - 1 : volumeID_B;
             
         // Sampling Light Volume B
-        L0_B = LV_SampleVolume_L0(volumeID_B, localUVW_B, occlusionB);
+        L0_B = LV_SampleVolume_L0(volumeID_B, localUVW_B, occlusion_B);
         
     }
 
     // Lerping occlusion
-    occlusion = lerp(occlusionB, occlusionA, mask);
+    occlusion = lerp(occlusion_B, occlusion_A, mask);
     
     // Lerping L0
     return L0 + lerp(L0_B,  L0_A,  mask);
@@ -1060,8 +1064,8 @@ float3 LightVolumeAdditiveSH_L0(float3 worldPos) {
         localUVW = LV_LocalFromVolume(id, worldPos);
         //Intersection test
         if (LV_PointLocalAABB(localUVW)) {
-            float4 unused;
-            L0 += LV_SampleVolume_L0(id, localUVW, unused);
+            float4 unusedOcclusion;
+            L0 += LV_SampleVolume_L0(id, localUVW, unusedOcclusion);
         }
     }
 

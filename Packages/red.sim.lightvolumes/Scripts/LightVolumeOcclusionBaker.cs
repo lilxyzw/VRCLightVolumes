@@ -352,8 +352,8 @@ namespace VRCLightVolumes
             Vector3 volumeSize,
             Vector3[] probePositions,
             IList<PointLightVolume> pixelLights,
-            float areaLightBrightnessCutoff)
-        {
+            float areaLightBrightnessCutoff) {
+            
             // If light is too small, it may not get rasterized at all. To prevent that, clamp it to a voxel at minimum.
             float voxelRadius = Mathf.Max(volumeSize.x / volumeResolution.x, volumeSize.y / volumeResolution.y, volumeSize.z / volumeResolution.z) / 2.0f;
             
