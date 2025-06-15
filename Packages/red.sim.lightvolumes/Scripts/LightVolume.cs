@@ -238,7 +238,7 @@ namespace VRCLightVolumes {
                     }
                     
                     // Bake occlusion
-                    occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
+                    occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, transform.lossyScale, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
                 }
 
                 // Quick shortcuts to SH L1 components

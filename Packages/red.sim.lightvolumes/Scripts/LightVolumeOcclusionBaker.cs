@@ -297,8 +297,11 @@ namespace VRCLightVolumes
 
         // Computes a 3D texture with up to 4 occlusion values for each probe position.
         // Shadowmask indices must be computed for each light beforehand.
-        public static Texture3D ComputeOcclusionTexture(Vector3Int resolution, Vector3[] probePositions, IList<PointLightVolume> pixelLights, float areaLightBrightnessCutoff)
+        public static Texture3D ComputeOcclusionTexture(Vector3Int volumeResolution, Vector3 volumeSize, Vector3[] probePositions, IList<PointLightVolume> pixelLights, float areaLightBrightnessCutoff)
         {
+            // If light is too small, it may not get rasterized at all. To prevent that, clamp it to a voxel at minimum.
+            float voxelRadius = Mathf.Max(volumeSize.x / volumeResolution.x, volumeSize.y / volumeResolution.y, volumeSize.z / volumeResolution.z) / 2.0f;
+            
             // Precompute bounding sphere radius of each shadow casting light
             // TODO(pema99): Deduplicate this code, don't do it twice
             float[] shadowLightInfluenceRadii = new float[pixelLights.Count];
@@ -320,11 +323,11 @@ namespace VRCLightVolumes
                     lightRadius = Mathf.Sqrt(width * width + height * height);
                 }
                 shadowLightInfluenceRadii[lightIdx] = lightInfluenceRadius;
-                shadowLightRadii[lightIdx] = lightRadius;
+                shadowLightRadii[lightIdx] = Mathf.Max(voxelRadius, lightRadius);
             }
             
             // For each probe, we need to find the lights that affect it. 4 entries per probe. -1 means no light affects this probe.
-            int[] perProbeLights = new int[resolution.x * resolution.y * resolution.z * 4];
+            int[] perProbeLights = new int[volumeResolution.x * volumeResolution.y * volumeResolution.z * 4];
             Array.Fill(perProbeLights, -1);
             bool[] slotFilled = new bool[4];
             for (int probeIdx = 0; probeIdx < probePositions.Length; probeIdx++)
@@ -356,7 +359,7 @@ namespace VRCLightVolumes
             
             // Calculate occlusion factors for each probe position and populate the texture
             float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, pixelLights, shadowLightRadii, 256);
-            Color[] occlusionColors = new Color[resolution.x * resolution.y * resolution.z];
+            Color[] occlusionColors = new Color[volumeResolution.x * volumeResolution.y * volumeResolution.z];
             for (int texelIdx = 0; texelIdx < occlusionColors.Length; texelIdx++)
             {
                 occlusionColors[texelIdx] = new Color(
@@ -367,7 +370,7 @@ namespace VRCLightVolumes
             }
 
             TextureFormat format = TextureFormat.RGBAHalf;
-            Texture3D tex = new Texture3D(resolution.x, resolution.y, resolution.z, format, false)
+            Texture3D tex = new Texture3D(volumeResolution.x, volumeResolution.y, volumeResolution.z, format, false)
             {
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Bilinear
