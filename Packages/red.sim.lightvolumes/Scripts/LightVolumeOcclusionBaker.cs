@@ -12,11 +12,35 @@ namespace VRCLightVolumes
 {
     public static class LightVolumeOcclusionBaker
     {
+        static float AreaLightFOV(
+            Vector3 probePos,
+            Vector3 lightPos,
+            Vector3 right,
+            Vector3 up,
+            Vector2 size) {
+            var probeToLight = lightPos - probePos;
+            var sqDist = probeToLight.sqrMagnitude;
+            var invSqDist = 1.0f / sqDist;
+
+            // Calculate half-size edge vectors
+            var halfRight = right * (size.x * 0.5f);
+            var halfUp = up * (size.y * 0.5f);
+
+            // Project both edges onto the eye-plane
+            var projRight = halfRight - Vector3.Dot(halfRight, probeToLight) * invSqDist * probeToLight;
+            var projUp = halfUp - Vector3.Dot(halfUp, probeToLight) * invSqDist * probeToLight;
+            
+            // Calculate FOV given the distance to the furthest corner
+            float r2 = Mathf.Max((projRight + projUp).sqrMagnitude, (projRight - projUp).sqrMagnitude);
+            return 2.0f * Mathf.Atan(Mathf.Sqrt(r2 * invSqDist)) * Mathf.Rad2Deg;
+        }
+        
         private static float[] ComputeOcclusionFactors(
             Vector3[] probePositions,
             int[] perProbeLightIndices,
             IList<PointLightVolume> pixelLights,
             float[] pixelLightRadii,
+            Vector2[] pixelLightAreas,
             int resolution = 256) {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             
@@ -32,6 +56,7 @@ namespace VRCLightVolumes
             
             // Get required assets
             Mesh sphereMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
+            Mesh quadMesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
             Shader occlusionShader = AssetDatabase.LoadAssetAtPath<Shader>("Packages/red.sim.lightvolumes/Shaders/OcclusionShader.shader");
             Material whiteMat = new Material(occlusionShader) { color = Color.white };
             Material blackMat = new Material(occlusionShader) { color = Color.black };
@@ -83,20 +108,32 @@ namespace VRCLightVolumes
                     int lightIndex = perProbeLightIndices[probeIdx * 4 + channel];
                     if (lightIndex < 0)
                         continue;
-                    
-                    Vector3 lightPosition = pixelLights[lightIndex].transform.position;
+
+                    PointLightVolume pixelLight = pixelLights[lightIndex];
+                    Vector3 lightPosition = pixelLight.transform.position;
                     float lightRadius = pixelLightRadii[lightIndex];
                     
                     Vector3 probePosition = probePositions[probeIdx];
                     float distanceToLight = Vector3.Distance(probePosition, lightPosition);
                     float farClip = distanceToLight + lightRadius + 0.001f; // Add a bit of wiggle room to avoid precision issues
+
+                    // Area lights need special handling
+                    bool isQuad = pixelLight.Type == PointLightVolume.LightType.AreaLight;
                     
                     // Calculate model, view, and projection matrices
-                    Matrix4x4 lightToWorld = Matrix4x4.TRS(lightPosition, Quaternion.identity, 2 * lightRadius * Vector3.one); // Model
+                    Matrix4x4 lightToWorld;
+                    float fov;
+                    if (isQuad) {
+                        lightToWorld = Matrix4x4.TRS(lightPosition, pixelLight.transform.rotation, pixelLight.transform.lossyScale); // Model, quad
+                        fov = AreaLightFOV(probePosition, lightPosition, pixelLight.transform.right, pixelLight.transform.up, pixelLightAreas[lightIndex]);
+                    } else {
+                        lightToWorld = Matrix4x4.TRS(lightPosition, Quaternion.identity, 2 * lightRadius * Vector3.one); // Model, point
+                        fov = 2.0f * Mathf.Asin(Mathf.Clamp(lightRadius / distanceToLight, -1, 1)) * Mathf.Rad2Deg;
+                    }
+                    fov = Mathf.Min(fov, 179);
                     Matrix4x4 probeToWorld = Matrix4x4.LookAt(probePosition, lightPosition, Vector3.up);
                     Matrix4x4 yFlipMatrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, 1, -1));
                     Matrix4x4 worldToProbe = yFlipMatrix * probeToWorld.inverse; // View
-                    float fov = 2.0f * Mathf.Asin(lightRadius / distanceToLight) * Mathf.Rad2Deg;
                     Matrix4x4 probeToClip = Matrix4x4.Perspective(fov, 1, 0.01f, farClip); // Projection
 
                     // Cull occluders
@@ -116,7 +153,7 @@ namespace VRCLightVolumes
                     cmd.SetViewProjectionMatrices(worldToProbe, probeToClip);
                     cmd.SetRenderTarget(tempRT);
                     cmd.ClearRenderTarget(true, true, Color.black);
-                    cmd.DrawMesh(sphereMesh, lightToWorld, whiteMat);
+                    cmd.DrawMesh(isQuad ? quadMesh : sphereMesh, lightToWorld, whiteMat);
                     cmd.SetRenderTarget(nullRT);
                     
                     // Count unocccluded pixels - this is the total area of the light
@@ -306,6 +343,7 @@ namespace VRCLightVolumes
             // TODO(pema99): Deduplicate this code, don't do it twice
             float[] shadowLightInfluenceRadii = new float[pixelLights.Count];
             float[] shadowLightRadii = new float[pixelLights.Count];
+            Vector2[] shadowLightArea = new Vector2[pixelLights.Count];
             for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++)
             {
                 // Don't care about non-shadow casting lights
@@ -320,7 +358,8 @@ namespace VRCLightVolumes
                     float width = Mathf.Max(Mathf.Abs(light.transform.lossyScale.x), 0.001f);
                     float height = Mathf.Max(Mathf.Abs(light.transform.lossyScale.y), 0.001f);
                     lightInfluenceRadius = ComputeAreaLightBoundingRadius(width, height, light.Color, areaLightBrightnessCutoff);
-                    lightRadius = Mathf.Sqrt(width * width + height * height);
+                    lightRadius = Mathf.Sqrt(width * width + height * height) / 2.0f;
+                    shadowLightArea[lightIdx] = new Vector2(width, height);
                 }
                 shadowLightInfluenceRadii[lightIdx] = lightInfluenceRadius;
                 shadowLightRadii[lightIdx] = Mathf.Max(voxelRadius, lightRadius);
@@ -335,8 +374,12 @@ namespace VRCLightVolumes
                 Array.Fill(slotFilled, false);
                 for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++)
                 {
-                    // Don't care about lights with no shadowmask index
+                    // Don't care about disabled lights
                     var light = pixelLights[lightIdx];
+                    if (!light.enabled || !light.gameObject.activeInHierarchy)
+                        continue;
+                    
+                    // Don't care about lights with no shadowmask index
                     sbyte shadowmaskIndex = light.PointLightVolumeInstance.ShadowmaskIndex;
                     if (shadowmaskIndex < 0)
                         continue;
@@ -358,7 +401,7 @@ namespace VRCLightVolumes
             }
             
             // Calculate occlusion factors for each probe position and populate the texture
-            float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, pixelLights, shadowLightRadii, 256);
+            float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, pixelLights, shadowLightRadii, shadowLightArea, 256);
             Color[] occlusionColors = new Color[volumeResolution.x * volumeResolution.y * volumeResolution.z];
             for (int texelIdx = 0; texelIdx < occlusionColors.Length; texelIdx++)
             {

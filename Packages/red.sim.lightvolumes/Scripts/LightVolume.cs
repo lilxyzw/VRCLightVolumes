@@ -164,7 +164,7 @@ namespace VRCLightVolumes {
             }
             
             // Compute shadowmask indices and apply them to lights
-            sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
+            sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
             for (int lightIdx = 0; lightIdx < LightVolumeSetup.PointLightVolumes.Count; lightIdx++) {
                 var instance = LightVolumeSetup.PointLightVolumes[lightIdx].PointLightVolumeInstance;
                 if (instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
@@ -174,7 +174,7 @@ namespace VRCLightVolumes {
             }
                 
             // Bake occlusion
-            Texture3D occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, transform.lossyScale, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff);
+            Texture3D occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, transform.lossyScale, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
             
             string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/Temp";
             if (occ != null)

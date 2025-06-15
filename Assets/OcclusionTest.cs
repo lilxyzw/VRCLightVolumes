@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
+using VRCLightVolumes;
 
 [ExecuteAlways]
 public class OcclusionTest : MonoBehaviour
@@ -19,25 +20,28 @@ public class OcclusionTest : MonoBehaviour
         {
             run = false;
             
-            float occ = CalculateOcclusionFactors(new [] {transform.position}, target.position, target.lossyScale.x/2)[0];
-            Debug.Log("Occlusion factor for target: " + occ);
+            //float occ = CalculateOcclusionFactors(new [] {transform.position}, target.position, target.lossyScale.x/2)[0];
+            var ps = GameObject.Find("Light Volume Manager").GetComponent<LightVolumeSetup>().PointLightVolumes;
+            var occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Vector3Int.one, Vector3.one / 3.0f,
+                new Vector3[] { target.position }, ps, 0);
+            Debug.Log("Occlusion factor for target: " + occ.GetPixel(0,0,0).r);
 
-            var probePositions = LightmapSettings.lightProbes.positions;
-            var sh = LightmapSettings.lightProbes.bakedProbes;
-            
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            float[] occlusion = CalculateOcclusionFactors(probePositions, target.position, target.lossyScale.x/2);
-            sw.Stop();
-            Debug.Log($"Occlusion calculation took {sw.ElapsedMilliseconds} ms for {probePositions.Length} probes.");
-            
-            for (int i = 0; i < probePositions.Length; i++)
-            {
-                var pos = probePositions[i];
-                var newSh = new SphericalHarmonicsL2();
-                newSh.AddAmbientLight(Color.white * occlusion[i]);
-                sh[i] = newSh;
-            }
-            LightmapSettings.lightProbes.bakedProbes = sh;
+            // var probePositions = LightmapSettings.lightProbes.positions;
+            // var sh = LightmapSettings.lightProbes.bakedProbes;
+            //
+            // var sw = System.Diagnostics.Stopwatch.StartNew();
+            // float[] occlusion = CalculateOcclusionFactors(probePositions, target.position, target.lossyScale.x/2);
+            // sw.Stop();
+            // Debug.Log($"Occlusion calculation took {sw.ElapsedMilliseconds} ms for {probePositions.Length} probes.");
+            //
+            // for (int i = 0; i < probePositions.Length; i++)
+            // {
+            //     var pos = probePositions[i];
+            //     var newSh = new SphericalHarmonicsL2();
+            //     newSh.AddAmbientLight(Color.white * occlusion[i]);
+            //     sh[i] = newSh;
+            // }
+            // LightmapSettings.lightProbes.bakedProbes = sh;
         }
     }
  
