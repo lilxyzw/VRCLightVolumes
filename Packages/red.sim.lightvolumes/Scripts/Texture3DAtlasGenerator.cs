@@ -58,6 +58,11 @@ namespace VRCLightVolumes {
 
             for (int i = 0; i < count; ++i) {
                 Texture3D t = texs[i];
+                if (t == null) {
+                    origToUnique[i] = -1; // Missing optional texture
+                    continue;
+                }
+                
                 NativeArray<byte> raw = t.GetPixelData<byte>(0);
                 Hash128 hash = Hash128.Compute(raw);
                 string key = $"{hash}_{t.width}_{t.height}_{t.depth}";
@@ -204,6 +209,8 @@ namespace VRCLightVolumes {
             Vector3[] boundsMax = new Vector3[count];
             for (int i = 0; i < count; ++i) {
                 int u = origToUnique[i];
+                if (u < 0)
+                    continue; // Missing optional texture
                 boundsMin[i] = uniqueBoundsMin[u];
                 boundsMax[i] = uniqueBoundsMax[u];
             }
