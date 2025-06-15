@@ -116,7 +116,7 @@ namespace VRCLightVolumes {
             }
         }
 
-        // Generates LUT array based on all the LUT Textures2D provided in PointLightVolumes
+        // Generates LUT and Cubemap array based on all the LUT Textures2D and Cube provided in PointLightVolumes
         List<PointLightVolume> _customTexPointVolumes = new List<PointLightVolume>();
         public void GenerateCustomTexturesArray() {
 

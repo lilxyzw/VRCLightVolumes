@@ -34,7 +34,7 @@ namespace VRCLightVolumes {
         [Tooltip("Shows overdrawing range gizmo. Less point light volumes intersections - more performance!")]
         public bool DebugRange = false;
 
-        public int CustomID = -1;
+        public int CustomID = 0;
 
         public PointLightVolumeInstance PointLightVolumeInstance;
         public LightVolumeSetup LightVolumeSetup;
@@ -81,6 +81,7 @@ namespace VRCLightVolumes {
         }
 
         private void Update() {
+            if (gameObject == null) return;
             SetupDependencies();
 #if UNITY_EDITOR
             if (_falloffLUTPrev != FalloffLUT || _cookiePrev != Cookie || _cubemapPrev != Cubemap || _shapePrev != Shape || _typePrev != Type) {
@@ -91,10 +92,12 @@ namespace VRCLightVolumes {
                 _typePrev = Type;
                 LightVolumeSetup.GenerateCustomTexturesArray();
             }
+            LightVolumeSetup.SyncUdonScript();
 #endif
         }
 
         public void SyncUdonScript() {
+            if (gameObject == null) return;
             SetupDependencies();
             PointLightVolumeInstance.IsDynamic = Dynamic;
             PointLightVolumeInstance.SetColor(Color, Intensity);
@@ -151,7 +154,9 @@ namespace VRCLightVolumes {
                 FalloffLUT = null;
                 Cookie = null;
                 Cubemap = null;
+#if UNITY_EDITOR
                 LightVolumeSetup.GenerateCustomTexturesArray();
+#endif
                 LightVolumeSetup.RefreshVolumesList();
                 LightVolumeSetup.SyncUdonScript();
             }
