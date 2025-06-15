@@ -12,12 +12,13 @@ namespace VRCLightVolumes
 {
     public static class LightVolumeOcclusionBaker
     {
-        static float AreaLightFOV(
+        private static float AreaLightFOV(
             Vector3 probePos,
             Vector3 lightPos,
             Vector3 right,
             Vector3 up,
             Vector2 size) {
+            
             var probeToLight = lightPos - probePos;
             var sqDist = probeToLight.sqrMagnitude;
             var invSqDist = 1.0f / sqDist;
@@ -33,6 +34,7 @@ namespace VRCLightVolumes
             // Calculate FOV given the distance to the furthest corner
             float r2 = Mathf.Max((projRight + projUp).sqrMagnitude, (projRight - projUp).sqrMagnitude);
             return 2.0f * Mathf.Atan(Mathf.Sqrt(r2 * invSqDist)) * Mathf.Rad2Deg;
+            
         }
         
         private static float[] ComputeOcclusionFactors(
@@ -42,6 +44,7 @@ namespace VRCLightVolumes
             float[] pixelLightRadii,
             Vector2[] pixelLightAreas,
             int resolution = 256) {
+            
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             
             // Check how many probes need occlusion so we can report progress.
@@ -212,10 +215,12 @@ namespace VRCLightVolumes
             Debug.Log("[LightVolumeOcclusionBaker] Occlusion baking took " + stopwatch.ElapsedMilliseconds + " ms for " + probePositions.Length + " probes.");
             
             return occlusion;
+            
         }
 
         // Matches behavior of LV_ComputeAreaLightSquaredBoundingSphere() in LightVolumes.cginc
         private static float ComputeAreaLightBoundingRadius(float width, float height, Color color, float areaLightBrightnessCutoff) {
+            
             float minSolidAngle = areaLightBrightnessCutoff / Mathf.Max(color.r, Mathf.Max(color.g, color.b));
             float A = width * height;
             float w2 = width * width;
@@ -227,13 +232,14 @@ namespace VRCLightVolumes
             float discriminant = Mathf.Sqrt(TB * TB + 4.0f * T * A * A);
             float d2 = (discriminant - TB) * 0.125f / T;
             return Mathf.Sqrt(d2);
+            
         }
         
         // Compute shadowmask indices for each pixel light, in range [0; 3] (1 for each color channel).
         // Lights that don't use shadowmask will have -1 in the index.
         // Always returns 128 indices - the maximum number of pixel lights.
-        public static sbyte[] ComputeShadowmaskIndices(IList<PointLightVolume> pixelLights, float areaLightBrightnessCutoff)
-        {
+        public static sbyte[] ComputeShadowmaskIndices(IList<PointLightVolume> pixelLights, float areaLightBrightnessCutoff) {
+            
             sbyte[] shadowmaskIndices = new sbyte[128];
             Array.Fill<sbyte>(shadowmaskIndices, -1);
             
@@ -329,6 +335,7 @@ namespace VRCLightVolumes
             }
 
             return shadowmaskIndices;
+            
         }
 
         // Computes a 3D texture with up to 4 occlusion values for each probe position.
@@ -387,6 +394,10 @@ namespace VRCLightVolumes
                     Vector3 lightPosition = light.transform.position;
                     float lightRadius = shadowLightInfluenceRadii[lightIdx];
                     if (Vector3.Distance(probePositions[probeIdx], lightPosition) > lightRadius)
+                        continue;
+                    
+                    // Area lights only affect probes in front of them
+                    if (light.Type == PointLightVolume.LightType.AreaLight && Vector3.Dot(light.transform.forward, (probePositions[probeIdx] - lightPosition).normalized) < 0.0f)
                         continue;
                     
                     // Assign the light to the probe's shadowmask slot
