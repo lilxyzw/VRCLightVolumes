@@ -245,16 +245,14 @@ namespace VRCLightVolumes
             
             // Precompute bounding sphere radius of each shadow casting light
             float[] shadowLightInfluenceRadii = new float[pixelLights.Count];
-            for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++)
-            {
+            for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++) {
                 // Don't care about non-shadow casting lights
                 var light = pixelLights[lightIdx];
                 if (light.Dynamic || !light.BakedShadows)
                     continue;
                 
                 float lightRadius = light.Range;
-                if (light.Type == PointLightVolume.LightType.AreaLight)
-                {
+                if (light.Type == PointLightVolume.LightType.AreaLight) {
                     float width = Mathf.Max(Mathf.Abs(light.transform.lossyScale.x), 0.001f);
                     float height = Mathf.Max(Mathf.Abs(light.transform.lossyScale.y), 0.001f);
                     lightRadius = ComputeAreaLightBoundingRadius(width, height, light.Color, areaLightBrightnessCutoff);
@@ -268,8 +266,7 @@ namespace VRCLightVolumes
             Array.Fill(availableIndices, true);
             
             // Compute shadowmask indices for each pixel light
-            for (int lightIdx = 0; lightIdx < 128; lightIdx++)
-            {
+            for (int lightIdx = 0; lightIdx < 128; lightIdx++) {
                 // No light at this index
                 if (lightIdx >= pixelLights.Count)
                     continue;
@@ -285,8 +282,7 @@ namespace VRCLightVolumes
 
                 // Check each other shadow casting light for overlaps
                 overlaps.Clear();
-                for (int otherLightIdx = 0; otherLightIdx < pixelLights.Count; otherLightIdx++)
-                {
+                for (int otherLightIdx = 0; otherLightIdx < pixelLights.Count; otherLightIdx++) {
                     // Skip self and non-shadow casting lights
                     var otherLight = pixelLights[otherLightIdx];
                     if (light == otherLight || otherLight.Dynamic || !otherLight.BakedShadows)
@@ -303,8 +299,7 @@ namespace VRCLightVolumes
 
                 // For each overlapping light, remove its index
                 Array.Fill(availableIndices, true);
-                foreach (var otherLightIdx in overlaps)
-                {
+                foreach (var otherLightIdx in overlaps) {
                     sbyte otherShadowmaskIndex = shadowmaskIndices[otherLightIdx];
                     
                     // No shadowmask index for this light
@@ -316,10 +311,8 @@ namespace VRCLightVolumes
                 
                 // Pick the first available shadowmask index
                 sbyte shadowmaskIndex = -1;
-                for (sbyte bitIdx = 0; bitIdx < 4; bitIdx++)
-                {
-                    if (availableIndices[bitIdx])
-                    {
+                for (sbyte bitIdx = 0; bitIdx < 4; bitIdx++) {
+                    if (availableIndices[bitIdx]) {
                         shadowmaskIndex = bitIdx;
                         break;
                     }
@@ -327,8 +320,7 @@ namespace VRCLightVolumes
                 shadowmaskIndices[lightIdx] = shadowmaskIndex;
 
                 // Warn user if no shadowmask index is available
-                if (shadowmaskIndex < 0)
-                {
+                if (shadowmaskIndex < 0) {
                     var go = light.gameObject;
                     Debug.LogWarning($"[LightVolumeOcclusionBaker] Failed to allocate a shadowmask for light '{go.name}'. There are too many other shadow casting lights nearby it!", go);
                 }
@@ -340,7 +332,12 @@ namespace VRCLightVolumes
 
         // Computes a 3D texture with up to 4 occlusion values for each probe position.
         // Shadowmask indices must be computed for each light beforehand.
-        public static Texture3D ComputeOcclusionTexture(Vector3Int volumeResolution, Vector3 volumeSize, Vector3[] probePositions, IList<PointLightVolume> pixelLights, float areaLightBrightnessCutoff)
+        public static Texture3D ComputeOcclusionTexture(
+            Vector3Int volumeResolution,
+            Vector3 volumeSize,
+            Vector3[] probePositions,
+            IList<PointLightVolume> pixelLights,
+            float areaLightBrightnessCutoff)
         {
             // If light is too small, it may not get rasterized at all. To prevent that, clamp it to a voxel at minimum.
             float voxelRadius = Mathf.Max(volumeSize.x / volumeResolution.x, volumeSize.y / volumeResolution.y, volumeSize.z / volumeResolution.z) / 2.0f;
@@ -350,8 +347,7 @@ namespace VRCLightVolumes
             float[] shadowLightInfluenceRadii = new float[pixelLights.Count];
             float[] shadowLightRadii = new float[pixelLights.Count];
             Vector2[] shadowLightArea = new Vector2[pixelLights.Count];
-            for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++)
-            {
+            for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++) {
                 // Don't care about non-shadow casting lights
                 var light = pixelLights[lightIdx];
                 if (light.Dynamic || !light.BakedShadows)
@@ -359,8 +355,7 @@ namespace VRCLightVolumes
                 
                 float lightInfluenceRadius = light.Range;
                 float lightRadius = light.BakedShadowRadius;
-                if (light.Type == PointLightVolume.LightType.AreaLight)
-                {
+                if (light.Type == PointLightVolume.LightType.AreaLight) {
                     float width = Mathf.Max(Mathf.Abs(light.transform.lossyScale.x), 0.001f);
                     float height = Mathf.Max(Mathf.Abs(light.transform.lossyScale.y), 0.001f);
                     lightInfluenceRadius = ComputeAreaLightBoundingRadius(width, height, light.Color, areaLightBrightnessCutoff);
@@ -375,11 +370,9 @@ namespace VRCLightVolumes
             int[] perProbeLights = new int[volumeResolution.x * volumeResolution.y * volumeResolution.z * 4];
             Array.Fill(perProbeLights, -1);
             bool[] slotFilled = new bool[4];
-            for (int probeIdx = 0; probeIdx < probePositions.Length; probeIdx++)
-            {
+            for (int probeIdx = 0; probeIdx < probePositions.Length; probeIdx++) {
                 Array.Fill(slotFilled, false);
-                for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++)
-                {
+                for (int lightIdx = 0; lightIdx < pixelLights.Count; lightIdx++) {
                     // Don't care about disabled lights
                     var light = pixelLights[lightIdx];
                     if (!light.enabled || !light.gameObject.activeInHierarchy)
@@ -413,8 +406,7 @@ namespace VRCLightVolumes
             // Calculate occlusion factors for each probe position and populate the texture
             float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, pixelLights, shadowLightRadii, shadowLightArea, 256);
             Color[] occlusionColors = new Color[volumeResolution.x * volumeResolution.y * volumeResolution.z];
-            for (int texelIdx = 0; texelIdx < occlusionColors.Length; texelIdx++)
-            {
+            for (int texelIdx = 0; texelIdx < occlusionColors.Length; texelIdx++) {
                 occlusionColors[texelIdx] = new Color(
                     occlusionFactors[texelIdx * 4 + 0],
                     occlusionFactors[texelIdx * 4 + 1],
@@ -423,8 +415,7 @@ namespace VRCLightVolumes
             }
 
             TextureFormat format = TextureFormat.RGBAHalf;
-            Texture3D tex = new Texture3D(volumeResolution.x, volumeResolution.y, volumeResolution.z, format, false)
-            {
+            Texture3D tex = new Texture3D(volumeResolution.x, volumeResolution.y, volumeResolution.z, format, false) {
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Bilinear
             };
