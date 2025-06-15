@@ -159,7 +159,10 @@ namespace VRCLightVolumes {
             if (!needOcclusion) {
                 if (OcclusionTexture != null)
                     LVUtils.MarkDirty(this);
+                if (LightVolumeInstance.BakeOcclusion)
+                    LVUtils.MarkDirty(LightVolumeInstance);
                 OcclusionTexture = null;
+                LightVolumeInstance.BakeOcclusion = false;
                 return;
             }
             
@@ -182,6 +185,9 @@ namespace VRCLightVolumes {
             
             OcclusionTexture = occ;
             LVUtils.MarkDirty(this);
+            
+            LightVolumeInstance.BakeOcclusion = occ != null;
+            LVUtils.MarkDirty(LightVolumeInstance);
         }
 #endif
 

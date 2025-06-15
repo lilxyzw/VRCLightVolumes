@@ -33,7 +33,11 @@ uniform float4 _UdonLightVolumeRotationQaternion[32];
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[32];
 
 // AABB Bounds of islands on the 3D Texture atlas. XYZ: UvwMin, W: Scale per axis
-uniform float4 _UdonLightVolumeUvwScale[128];
+uniform float4 _UdonLightVolumeUvwScale[96];
+
+// AABB Bounds of islands on the 3D Texture atlas storing occlusion.
+// This is optional data. If the volume has no occlusion, the value will be (-1, -1, -1, -1).
+uniform float3 _UdonLightVolumeOcclusionUvw[32];
 
 // Color multiplier (RGB) | If we actually need to rotate L1 components at all (A)
 uniform float4 _UdonLightVolumeColor[32];
@@ -69,11 +73,11 @@ uniform float _UdonPointLightVolumeCustomID[128];
 // we cull the light.
 uniform float _UdonAreaLightBrightnessCutoff;
 
-// Shadowmask indices, 2 bits per lights.
+// Light shadowmask indices, 2 bits per lights.
 // Each float stores 24 bits, i.e. 12 lights
 uniform float _UdonPointLightShadowmaskIndices[11];
 
-// Shadowmask toggle, 1 bit per light.
+// Light shadowmask toggle, 1 bit per light.
 // Each float stores 24 bits, i.e. 24 lights
 uniform float _UdonPointLightShadowmaskEnabled[6];
 
@@ -540,10 +544,6 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
     return L0 + dot(L1, n);
 }
 
-bool LV_VolumeHasOcclusion(uint id) {
-    return true; // TODO(pema99)
-}
-
 bool LV_LightHasShadowmask(uint id) {
     uint bits = _UdonPointLightShadowmaskEnabled[id / 24u];
     return bits & (1u << (23u - (id % 24u)));
@@ -560,7 +560,7 @@ float4 LV_GetLightShadowmaskSelector(uint id) {
 void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
     
     // Additive UVW
-    uint uvwID = id * 4;
+    uint uvwID = id * 3;
     float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
     float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
     float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
@@ -575,10 +575,10 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
 
     // Sample occlusion
+    float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz + uvwScaled;
     [branch]
-    if (LV_VolumeHasOcclusion(id)) {
-        float3 uvw3 = _UdonLightVolumeUvwScale[uvwID + 3].xyz + uvwScaled;
-        occlusion = tex3Dlod(_UdonLightVolume, float4(uvw3, 0));
+    if (uvwOcclusion.x >= 0) {
+        occlusion = tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
     } else {
         occlusion = 1;
     }
@@ -600,39 +600,19 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
                 
 }
 
-// Samples a Volume with ID and Local UVW
-float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
-    
-    // Additive UVW
-    uint uvwID = id * 4;
-    float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
-    float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
-    float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
-    float4 uvwPos3 = _UdonLightVolumeUvwScale[uvwID + 3];
-    float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
-    
-    float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
-    float3 uvw = uvwPos3.xyz + uvwScaled;
-                
-    // Sample additive
-    float4 tex0 = tex3Dlod(_UdonLightVolume, float4(uvw, 0));
-    return tex0;
-    
-}
-
 // Samples a Volume with ID and Local UVW, but L0 component only
 float3 LV_SampleVolume_L0(uint id, float3 localUVW, out float4 occlusion) {
-    uint uvwID = id * 4;
+    uint uvwID = id * 3;
     float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
     float3 uvwScale = float3(uvwPos0.w, _UdonLightVolumeUvwScale[uvwID + 1].w, _UdonLightVolumeUvwScale[uvwID + 2].w);
     float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
     float3 uvw0 = uvwPos0.xyz + uvwScaled;
 
     // Sample occlusion
+    float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz + uvwScaled;
     [branch]
-    if (LV_VolumeHasOcclusion(id)) {
-        float3 uvw3 = _UdonLightVolumeUvwScale[uvwID + 3].xyz + uvwScaled;
-        occlusion = tex3Dlod(_UdonLightVolume, float4(uvw3, 0));
+    if (uvwOcclusion.x >= 0) {
+        occlusion = tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
     } else {
         occlusion = 1;
     }

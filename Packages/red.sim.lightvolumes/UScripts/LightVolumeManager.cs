@@ -50,6 +50,7 @@ namespace VRCLightVolumes {
         private Vector4[] _colors = new Vector4[0];
         private Vector4[] _invWorldMatrix3x4 = new Vector4[0];
         private Vector4[] _boundsUvwScale = new Vector4[0];
+        private Vector4[] _boundsOcclusionUvw = new Vector4[0];
         private Vector4[] _relativeRotationQuaternion = new Vector4[0];
 
         // Point Lights Data
@@ -60,8 +61,6 @@ namespace VRCLightVolumes {
         private Vector4[] _pointLightColor;
         private Vector4[] _pointLightDirection;
         private float[] _pointLightCustomId;
-        private float[] _pointLightShadowmaskIndicesPacked = new float[11];
-        private float[] _pointLightShadowmaskEnabledPacked = new float[6];
 
         // Legacy support Data
         private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
@@ -70,13 +69,14 @@ namespace VRCLightVolumes {
 
         // Other
         private int[] _enabledIDs = new int[32];
-        private Vector4[] _boundsScale = new Vector4[4];
+        private Vector4[] _boundsScale = new Vector4[3];
         private Vector4[] _bounds = new Vector4[6]; // Legacy
 
         #region Shader Property IDs
         // Light Volumes
         private int lightVolumeInvLocalEdgeSmoothID;
         private int lightVolumeColorID;
+        private int lightVolumeShadowmaskEnabledID;
         private int lightVolumeCountID;
         private int lightVolumeAdditiveCountID;
         private int lightVolumeAdditiveMaxOverdrawID;
@@ -87,6 +87,7 @@ namespace VRCLightVolumes {
         private int lightVolumeRotationQuaternionID;
         private int lightVolumeInvWorldMatrix3x4ID;
         private int lightVolumeUvwScaleID;
+        private int lightVolumeOcclusionUvwID;
         // Point Lights
         private int _pointLightPositionID;
         private int _pointLightColorID;
@@ -119,6 +120,7 @@ namespace VRCLightVolumes {
             lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
             lightVolumeUvwID = VRCShader.PropertyToID("_UdonLightVolumeUvw");
             lightVolumeColorID = VRCShader.PropertyToID("_UdonLightVolumeColor");
+            lightVolumeShadowmaskEnabledID = VRCShader.PropertyToID("_UdonLightVolumeShadowmaskEnabled");
             lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
             lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
             lightVolumeAdditiveMaxOverdrawID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw");
@@ -129,6 +131,7 @@ namespace VRCLightVolumes {
             lightVolumeRotationQuaternionID = VRCShader.PropertyToID("_UdonLightVolumeRotationQuaternion");
             lightVolumeInvWorldMatrix3x4ID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix3x4");
             lightVolumeUvwScaleID = VRCShader.PropertyToID("_UdonLightVolumeUvwScale");
+            lightVolumeOcclusionUvwID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionUvw");
             // Point Lights
             _pointLightPositionID = VRCShader.PropertyToID("_UdonPointLightVolumePosition");
             _pointLightColorID = VRCShader.PropertyToID("_UdonPointLightVolumeColor");
@@ -151,9 +154,11 @@ namespace VRCLightVolumes {
             // Light Volumes
             VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, new Vector4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeColorID, new Vector4[32]);
+            VRCShader.SetGlobalFloatArray(lightVolumeShadowmaskEnabledID, new float[2]);
             VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, new Vector4[96]);
             VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, new Vector4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, new Vector4[96]);
+            VRCShader.SetGlobalVectorArray(lightVolumeOcclusionUvwID, new Vector4[32]);
             // Point Lights
             VRCShader.SetGlobalVectorArray(_pointLightPositionID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightColorID, new Vector4[128]);
@@ -211,7 +216,8 @@ namespace VRCLightVolumes {
                 _invLocalEdgeSmooth = new Vector4[_enabledCount];
                 _invWorldMatrix3x4 = new Vector4[_enabledCount * 3];
                 _relativeRotationQuaternion = new Vector4[_enabledCount];
-                _boundsUvwScale = new Vector4[_enabledCount * 4];
+                _boundsUvwScale = new Vector4[_enabledCount * 3];
+                _boundsOcclusionUvw = new Vector4[_enabledCount];
                 _colors = new Vector4[_enabledCount];
 
                 // Legacy data arrays
@@ -253,7 +259,7 @@ namespace VRCLightVolumes {
                 _boundsScale[0] = instance.BoundsUvwMin0;
                 _boundsScale[1] = instance.BoundsUvwMin1;
                 _boundsScale[2] = instance.BoundsUvwMin2;
-                _boundsScale[3] = instance.BoundsUvwMinOcclusion;
+                _boundsOcclusionUvw[i] = instance.BakeOcclusion ? instance.BoundsUvwMinOcclusion : -Vector4.one;
                 // Legacy
                 _bounds[0] = instance.BoundsUvwMin0;
                 _bounds[1] = instance.BoundsUvwMax0;
@@ -262,7 +268,7 @@ namespace VRCLightVolumes {
                 _bounds[4] = instance.BoundsUvwMin2;
                 _bounds[5] = instance.BoundsUvwMax2;
 
-                Array.Copy(_boundsScale, 0, _boundsUvwScale, i3, 4);
+                Array.Copy(_boundsScale, 0, _boundsUvwScale, i3, 3);
                 Array.Copy(_bounds, 0, _boundsUvw, i6, 6); // Legacy
 
             }
@@ -302,24 +308,6 @@ namespace VRCLightVolumes {
                 _pointLightCustomId[i] = instance.CustomID;
                 pointLightShadowmaskIndicesRaw[i] = instance.ShadowmaskIndex;
             }
-            
-            // Bitpack shadowmask indices
-            bool[] shadowmaskIndicesBits = new bool[256];
-            bool[] shadowmaskEnabledBits = new bool[128];
-            if (_pointLightCount > 0) {
-                for (int i = 0; i < _pointLightCount; i++)
-                {
-                    sbyte shadowmaskIndex = pointLightShadowmaskIndicesRaw[i];
-                    if (shadowmaskIndex < 0)
-                        continue;
-
-                    shadowmaskEnabledBits[i] = true;
-                    shadowmaskIndicesBits[i * 2 + 0] = (shadowmaskIndex & 0b10) != 0;
-                    shadowmaskIndicesBits[i * 2 + 1] = (shadowmaskIndex & 0b01) != 0;
-                }
-            }
-            _pointLightShadowmaskIndicesPacked = PackBitsToFloatArray(shadowmaskIndicesBits);
-            _pointLightShadowmaskEnabledPacked = PackBitsToFloatArray(shadowmaskEnabledBits);
 
             bool isAtlas = LightVolumeAtlas != null;
 
@@ -348,6 +336,7 @@ namespace VRCLightVolumes {
 
                 // All light volumes UVW
                 VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, _boundsUvwScale);
+                VRCShader.SetGlobalVectorArray(lightVolumeOcclusionUvwID, _boundsOcclusionUvw);
 
                 // Volume Transform Matrix
                 VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, _invWorldMatrix3x4);
@@ -376,8 +365,24 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
                 VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
                 VRCShader.SetGlobalFloat(_areaLightBrightnessCutoffID, AreaLightBrightnessCutoff);
-                VRCShader.SetGlobalFloatArray(_pointLightShadowmaskIndicesID, _pointLightShadowmaskIndicesPacked);
-                VRCShader.SetGlobalFloatArray(_pointLightShadowmaskEnabledID, _pointLightShadowmaskEnabledPacked);
+                
+                // Bitpack shadowmask indices
+                bool[] shadowmaskIndicesBits = new bool[256];
+                bool[] shadowmaskEnabledBits = new bool[128];
+                if (_pointLightCount > 0) {
+                    for (int i = 0; i < _pointLightCount; i++)
+                    {
+                        sbyte shadowmaskIndex = pointLightShadowmaskIndicesRaw[i];
+                        if (shadowmaskIndex < 0)
+                            continue;
+
+                        shadowmaskEnabledBits[i] = true;
+                        shadowmaskIndicesBits[i * 2 + 0] = (shadowmaskIndex & 0b10) != 0;
+                        shadowmaskIndicesBits[i * 2 + 1] = (shadowmaskIndex & 0b01) != 0;
+                    }
+                }
+                VRCShader.SetGlobalFloatArray(_pointLightShadowmaskIndicesID, PackBitsToFloatArray(shadowmaskIndicesBits));
+                VRCShader.SetGlobalFloatArray(_pointLightShadowmaskEnabledID, PackBitsToFloatArray(shadowmaskEnabledBits));
             }
             if(CustomTextures != null) {
                 VRCShader.SetGlobalTexture(_pointLightTextureID, CustomTextures);

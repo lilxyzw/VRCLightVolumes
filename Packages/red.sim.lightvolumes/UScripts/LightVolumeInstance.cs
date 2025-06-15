@@ -50,6 +50,8 @@ namespace VRCLightVolumes {
         public Vector3 RelativeRotationRow1 = Vector3.zero;
         [Tooltip("True if there is any relative rotation. No relative rotation improves performance. Recalculated via the UpdateRotation() method.")]
         public bool IsRotated = false;
+        [Tooltip("True if the volume has baked occlusion.")]
+        public bool BakeOcclusion = false;
 
         // Calculates and sets invLocalEdgeBlending
         public void SetSmoothBlending(float radius) {
