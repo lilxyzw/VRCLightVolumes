@@ -386,7 +386,7 @@ namespace VRCLightVolumes {
                 Texture0 = tex0;
                 Texture1 = tex1;
                 Texture2 = tex2;
-                
+
             }
 
             LVUtils.MarkDirty(this);
