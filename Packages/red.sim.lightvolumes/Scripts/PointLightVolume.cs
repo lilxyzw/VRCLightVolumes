@@ -147,7 +147,9 @@ namespace VRCLightVolumes {
                 FalloffLUT = null;
                 Cookie = null;
                 Cubemap = null;
+#if UNITY_EDITOR
                 LightVolumeSetup.GenerateCustomTexturesArray();
+#endif
                 LightVolumeSetup.RefreshVolumesList();
                 LightVolumeSetup.SyncUdonScript();
             }

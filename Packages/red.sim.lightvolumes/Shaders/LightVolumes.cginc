@@ -2,6 +2,10 @@
 #define VRC_LIGHT_VOLUMES_INCLUDED
 #define VRCLV_VERSION 2
 
+#ifndef SHADER_TARGET_SURFACE_ANALYSIS
+cbuffer LightVolumeUniforms {
+#endif
+
 // Are Light Volumes enabled on scene? Returns 0 if not, returns 1, 2 or other number if there are light volumes. Number represents the light volumes system internal version number.
 uniform float _UdonLightVolumeEnabled;
 
@@ -19,9 +23,6 @@ uniform float _UdonLightVolumeProbesBlend;
 
 // Should volumes be with sharp edges when not blending with each other
 uniform float _UdonLightVolumeSharpBounds;
-
-// Main 3D Texture atlas
-uniform sampler3D _UdonLightVolume;
 
 // World to Local (-0.5, 0.5) UVW Matrix 3x4
 uniform float4 _UdonLightVolumeInvWorldMatrix3x4[96];
@@ -68,6 +69,13 @@ uniform float _UdonPointLightVolumeCustomID[128];
 // is guaranteed lower than the threshold defined by this value,
 // we cull the light.
 uniform float _UdonAreaLightBrightnessCutoff;
+
+#ifndef SHADER_TARGET_SURFACE_ANALYSIS
+}
+#endif
+
+// Main 3D Texture atlas
+uniform sampler3D _UdonLightVolume;
 
 // First elements must be cubemap faces (6 face textures per cubemap). Then goes other textures
 UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeTexture);
@@ -596,7 +604,7 @@ float3 LightVolumeSpecular(float3 f0, float smoothness, float3 worldNormal, floa
     float gNh = saturate(dot(worldNormal, gDir));
     float bNh = saturate(dot(worldNormal, bDir));
     
-    float roughness = 1 - smoothness;
+    float roughness = 1 - smoothness * 0.9f;
     float roughExp = roughness * roughness;
     
     float rSpec = LV_DistributionGGX(rNh, roughExp);
@@ -607,7 +615,7 @@ float3 LightVolumeSpecular(float3 f0, float smoothness, float3 worldNormal, floa
     float3 coloredSpecs = specs * specColor;
     
     float3 a = coloredSpecs + specs * L0;
-    float3 b = coloredSpecs * 4;
+    float3 b = coloredSpecs * 3;
     
     return max(lerp(a, b, smoothness), 0.0);
     
@@ -625,12 +633,12 @@ float3 LightVolumeSpecularDominant(float3 f0, float smoothness, float3 worldNorm
     float3 dir = normalize(normalize(dominantDir) + viewDir);
     float nh = saturate(dot(worldNormal, dir));
     
-    float roughness = 1 - smoothness;
+    float roughness = 1 - smoothness * 0.9f;
     float roughExp = roughness * roughness;
     
     float spec = LV_DistributionGGX(nh, roughExp);
     
-    return max(spec * L0 * f0, 0.0) * 2;
+    return max(spec * L0 * f0, 0.0) * 3;
     
 }
 
@@ -659,14 +667,14 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     
     
     // Clamping gloabal iteration counts
-    uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
-    uint volumesCount = clamp((uint) _UdonLightVolumeCount, 0, 32);
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
+    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
     if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
         return;
     }
-    uint maxOverdraw = clamp((uint) _UdonLightVolumeAdditiveMaxOverdraw, 1, 32);
-    uint additiveCount = clamp((uint) _UdonLightVolumeAdditiveCount, 0, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
+    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
     bool lightProbesBlend = _UdonLightVolumeProbesBlend;
     
     // Process Point Lights
@@ -791,10 +799,10 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     L1b = float3(0, 0, 0);
     
     // Clamping gloabal iteration counts
-    uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
-    uint additiveCount = clamp((uint) _UdonLightVolumeAdditiveCount, 0, 32);
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
+    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
     if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
-    uint maxOverdraw = clamp((uint) _UdonLightVolumeAdditiveMaxOverdraw, 1, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     uint count = min(additiveCount, maxOverdraw);
     
     // Process Point Lights
@@ -829,13 +837,13 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
 float3 LightVolumeSH_L0(float3 worldPos) {
 
     // Clamping gloabal iteration counts
-    uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
-    uint volumesCount = clamp((uint) _UdonLightVolumeCount, 0, 32);
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
+    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
     if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
         return LV_SampleLightProbe_L0();
     }
-    uint maxOverdraw = clamp((uint) _UdonLightVolumeAdditiveMaxOverdraw, 1, 32);
-    uint additiveCount = clamp((uint) _UdonLightVolumeAdditiveCount, 0, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
+    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
     bool lightProbesBlend = _UdonLightVolumeProbesBlend;
     
     float3 L0 = float3(0, 0, 0);
@@ -933,10 +941,10 @@ float3 LightVolumeAdditiveSH_L0(float3 worldPos) {
     float3 L0  = float3(0, 0, 0);
     
     // Clamping gloabal iteration counts
-    uint pointCount = clamp((uint) _UdonPointLightVolumeCount, 0, 128);
-    uint additiveCount = clamp((uint) _UdonLightVolumeAdditiveCount, 0, 32);
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
+    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
     if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return L0;
-    uint maxOverdraw = clamp((uint) _UdonLightVolumeAdditiveMaxOverdraw, 1, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     uint count = min(additiveCount, maxOverdraw);
     
     // Process Point Lights

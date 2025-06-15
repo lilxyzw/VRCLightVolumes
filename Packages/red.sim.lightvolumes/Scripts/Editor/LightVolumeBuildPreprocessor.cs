@@ -10,9 +10,9 @@ namespace VRCLightVolumes {
         static void OnPostProcessScene() {
             if (!BuildPipeline.isBuildingPlayer) return; // We only want to cleanup on build
             var roots = SceneManager.GetActiveScene().GetRootGameObjects();
+            Cleanup<LightVolumeSetup>(roots); // We must destroy LightVolumeSetup first!
             Cleanup<LightVolume>(roots);
             Cleanup<PointLightVolume>(roots);
-            Cleanup<LightVolumeSetup>(roots);
         }
 
         static void Cleanup<T>(GameObject[] roots) where T : Component {
