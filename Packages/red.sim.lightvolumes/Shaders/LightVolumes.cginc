@@ -699,7 +699,7 @@ float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g
     }
 }
 
-// Calculates SH components based on the world position
+// Calculates L1 SH and occlusion based on the world position. Only samples light volumes, not point lights.
 void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
 
     // Initializing output variables
@@ -831,9 +831,8 @@ void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, 
 
 }
 
-void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
-    float4 occlusion;
-    LightVolumeSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
+// Calculates L1 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
+void PointLightSH(float3 worldPos, float4 occlusion, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
@@ -855,6 +854,16 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
         L1b += _L1b * lightOcclusion;
         if (pcount >= maxOverdraw) break;
     }
+    
+}
+
+// Calculates L1 SH based on the world position. Samples both light volumes and point lights.
+void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+    
+    float4 occlusion;
+    LightVolumeSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
+    PointLightSH(worldPos, occlusion, L0, L1r, L1g, L1b);
+    
 }
 
 // Calculates SH components based on the world position but for additive volumes only
@@ -902,7 +911,7 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
 
 }
 
-// Calculates L0 components based on the world position
+// Calculates L0 SH and occlusion based on the world position. Only samples light volumes, not point lights.
 float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
 
     // Default to unoccluded
@@ -1005,9 +1014,8 @@ float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
 
 }
 
-float3 LightVolumeSH_L0(float3 worldPos) {
-    float4 occlusion;
-    LightVolumeSHNoPointLights_L0(worldPos, occlusion);
+// Calculates L0 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
+float3 PointLightSH_L0(float3 worldPos, float4 occlusion) {
     
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
@@ -1030,6 +1038,17 @@ float3 LightVolumeSH_L0(float3 worldPos) {
     }
 
     return L0;
+    
+}
+
+// Calculates L0 SH based on the world position. Samples both light volumes and point lights.
+float3 LightVolumeSH_L0(float3 worldPos) {
+    
+    float4 occlusion;
+    float3 L0 = LightVolumeSHNoPointLights_L0(worldPos, occlusion);
+    L0 += PointLightSH_L0(worldPos, occlusion);
+    return L0;
+    
 }
 
 // Calculates L0 component based on the world position but for additive volumes only
