@@ -121,6 +121,10 @@ namespace VRCLightVolumes {
             hiddenFields.Add("BakeryVolume");
 #endif
 
+            if (LightVolume.Additive) {
+                hiddenFields.Add("BakeOcclusion");
+            }
+            
             if (!LightVolume.Bake) {
                 hiddenFields.Add("AdaptiveResolution");
                 hiddenFields.Add("Resolution");
