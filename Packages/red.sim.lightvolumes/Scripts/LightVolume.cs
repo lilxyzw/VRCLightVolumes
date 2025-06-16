@@ -171,7 +171,7 @@ namespace VRCLightVolumes {
             sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
             for (int lightIdx = 0; lightIdx < LightVolumeSetup.PointLightVolumes.Count; lightIdx++) {
                 var instance = LightVolumeSetup.PointLightVolumes[lightIdx].PointLightVolumeInstance;
-                if (instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
+                if (instance != null && instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
                     continue;
                 instance.ShadowmaskIndex = shadowmaskIndices[lightIdx];
                 LVUtils.MarkDirty(instance);
