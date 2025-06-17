@@ -853,7 +853,7 @@ void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, 
 }
 
 // Calculates L1 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
-void PointLightSH(float3 worldPos, float4 occlusion, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+void PointLightSH(float3 worldPos, float4 occlusion, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
     
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
