@@ -680,9 +680,8 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     // Process Point Lights
     uint pcount = 0;
     [loop]
-    for (uint pid = 0; pid < pointCount; pid++) {
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         LV_PointLight(pid, worldPos, L0, L1r, L1g, L1b, pcount);
-        if (pcount >= maxOverdraw) break;
     }
     
     uint volumeID_A = -1; // Main, dominant volume ID
@@ -808,9 +807,8 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
     // Process Point Lights
     uint pcount = 0;
     [loop] 
-    for (uint pid = 0; pid < pointCount; pid++) {
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         LV_PointLight(pid, worldPos, L0, L1r, L1g, L1b, pcount);
-        if (pcount >= maxOverdraw) break;
     }
     
     // Additive volumes variables
@@ -851,9 +849,8 @@ float3 LightVolumeSH_L0(float3 worldPos) {
     // Process Point Lights
     uint pcount = 0;
     [loop]
-    for (uint pid = 0; pid < pointCount; pid++) {
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         LV_PointLight_L0(pid, worldPos, L0, pcount);
-        if (pcount >= maxOverdraw) break;
     }
     
     uint volumeID_A = -1; // Main, dominant volume ID
@@ -950,10 +947,8 @@ float3 LightVolumeAdditiveSH_L0(float3 worldPos) {
     // Process Point Lights
     uint pcount = 0;
     [loop] 
-    for (uint pid = 0; pid < pointCount; pid++) {
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         LV_PointLight_L0(pid, worldPos, L0, pcount);
-        if (pcount >= maxOverdraw)
-            break;
     }
     
     // Additive volumes variables
