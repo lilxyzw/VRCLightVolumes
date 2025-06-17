@@ -320,7 +320,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             float spotMask = dot(ldir.xyz, -dirN) - angle;
             if(spotMask < 0) return;
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
-            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId - 1;
             float3 uvid = float3(sqrt(float2(spot, dirRadius)), id);
             att *= UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
             
@@ -330,7 +330,7 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
             if (localDir.z <= 0.0) return;
             float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
-            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId - 1;
             float3 uvid = float3(uv * 0.5 + 0.5, id);
             att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
             
@@ -420,7 +420,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
             float spotMask = dot(ldir.xyz, -dirN) - angle;
             if(spotMask < 0) return;
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
-            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId - 1;
             float3 uvid = float3(sqrt(float2(spot, dirRadius)), id);
             att *= UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
             
@@ -430,7 +430,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
             if (localDir.z <= 0.0) return;
             float2 uv = localDir.xy * rcp(localDir.z * angle); // Here angle is tan(angle)
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
-            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId;
+            uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId - 1;
             float3 uvid = float3(uv * 0.5 + 0.5, id);
             att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
             
@@ -689,7 +689,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     uint volumeID_B = -1; // Secondary volume ID to blend main with
 
     float3 localUVW   = float3(0, 0, 0); // Last local UVW to use in disabled Light Probes mode
-    float3 localUVW_A = float3(0, 0, 0); // Main local UVW for Y Axis and Free rotations
+    float3 localUVW_A = float3(0, 0, 0); // Main local UVW
     float3 localUVW_B = float3(0, 0, 0); // Secondary local UVW
     
     // Are A and B volumes NOT found?

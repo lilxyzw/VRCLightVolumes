@@ -63,12 +63,20 @@ namespace VRCLightVolumes {
 
         private void OnSceneGUI(SceneView sceneView) {
 
-            if (!_isWindowActive || _resolution.x * _resolution.y * _resolution.z > 1000000) return;
+            if (!_isWindowActive) return;
+
+            Vector3[] pPositions; // Draw only 1000 000 first probes!
+            if (_probesPositions.Length > 1000000) {
+                pPositions = new Vector3[1000000];
+                System.Array.Copy(_probesPositions, pPositions, 1000000);
+            } else {
+                pPositions = _probesPositions;
+            }
 
             // Initialize Buffers
-            if (_posBuf == null || _posBuf.count != _probesPositions.Length) {
+            if (_posBuf == null || _posBuf.count != pPositions.Length) {
                 ReleasePreviewBuffers();
-                _posBuf = new ComputeBuffer(_probesPositions.Length, sizeof(float) * 3);
+                _posBuf = new ComputeBuffer(pPositions.Length, sizeof(float) * 3);
                 _argsBuf = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
             }
 
@@ -88,10 +96,10 @@ namespace VRCLightVolumes {
             float radius = Mathf.Min(scale.z / res.z, Mathf.Min(scale.x / res.x, scale.y / res.y)) / 3;
 
             // Setting data to buffers
-            _posBuf.SetData(_probesPositions);
+            _posBuf.SetData(pPositions);
             _previewMaterial.SetBuffer(_previewPosID, _posBuf);
             _previewMaterial.SetFloat(_previewScaleID, radius);
-            _argsBuf.SetData(new uint[] { _previewMesh.GetIndexCount(0), (uint)_probesPositions.Length, _previewMesh.GetIndexStart(0), (uint)_previewMesh.GetBaseVertex(0), 0 });
+            _argsBuf.SetData(new uint[] { _previewMesh.GetIndexCount(0), (uint)pPositions.Length, _previewMesh.GetIndexStart(0), (uint)_previewMesh.GetBaseVertex(0), 0 });
 
             Bounds bounds = LVUtils.BoundsFromTRS(_lightVolume.GetMatrixTRS());
             Graphics.DrawMeshInstancedIndirect(_previewMesh, 0, _previewMaterial, bounds, _argsBuf, 0, null, ShadowCastingMode.Off, false, _lightVolume.gameObject.layer);
