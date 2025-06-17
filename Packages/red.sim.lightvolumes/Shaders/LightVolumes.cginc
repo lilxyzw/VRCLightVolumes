@@ -689,7 +689,7 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
     uint volumeID_B = -1; // Secondary volume ID to blend main with
 
     float3 localUVW   = float3(0, 0, 0); // Last local UVW to use in disabled Light Probes mode
-    float3 localUVW_A = float3(0, 0, 0); // Main local UVW for Y Axis and Free rotations
+    float3 localUVW_A = float3(0, 0, 0); // Main local UVW
     float3 localUVW_B = float3(0, 0, 0); // Secondary local UVW
     
     // Are A and B volumes NOT found?
