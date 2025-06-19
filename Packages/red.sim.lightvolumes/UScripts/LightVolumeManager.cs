@@ -164,6 +164,8 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalVectorArray(_pointLightColorID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightDirectionID, new Vector4[128]);
             VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, new float[128]);
+            VRCShader.SetGlobalFloatArray(_pointLightShadowmaskIndicesID, new float[11]);
+            VRCShader.SetGlobalFloatArray(_pointLightShadowmaskEnabledID, new float[6]);
             // Legacy support
             VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, new Matrix4x4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeRotationID, new Vector4[64]);
@@ -370,8 +372,7 @@ namespace VRCLightVolumes {
                 bool[] shadowmaskIndicesBits = new bool[256];
                 bool[] shadowmaskEnabledBits = new bool[128];
                 if (_pointLightCount > 0) {
-                    for (int i = 0; i < _pointLightCount; i++)
-                    {
+                    for (int i = 0; i < _pointLightCount; i++) {
                         sbyte shadowmaskIndex = pointLightShadowmaskIndicesRaw[i];
                         if (shadowmaskIndex < 0)
                             continue;
