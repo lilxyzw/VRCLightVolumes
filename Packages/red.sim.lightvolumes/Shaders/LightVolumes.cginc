@@ -589,7 +589,7 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz + uvwScaled;
     [branch]
     if (uvwOcclusion.x >= 0) {
-        occlusion = tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
+        occlusion = 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
     } else {
         occlusion = 1;
     }
@@ -625,7 +625,7 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
     float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz + uvwScaled;
     [branch]
     if (uvwOcclusion.x >= 0) {
-        return tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
+        return 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
     }
 
     return 1;
@@ -644,7 +644,7 @@ float3 LV_SampleVolume_L0(uint id, float3 localUVW, out float4 occlusion) {
     float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz + uvwScaled;
     [branch]
     if (uvwOcclusion.x >= 0) {
-        occlusion = tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
+        occlusion = 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion, 0));
     } else {
         occlusion = 1;
     }

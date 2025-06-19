@@ -45,10 +45,10 @@ void ComputeOcclusionRatio(uint3 tid : SV_DispatchThreadID) {
 
     // Don't divide by zero. This can happen if the probe is inside the light.
     if (before == 0) {
-        _Occlusion[tid.x] = 1.0;
+        _Occlusion[tid.x] = 0.0f;
         return;
     }
 
     // Soft occlusion is the ratio of unoccluded pixels before and after occluders
-    _Occlusion[tid.x] = float(after) / float(before);
+    _Occlusion[tid.x] = 1.0f - float(after) / float(before);
 }
