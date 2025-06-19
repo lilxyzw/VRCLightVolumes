@@ -279,7 +279,7 @@ namespace VRCLightVolumes
                 if (light.Type == PointLightVolume.LightType.AreaLight) {
                     float width = Mathf.Max(Mathf.Abs(light.transform.lossyScale.x), 0.001f);
                     float height = Mathf.Max(Mathf.Abs(light.transform.lossyScale.y), 0.001f);
-                    lightInfluenceRadius = ComputeAreaLightBoundingRadius(width, height, light.Color, areaLightBrightnessCutoff);
+                    lightInfluenceRadius = ComputeAreaLightBoundingRadius(width, height, light.Color * light.Intensity, areaLightBrightnessCutoff);
                     lightRadius = Mathf.Sqrt(width * width + height * height) / 2.0f;
                     shadowLightArea[lightIdx] = new Vector2(width, height);
                 }
