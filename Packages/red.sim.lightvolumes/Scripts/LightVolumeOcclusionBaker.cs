@@ -366,6 +366,43 @@ namespace VRCLightVolumes
             
         }
 
+        // Gaussian blur the occlusion texture to smooth it out
+        private static Color[] BlurOcclusionData(Vector3Int volumeResolution, Color[] occlusionColors) {
+            
+            // 1D gaussian kernel
+            float[] kernel = { 1.0f, 2.0f, 1.0f };
+            float kernelSum = 64.0f;
+            
+            Color[] occlusionColorsBlurred = new Color[occlusionColors.Length];
+            for (int voxelZ = 0; voxelZ < volumeResolution.z; voxelZ++)
+                for (int voxelY = 0; voxelY < volumeResolution.y; voxelY++)
+                    for (int voxelX = 0; voxelX < volumeResolution.x; voxelX++) {
+                        int centerIdx = voxelX + voxelY * volumeResolution.x + voxelZ * volumeResolution.x * volumeResolution.y;
+
+                        Color sum = Color.black;
+                        float weightSum = 0.0f;
+                        for (int dz = -1; dz <= 1; dz++)
+                            for (int dy = -1; dy <= 1; dy++)
+                                for (int dx = -1; dx <= 1; dx++) {
+                                    int xx = voxelX + dx;
+                                    int yy = voxelY + dy;
+                                    int zz = voxelZ + dz;
+                                    if (xx < 0 || yy < 0 || zz < 0 || xx >= volumeResolution.x || yy >= volumeResolution.y || zz >= volumeResolution.z) continue;
+                                    
+                                    float weight = (kernel[dx+1] * kernel[dy+1] * kernel[dz+1]) / kernelSum;
+                                    weightSum += weight;
+                                                    
+                                    int nIdx = xx + yy * volumeResolution.x + zz * volumeResolution.x * volumeResolution.y;
+                                    sum += occlusionColors[nIdx] * weight;
+                                }
+                        
+                        occlusionColorsBlurred[centerIdx] = sum / weightSum;
+                    }
+            
+            return occlusionColorsBlurred;
+            
+        }
+
         // Computes a 3D texture with up to 4 occlusion values for each probe position.
         // Shadowmask indices must be computed for each light beforehand.
         public static Texture3D ComputeOcclusionTexture(
@@ -374,7 +411,8 @@ namespace VRCLightVolumes
             IList<PointLightVolume> shadowLights,
             float[] shadowLightInfluenceRadii,
             float[] shadowLightRadii,
-            Vector2[] shadowLightArea) {
+            Vector2[] shadowLightArea,
+            bool blurOcclusion) {
             
             // For each probe, we need to find the lights that affect it. 4 entries per probe. -1 means no light affects this probe.
             int[] perProbeLights = new int[volumeResolution.x * volumeResolution.y * volumeResolution.z * 4];
@@ -429,6 +467,10 @@ namespace VRCLightVolumes
                     occlusionFactors[texelIdx * 4 + 2],
                     occlusionFactors[texelIdx * 4 + 3]);
             }
+            
+            // If requested, blur occlusion to soften the shadows
+            if (blurOcclusion)
+                occlusionColors = BlurOcclusionData(volumeResolution, occlusionColors);
 
             TextureFormat format = TextureFormat.RGBAHalf;
             Texture3D tex = new Texture3D(volumeResolution.x, volumeResolution.y, volumeResolution.z, format, false) {

@@ -123,6 +123,10 @@ namespace VRCLightVolumes {
 
             if (LightVolume.Additive) {
                 hiddenFields.Add("BakeOcclusion");
+                hiddenFields.Add("BlurOcclusion");
+            }
+            if (!LightVolume.BakeOcclusion) {
+                hiddenFields.Add("BlurOcclusion");
             }
             
             if (!LightVolume.Bake) {

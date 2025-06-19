@@ -48,6 +48,8 @@ namespace VRCLightVolumes {
         public bool Bake = true;
         [Tooltip("Uncheck it if you don't want to rebake occlusion data required for baked point light shadows.")]
         public bool BakeOcclusion = true;
+        [Tooltip("Post-processes the baked occlusion with a softening blur. This can help mitigate 'blocky' shadows caused by aliasing, but also makes shadows less crispy.")]
+        public bool BlurOcclusion = false;
         [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
         public bool AdaptiveResolution = true;
         [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
@@ -194,7 +196,8 @@ namespace VRCLightVolumes {
                 LightVolumeSetup.PointLightVolumes,
                 shadowLightInfluenceRadii,
                 shadowLightRadii,
-                shadowLightArea);
+                shadowLightArea,
+                BlurOcclusion);
             
             string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/Temp";
             if (occ != null)
