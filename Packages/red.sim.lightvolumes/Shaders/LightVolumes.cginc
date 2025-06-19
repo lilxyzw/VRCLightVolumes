@@ -562,7 +562,7 @@ bool LV_LightHasShadowmask(uint id) {
 // and 0 in all other channels.
 float4 LV_GetLightShadowmaskSelector(uint id) {
     uint bits = _UdonPointLightShadowmaskIndices[id / 12u];
-    uint bitOffset = (22u - (id * 2u));
+    uint bitOffset = (22u - ((id % 12u) * 2u));
     uint masked = (bits & (3u << bitOffset)) >> bitOffset;
     return float4(masked == 0, masked == 1, masked == 2, masked == 3);
 }
