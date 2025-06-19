@@ -306,7 +306,6 @@ namespace VRCLightVolumes
                     // If the distance between the lights is less than the sum of their radii, they overlap
                     float distance = Vector3.Distance(lightPosition, otherLight.transform.position);
                     bool overlap = distance < (lightRadius + shadowLightInfluenceRadii[otherLightIdx]);
-                    // TODO(pema99): For area lights, we can do better! If one light is behind an area light, there is no overlap
 
                     if (overlap)
                         overlaps.Add(otherLightIdx);
