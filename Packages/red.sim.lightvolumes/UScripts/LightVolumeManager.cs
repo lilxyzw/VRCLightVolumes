@@ -76,7 +76,6 @@ namespace VRCLightVolumes {
         // Light Volumes
         private int lightVolumeInvLocalEdgeSmoothID;
         private int lightVolumeColorID;
-        private int lightVolumeShadowmaskEnabledID;
         private int lightVolumeCountID;
         private int lightVolumeAdditiveCountID;
         private int lightVolumeAdditiveMaxOverdrawID;
@@ -120,7 +119,6 @@ namespace VRCLightVolumes {
             lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
             lightVolumeUvwID = VRCShader.PropertyToID("_UdonLightVolumeUvw");
             lightVolumeColorID = VRCShader.PropertyToID("_UdonLightVolumeColor");
-            lightVolumeShadowmaskEnabledID = VRCShader.PropertyToID("_UdonLightVolumeShadowmaskEnabled");
             lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
             lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
             lightVolumeAdditiveMaxOverdrawID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw");
@@ -154,7 +152,6 @@ namespace VRCLightVolumes {
             // Light Volumes
             VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, new Vector4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeColorID, new Vector4[32]);
-            VRCShader.SetGlobalFloatArray(lightVolumeShadowmaskEnabledID, new float[2]);
             VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, new Vector4[96]);
             VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, new Vector4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, new Vector4[96]);
