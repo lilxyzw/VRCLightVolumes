@@ -52,8 +52,8 @@ namespace VRCLightVolumes {
             array.wrapMode = TextureWrapMode.Clamp;
             Texture2D temp = new Texture2D(res, res, format, false, true); // Temp texture to read pixels from RT to
             for (int i = 0; i < processedCount; i++) {
-                if (RenderTexture.active == null || temp == null) yield break; // In case the textures were destroyed
                 RenderTexture.active = processedTextures[i];
+                if (RenderTexture.active == null || temp == null) yield break; // In case the textures were destroyed
                 temp.ReadPixels(new Rect(0, 0, res, res), 0, 0);
                 temp.Apply(false);
                 Graphics.CopyTexture(temp, 0, 0, array, i, 0);
