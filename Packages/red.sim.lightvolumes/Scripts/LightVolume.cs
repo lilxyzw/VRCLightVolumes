@@ -167,8 +167,18 @@ namespace VRCLightVolumes {
                 return;
             }
             
+            // Precompute some properties of each shadow casting light
+            LightVolumeOcclusionBaker.ComputeLightProperties(
+                LightVolumeSetup.PointLightVolumes,
+                Resolution,
+                transform.lossyScale, 
+                LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f,
+                out float[] shadowLightInfluenceRadii,
+                out float[] shadowLightRadii,
+                out Vector2[] shadowLightArea);
+            
             // Compute shadowmask indices and apply them to lights
-            sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
+            sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, shadowLightInfluenceRadii);
             for (int lightIdx = 0; lightIdx < LightVolumeSetup.PointLightVolumes.Count; lightIdx++) {
                 var instance = LightVolumeSetup.PointLightVolumes[lightIdx].PointLightVolumeInstance;
                 if (instance != null && instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
@@ -178,7 +188,13 @@ namespace VRCLightVolumes {
             }
                 
             // Bake occlusion
-            Texture3D occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(Resolution, transform.lossyScale, _probesPositions, LightVolumeSetup.PointLightVolumes, LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
+            Texture3D occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(
+                Resolution,
+                _probesPositions,
+                LightVolumeSetup.PointLightVolumes,
+                shadowLightInfluenceRadii,
+                shadowLightRadii,
+                shadowLightArea);
             
             string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/Temp";
             if (occ != null)
