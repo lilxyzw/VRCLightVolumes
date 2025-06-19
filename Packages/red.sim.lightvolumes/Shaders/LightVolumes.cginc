@@ -745,7 +745,7 @@ void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, 
     uint volumeID_B = -1; // Secondary volume ID to blend main with
 
     float3 localUVW   = float3(0, 0, 0); // Last local UVW to use in disabled Light Probes mode
-    float3 localUVW_A = float3(0, 0, 0); // Main local UVW for Y Axis and Free rotations
+    float3 localUVW_A = float3(0, 0, 0); // Main local UVW
     float3 localUVW_B = float3(0, 0, 0); // Secondary local UVW
     
     // Are A and B volumes NOT found?
@@ -853,7 +853,7 @@ void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, 
 }
 
 // Calculates L1 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
-void PointLightSH(float3 worldPos, float4 occlusion, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+void PointLightSH(float3 worldPos, float4 occlusion, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
     
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
@@ -861,7 +861,7 @@ void PointLightSH(float3 worldPos, float4 occlusion, out float3 L0, out float3 L
     // Process Point Lights
     uint pcount = 0;
     [loop]
-    for (uint pid = 0; pid < pointCount; pid++) {
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         float3 _L0 = 0, _L1r = 0, _L1g = 0, _L1b = 0;
         LV_PointLight(pid, worldPos, _L0, _L1r, _L1g, _L1b, pcount);
         float lightOcclusion = 1;
@@ -873,7 +873,6 @@ void PointLightSH(float3 worldPos, float4 occlusion, out float3 L0, out float3 L
         L1r += _L1r * lightOcclusion;
         L1g += _L1g * lightOcclusion;
         L1b += _L1b * lightOcclusion;
-        if (pcount >= maxOverdraw) break;
     }
     
 }
@@ -1116,7 +1115,7 @@ float3 PointLightSH_L0(float3 worldPos, float4 occlusion) {
     // Process Point Lights
     uint pcount = 0;
     [loop]
-    for (uint pid = 0; pid < pointCount; pid++) {
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         float3 _L0 = 0;
         LV_PointLight_L0(pid, worldPos, _L0, pcount);
         float lightOcclusion = 1;
@@ -1125,7 +1124,6 @@ float3 PointLightSH_L0(float3 worldPos, float4 occlusion) {
             lightOcclusion = dot(1, selector * occlusion);
         }
         L0 += _L0 * lightOcclusion;
-        if (pcount >= maxOverdraw) break;
     }
 
     return L0;
