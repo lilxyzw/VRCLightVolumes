@@ -380,6 +380,7 @@ namespace VRCLightVolumes
             int[] perProbeLights = new int[volumeResolution.x * volumeResolution.y * volumeResolution.z * 4];
             Array.Fill(perProbeLights, -1);
             bool[] slotFilled = new bool[4];
+            bool anyLightsAffectVolume = false;
             for (int probeIdx = 0; probeIdx < probePositions.Length; probeIdx++) {
                 Array.Fill(slotFilled, false);
                 for (int lightIdx = 0; lightIdx < shadowLights.Count; lightIdx++) {
@@ -405,6 +406,7 @@ namespace VRCLightVolumes
                     
                     // Assign the light to the probe's shadowmask slot
                     perProbeLights[probeIdx * 4 + shadowmaskIndex] = lightIdx;
+                    anyLightsAffectVolume = true;
                     
                     // If we already filled all slots, we can stop
                     slotFilled[shadowmaskIndex] = true;
@@ -412,6 +414,10 @@ namespace VRCLightVolumes
                         break;
                 }
             }
+
+            // If no lights affect the volume, no need to bake. Just return null texture.
+            if (!anyLightsAffectVolume)
+                return null;
             
             // Calculate occlusion factors for each probe position and populate the texture
             float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, shadowLights, shadowLightRadii, shadowLightArea, 256);
