@@ -221,7 +221,6 @@ namespace VRCLightVolumes {
             var volumes = FindObjectsOfType<LightVolume>(true);
             for (int i = 0; i < volumes.Length; i++) {
                 volumes[i].SetupBakeryDependencies();
-                volumes[i].BakeOcclusionTexture();
             }
         }
 
@@ -230,6 +229,9 @@ namespace VRCLightVolumes {
             LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < volumes.Length; i++) {
                 if (volumes[i].Bake && volumes[i].LightVolumeInstance != null) {
+                    volumes[i].RecalculateProbesPositions();
+                    volumes[i].BakeOcclusionTexture();
+
                     volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
                     if (IsBakeryMode && volumes[i].BakeryVolume != null) {
                         volumes[i].Texture0 = volumes[i].BakeryVolume.bakedTexture0;
