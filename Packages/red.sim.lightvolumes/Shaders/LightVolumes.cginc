@@ -552,11 +552,14 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
     return L0 + dot(L1, n);
 }
 
+// Check whether the light with the given ID uses shadowmasks (baked shadows).
 bool LV_LightHasShadowmask(uint id) {
     uint bits = _UdonPointLightShadowmaskEnabled[id / 24u];
     return bits & (1u << (23u - (id % 24u)));
 }
 
+// Returns a float4 with 1 in the channel used for shadowmasks by the light with the given ID,
+// and 0 in all other channels.
 float4 LV_GetLightShadowmaskSelector(uint id) {
     uint bits = _UdonPointLightShadowmaskIndices[id / 12u];
     uint bitOffset = (22u - (id * 2u));
