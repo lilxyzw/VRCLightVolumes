@@ -14,15 +14,13 @@ RWStructuredBuffer<uint> _Count; // 2 elements per probe, one for before and one
 groupshared uint _GroupSum[COUNT_KERNEL_SIZE_X * COUNT_KERNEL_SIZE_Y];
 
 [numthreads(COUNT_KERNEL_SIZE_X, COUNT_KERNEL_SIZE_Y, 1)]
-void CountUnoccludedPixels(uint3 tid : SV_DispatchThreadID, uint3 gid : SV_GroupThreadID)
-{
+void CountUnoccludedPixels(uint3 tid : SV_DispatchThreadID, uint3 gid : SV_GroupThreadID) {
     uint value = _Texture[tid.xy].r > 0.0;
     _GroupSum[gid.y * COUNT_KERNEL_SIZE_X + gid.x] = value;
     
     GroupMemoryBarrierWithGroupSync();
     
-    if (gid.x == 0 && gid.y == 0)
-    {
+    if (gid.x == 0 && gid.y == 0) {
         uint sum = 0;
         for (uint i = 0; i < COUNT_KERNEL_SIZE_X * COUNT_KERNEL_SIZE_Y; ++i)
         {
@@ -38,8 +36,7 @@ uint _OcclusionCount;
 RWStructuredBuffer<float> _Occlusion;
 
 [numthreads(RATIO_KERNEL_SIZE, 1, 1)]
-void ComputeOcclusionRatio(uint3 tid : SV_DispatchThreadID)
-{
+void ComputeOcclusionRatio(uint3 tid : SV_DispatchThreadID) {
     if (tid.x >= _OcclusionCount)
         return;
 
@@ -47,8 +44,7 @@ void ComputeOcclusionRatio(uint3 tid : SV_DispatchThreadID)
     uint before = _Count[tid.x * 2 + 0];
 
     // Don't divide by zero. This can happen if the probe is inside the light.
-    if (before == 0)
-    {
+    if (before == 0) {
         _Occlusion[tid.x] = 1.0;
         return;
     }
