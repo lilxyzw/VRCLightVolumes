@@ -119,7 +119,7 @@ namespace VRCLightVolumes {
 
         // Sets color
         public void SetColor(Color color, float intensity) {
-            Vector4 c = color * intensity;
+            Vector4 c = color.linear * intensity;
             ColorData = new Vector4(c.x, c.y, c.z, ColorData.w);
         }
 
