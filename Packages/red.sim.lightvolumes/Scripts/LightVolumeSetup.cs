@@ -168,8 +168,10 @@ namespace VRCLightVolumes {
 
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
-                        _customTexPointVolumes[i].CustomID = ids[i];
-                        _customTexPointVolumes[i].SyncUdonScript();
+                        if (_customTexPointVolumes[i] != null) {
+                            _customTexPointVolumes[i].CustomID = ids[i];
+                            _customTexPointVolumes[i].SyncUdonScript();
+                        }
                     }
                 }
                 LightVolumeManager.CustomTextures = texArray;
