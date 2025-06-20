@@ -67,6 +67,9 @@ namespace VRCLightVolumes {
         private TextureArrayResolution _resolutionPrev = TextureArrayResolution._128x128;
         private TextureArrayFormat _formatPrev = TextureArrayFormat.RGBAHalf;
 
+        private EditorCoroutine _generateAtlasCoroutine = null;
+        private EditorCoroutine _generateTextureArrayCoroutine = null;
+
         public void RefreshVolumesList() {
             // Searching for all light volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);
@@ -156,7 +159,12 @@ namespace VRCLightVolumes {
                 LightVolumeManager.CubemapsCount = 0;
             }
 
-            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
+            // Stop old coroutine if one is in process already
+            if (_generateTextureArrayCoroutine != null) {
+                EditorCoroutineUtility.StopCoroutine(_generateTextureArrayCoroutine);
+                _generateTextureArrayCoroutine = null;
+            }
+            _generateTextureArrayCoroutine = EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
 
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
@@ -167,6 +175,8 @@ namespace VRCLightVolumes {
                 LightVolumeManager.CustomTextures = texArray;
                 LightVolumeManager.CubemapsCount = cubeTextures.Count;
                 if (texArray != null) LVUtils.SaveAsAssetDelayed(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/PointLightVolumeArray.asset");
+
+                _generateTextureArrayCoroutine = null;
 
             }), this);
 
@@ -327,6 +337,8 @@ namespace VRCLightVolumes {
 
         }
 
+        
+
         // Generates atlas and setups udon script
         public void GenerateAtlas() {
 
@@ -334,42 +346,52 @@ namespace VRCLightVolumes {
 
             SetupDependencies();
 
-            var atlas = Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray());
-            if (atlas.Texture == null) return; // Return if atlas packing failed
-
-            LightVolumeManager.LightVolumeAtlas = atlas.Texture;
-
-            LightVolumeDataList.Clear();
-
-            for (int i = 0; i < LightVolumes.Count; i++) {
-
-                if (LightVolumes[i] == null) continue;
-                var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
-
-                if (lightVolumeInstance == null) continue;
-
-                Vector3 scale = atlas.BoundsUvwMax[i * 3] - atlas.BoundsUvwMin[i * 3];
-                Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 3];
-                Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
-                Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
-
-                lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
-                lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
-                lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
-
-                // Legacy
-                lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
-                lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
-                lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
-
-                LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
-
-                LVUtils.MarkDirty(lightVolumeInstance);
+            if(_generateAtlasCoroutine != null) { // Stop old coroutine in case one is in process already
+                EditorCoroutineUtility.StopCoroutine(_generateAtlasCoroutine);
+                _generateAtlasCoroutine = null;
             }
 
-            LVUtils.SaveAsAssetDelayed(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/LightVolumeAtlas.asset");
+            _generateAtlasCoroutine = EditorCoroutineUtility.StartCoroutine(Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray(), (Atlas3D atlas) => {
 
-            SyncUdonScript();
+                if (atlas.Texture == null) return; // Return if atlas packing failed
+
+                LightVolumeManager.LightVolumeAtlas = atlas.Texture;
+
+                LightVolumeDataList.Clear();
+
+                for (int i = 0; i < LightVolumes.Count; i++) {
+
+                    if (LightVolumes[i] == null) continue;
+                    var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
+
+                    if (lightVolumeInstance == null) continue;
+
+                    Vector3 scale = atlas.BoundsUvwMax[i * 3] - atlas.BoundsUvwMin[i * 3];
+                    Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 3];
+                    Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
+                    Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
+
+                    lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
+                    lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
+                    lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+
+                    // Legacy
+                    lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
+                    lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
+                    lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
+
+                    LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
+
+                    LVUtils.MarkDirty(lightVolumeInstance);
+                }
+
+                LVUtils.SaveAsAssetDelayed(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/LightVolumeAtlas.asset");
+
+                SyncUdonScript();
+
+                _generateAtlasCoroutine = null;
+
+            }), this);
 
         }
 

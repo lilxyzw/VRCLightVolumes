@@ -461,7 +461,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 33498727}
   IsDynamic: 1
   PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 0.8798822, y: 3, z: 0.24705881, w: 0.8660254}
+  ColorData: {x: 0.20988724, y: 3, z: 0.022497095, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988
@@ -1462,7 +1462,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 154949970}
   IsDynamic: 1
   PositionData: {x: -8.787, y: 0.5800005, z: 17.861, w: -0.01}
-  ColorData: {x: 1, y: 0.8445727, z: 0.57169807, w: 0.70710677}
+  ColorData: {x: 1, y: 0.6821521, z: 0.2865063, w: 0.70710677}
   DirectionData: {x: -1.0000002, y: 0.0000043832724, z: -0.0000032186556, w: 3.4142134}
   CustomID: 4
   angle: 0.7853982
@@ -3369,7 +3369,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 377300961}
   IsDynamic: 1
   PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -0.01}
-  ColorData: {x: 1, y: 0.7589134, z: 0.2320754, w: -0.88294756}
+  ColorData: {x: 1, y: 0.53651494, z: 0.043993086, w: -0.88294756}
   DirectionData: {x: 0.9659258, y: 0.00000040007035, z: 0.25881994, w: 3.0931816}
   CustomID: 0
   angle: 2.6529005
@@ -4369,7 +4369,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 569909709}
   IsDynamic: 1
   PositionData: {x: 2.198, y: 1.571, z: 1.022999, w: 1.0000002}
-  ColorData: {x: 5, y: 2.7026937, z: 0.9411764, w: 4}
+  ColorData: {x: 5, y: 1.2675006, z: 0.14778417, w: 4}
   DirectionData: {x: -0, y: -0.70710677, z: -0, w: 0.7071069}
   CustomID: 0
   angle: 0
@@ -4916,7 +4916,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 657256791}
   IsDynamic: 1
   PositionData: {x: 6.097, y: 0.58000046, z: -4.275, w: -0.01}
-  ColorData: {x: 10, y: 8.445727, z: 5.716981, w: 0.70710677}
+  ColorData: {x: 10, y: 6.821521, z: 2.865063, w: 0.70710677}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 3.4142134}
   CustomID: 3
   angle: 0.7853982
@@ -6074,7 +6074,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 832882188}
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -22, w: 0.027777778}
-  ColorData: {x: 1, y: 0.88851196, z: 0.109803915, w: 1}
+  ColorData: {x: 1, y: 0.7648705, z: 0.011612245, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   angle: 0
@@ -6284,7 +6284,7 @@ MonoBehaviour:
   - {fileID: 1036732748}
   - {fileID: 2070359847}
   - {fileID: 154949972}
-  Resolution: 512
+  Resolution: 256
   Format: 17
   AreaLightBrightnessCutoff: 0.35
   BakingMode: 0
@@ -7019,7 +7019,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 969307523}
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -22, w: 0.027777778}
-  ColorData: {x: 0.109803915, y: 0.6058649, z: 1, w: 1}
+  ColorData: {x: 0.011612245, y: 0.32543525, z: 1, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   angle: 0
@@ -7469,7 +7469,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 996561023}
   IsDynamic: 1
   PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 3, y: 0.35523212, z: 0.24339598, w: 0.8660254}
+  ColorData: {x: 3, y: 0.03936385, z: 0.022020133, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988
@@ -7793,7 +7793,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1036732746}
   IsDynamic: 1
   PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 0.24705881, y: 1.0225115, z: 3, w: 0.8660254}
+  ColorData: {x: 0.022497095, y: 0.28533506, z: 3, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988
@@ -11889,7 +11889,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1541482805}
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -16, w: 0.027777778}
-  ColorData: {x: 0.2668302, y: 1, z: 0.109803915, w: 1}
+  ColorData: {x: 0.057875987, y: 1, z: 0.011612245, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   angle: 0
@@ -12832,7 +12832,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1644032074}
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -16, w: 0.027777778}
-  ColorData: {x: 1, y: 0.111320674, z: 0.111320674, w: 1}
+  ColorData: {x: 1, y: 0.0118703935, z: 0.0118703935, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   angle: 0
@@ -20294,7 +20294,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1773416814}
   IsDynamic: 1
   PositionData: {x: -2.17, y: 1.571, z: 1.0230011, w: 1.0000002}
-  ColorData: {x: 0.9411764, y: 2.4259558, z: 5, w: 4}
+  ColorData: {x: 0.14778417, y: 1.002947, z: 5, w: 4}
   DirectionData: {x: -0, y: 0.7071065, z: -0, w: 0.7071072}
   CustomID: 0
   angle: 0
@@ -23613,7 +23613,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 2088816032}
   IsDynamic: 1
   PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -0.01}
-  ColorData: {x: 3, y: 2.533718, z: 1.7150942, w: 0.8660254}
+  ColorData: {x: 3, y: 2.0464563, z: 0.8595189, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988

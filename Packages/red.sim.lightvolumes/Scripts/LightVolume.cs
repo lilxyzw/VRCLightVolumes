@@ -66,6 +66,11 @@ namespace VRCLightVolumes {
         private Quaternion _prevRot = Quaternion.identity;
         private Vector3 _prevScl = Vector3.one;
 
+        private float _prevExposure = 0;
+        private float _prevShadows = 0;
+        private float _prevHighlights = 0;
+        private float _lastTimeColorCorrection = 0; // Last time color correction values changed
+
         // Preview
         private Material _previewMaterial;
         private Mesh _previewMesh;
@@ -443,6 +448,19 @@ namespace VRCLightVolumes {
                 _isValidated = false;
             }
 
+            // Regenerating atlas if color correction values were changed and 0.5 seconds delay passed
+            if (_prevExposure != Exposure || _prevHighlights != Highlights || _prevShadows != Shadows) {
+                
+                _prevExposure = Exposure;
+                _prevHighlights = Highlights;
+                _prevShadows = Shadows;
+                _lastTimeColorCorrection = Time.time;
+            }
+            if(_lastTimeColorCorrection > 0 && Time.time > _lastTimeColorCorrection + 0.5f) {
+                _lastTimeColorCorrection = 0;
+                LightVolumeSetup.GenerateAtlas();
+            }
+
             SyncUdonScript();
             LightVolumeSetup.SyncUdonScript();
 
@@ -494,6 +512,17 @@ namespace VRCLightVolumes {
         void ReleasePreviewBuffers() {
             if (_posBuf != null) { _posBuf.Release(); _posBuf = null; }
             if (_argsBuf != null) { _argsBuf.Release(); _argsBuf = null; }
+        }
+
+        private void Awake() {
+            _prevPos = transform.position;
+            _prevRot = transform.rotation;
+            _prevScl = transform.localScale;
+            _isValidated = false;
+            _prevExposure = Exposure;
+            _prevHighlights = Highlights;
+            _prevShadows = Shadows;
+            _lastTimeColorCorrection = 0;
         }
 
         private void OnEnable() {
