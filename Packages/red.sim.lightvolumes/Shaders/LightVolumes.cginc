@@ -245,6 +245,7 @@ void LV_QuadLight(
     float4 rotationQuat,
     float2 size,
     float3 color,
+    float occlusion,
     inout float3 L0,
     inout float3 L1r,
     inout float3 L1g,
@@ -288,16 +289,16 @@ void LV_QuadLight(
         areaLightSH.xyz *= areaLightSH.w / lenL1;
     
     // Accumulate SH coefficients
-    L0 += areaLightSH.w * color.rgb;
-    L1r += areaLightSH.xyz * color.r;
-    L1g += areaLightSH.xyz * color.g;
-    L1b += areaLightSH.xyz * color.b;
+    L0 += areaLightSH.w * color.rgb * occlusion;
+    L1r += areaLightSH.xyz * color.r * occlusion;
+    L1g += areaLightSH.xyz * color.g * occlusion;
+    L1b += areaLightSH.xyz * color.b * occlusion;
 
     count++;
 }
 
 // Samples a spot light, point light or quad/area light
-void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b, inout uint count) {
+void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b, inout uint count) {
     
     // Light position and inversed squared range 
     float4 pos = _UdonPointLightVolumePosition[id];
@@ -380,22 +381,22 @@ void LV_PointLight(uint id, float3 worldPos, inout float3 L0, inout float3 L1r, 
         float4 rotationQuat = ldir;
         float2 size = float2(pos.w, color.w - 2.0f);
         
-        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color.rgb, L0, L1r, L1g, L1b, count);
+        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color.rgb, occlusion, L0, L1r, L1g, L1b, count);
         return;
         
     }
 
     // Finnally adding SH components and incrementing counter
     count++;
-    L0 += att;
-    L1r += dirN * att.r;
-    L1g += dirN * att.g;
-    L1b += dirN * att.b;
+    L0 += att * occlusion;
+    L1r += dirN * att.r * occlusion;
+    L1g += dirN * att.g * occlusion;
+    L1b += dirN * att.b * occlusion;
 
 }
 
 // Samples spot light but for L0 only
-void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint count) {
+void LV_PointLight_L0(uint id, float3 worldPos, float occlusion, inout float3 L0, inout uint count) {
     
     // Light position and inversed squared range 
     float4 pos = _UdonPointLightVolumePosition[(uint) id];
@@ -483,14 +484,14 @@ void LV_PointLight_L0(uint id, float3 worldPos, inout float3 L0, inout uint coun
         float2 size = float2(pos.w, color.w - 2.0f);
 
         float3 unusedL1;
-        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color.rgb, L0, unusedL1, unusedL1, unusedL1, count);
+        LV_QuadLight(worldPos, centroidPos, rotationQuat, size, color.rgb, occlusion, L0, unusedL1, unusedL1, unusedL1, count);
         return;
         
     }
 
     // Finnally adding SH components and incrementing counter
     count++;
-    L0 += att;
+    L0 += att * occlusion;
 
 }
 
@@ -865,17 +866,12 @@ void PointLightSH(float3 worldPos, float4 occlusion, inout float3 L0, inout floa
     uint pcount = 0;
     [loop]
     for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-        float3 _L0 = 0, _L1r = 0, _L1g = 0, _L1b = 0;
-        LV_PointLight(pid, worldPos, _L0, _L1r, _L1g, _L1b, pcount);
         float lightOcclusion = 1;
         if (LV_LightHasShadowmask(pid)) {
             float4 selector = LV_GetLightShadowmaskSelector(pid);
             lightOcclusion = dot(1, selector * occlusion);
         }
-        L0  += _L0 * lightOcclusion;
-        L1r += _L1r * lightOcclusion;
-        L1g += _L1g * lightOcclusion;
-        L1b += _L1b * lightOcclusion;
+        LV_PointLight(pid, worldPos, lightOcclusion, L0, L1r, L1g, L1b, pcount);
     }
     
 }
@@ -1119,14 +1115,12 @@ float3 PointLightSH_L0(float3 worldPos, float4 occlusion) {
     uint pcount = 0;
     [loop]
     for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-        float3 _L0 = 0;
-        LV_PointLight_L0(pid, worldPos, _L0, pcount);
         float lightOcclusion = 1;
         if (LV_LightHasShadowmask(pid)) {
             float4 selector = LV_GetLightShadowmaskSelector(pid);
             lightOcclusion = dot(1, selector * occlusion);
         }
-        L0 += _L0 * lightOcclusion;
+        LV_PointLight_L0(pid, worldPos, lightOcclusion, L0, pcount);
     }
 
     return L0;
