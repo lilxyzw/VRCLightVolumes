@@ -15,18 +15,22 @@ namespace VRCLightVolumes {
     public class PointLightVolumeInstance : MonoBehaviour
 #endif
     {
+        [Tooltip("Point light volume color")]
+        [ColorUsage(showAlpha: false)] public Color Color;
+        [Tooltip("Color multiplies by this value.")]
+        public float ColorIntensity = 1;
         [Tooltip("Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance.")]
         public bool IsDynamic = false;
         [Tooltip("For point light: XYZ = Position, W = Inverse squared range.\nFor spot light: XYZ = Position, W = Inverse squared range, negated.\nFor area light: XYZ = Position, W = Width.")]
         public Vector4 PositionData;
-        [Tooltip("For point light: XYZ = Color, W = Cos of angle (for LUT).\nFor spot light: XYZ = Color, W = Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: XYZ = Color, W = 2 + Height.")]
-        public Vector4 ColorData;
         [Tooltip("For point light: XYZW = Rotation quaternion.\nFor spot light: XYZ = Direction, W = Cone falloff.\nFor area light: XYZW = Rotation quaternion.")]
         public Vector4 DirectionData;
         [Tooltip("If parametric: Stores 0.\nIf uses custom lut: Stores LUT ID with positive sign.\nIf uses custom texture: Stores texture ID with negative sign.")]
         public float CustomID;
         [Tooltip("Half-angle of the spotlight cone, in radians.")]
-        public float angle;
+        public float Angle;
+        [Tooltip("For point light: Cos of angle (for LUT).\nFor spot light: Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: 2 + Height.")]
+        public float AngleData;
 
         // Checks if it's a spotlight
         public bool IsSpotLight() {
@@ -35,12 +39,12 @@ namespace VRCLightVolumes {
         
         // Checks if it's a point light
         public bool IsPointLight() {
-            return PositionData.w >= 0 && ColorData.w <= 1.5;
+            return PositionData.w >= 0 && AngleData <= 1.5;
         }
 
         // Checks if it's an area light
         public bool IsAreaLight() {
-            return PositionData.w >= 0 && ColorData.w > 1.5;
+            return PositionData.w >= 0 && AngleData > 1.5;
         }
 
         // Checks if uses custom texture
@@ -66,21 +70,21 @@ namespace VRCLightVolumes {
         // Sets LUT ID
         public void SetLut(int id) {
             CustomID = id + 1;
-            ColorData.w = Mathf.Cos(angle);
+            AngleData = Mathf.Cos(Angle);
         }
 
         // Sets Cubemap or a Cookie ID
         public void SetCustomTexture(int id) {
             CustomID = - id - 1;
             if(IsSpotLight()) { // If it's spotlight
-                ColorData.w = Mathf.Tan(angle);
+                AngleData = Mathf.Tan(Angle);
             }
         }
 
         // Sets light into parametric mode
         public void SetParametric() {
             CustomID = 0;
-            ColorData.w = Mathf.Cos(angle);
+            AngleData = Mathf.Cos(Angle);
         }
 
         // Sets light into the point light type
@@ -90,23 +94,23 @@ namespace VRCLightVolumes {
 
         // Sets light into the spot light type with both angle and falloff because angle required to determine falloff anyway
         public void SetSpotLight(float angleDeg, float falloff) {
-            angle = angleDeg * Mathf.Deg2Rad * 0.5f;
+            Angle = angleDeg * Mathf.Deg2Rad * 0.5f;
             if (IsCustomTexture()) {
-                ColorData.w = Mathf.Tan(angle); // Using Custom Tex
+                AngleData = Mathf.Tan(Angle); // Using Custom Tex
             } else {
-                ColorData.w = Mathf.Cos(angle);
-                DirectionData.w = 1 / (Mathf.Cos(angle * (1.0f - Mathf.Clamp01(falloff))) - ColorData.w);
+                AngleData = Mathf.Cos(Angle);
+                DirectionData.w = 1 / (Mathf.Cos(Angle * (1.0f - Mathf.Clamp01(falloff))) - AngleData);
             }
             PositionData.w = - Mathf.Abs(PositionData.w);
         }
 
         // Sets light into the spot light type with angle specified
         public void SetSpotLight(float angleDeg) {
-            angle = angleDeg * Mathf.Deg2Rad * 0.5f;
+            Angle = angleDeg * Mathf.Deg2Rad * 0.5f;
             if (IsCustomTexture()) {
-                ColorData.w = Mathf.Tan(angle); // Using Custom Tex
+                AngleData = Mathf.Tan(Angle); // Using Custom Tex
             } else {
-                ColorData.w = Mathf.Cos(angle);
+                AngleData = Mathf.Cos(Angle);
             }
             PositionData.w = - Mathf.Abs(PositionData.w);
         }
@@ -114,13 +118,7 @@ namespace VRCLightVolumes {
         // Sets light into the area light type
         public void SetAreaLight() {
             PositionData.w = Mathf.Max(Mathf.Abs(transform.lossyScale.x), 0.001f);
-            ColorData.w = 2 + Mathf.Max(Mathf.Abs(transform.lossyScale.y), 0.001f); // Add 2 to get out of [-1; 1] codomain of cosine
-        }
-
-        // Sets color
-        public void SetColor(Color color, float intensity = 1) {
-            Vector4 c = color.linear * intensity;
-            ColorData = new Vector4(c.x, c.y, c.z, ColorData.w);
+            AngleData = 2 + Mathf.Max(Mathf.Abs(transform.lossyScale.y), 0.001f); // Add 2 to get out of [-1; 1] codomain of cosine
         }
 
         // Updates data required for shader

@@ -19,10 +19,7 @@ namespace VRCLightVolumes {
         public Texture TargetRenderTexture;
         public bool AntiFlickering = true;
         [Space]
-        public float LightVolumeIntensity = 1;
         public LightVolumeInstance[] TargetLightVolumes;
-        [Space]
-        public float PointLightVolumeIntensity = 1;
         public PointLightVolumeInstance[] TargetPointLightVolumes;
         
 #if UDONSHARP
@@ -88,11 +85,11 @@ namespace VRCLightVolumes {
 
             // Applying all colors
             for (int i = 0; i < TargetLightVolumes.Length; i++) {
-                TargetLightVolumes[i].Color = _prevColor * LightVolumeIntensity;
+                TargetLightVolumes[i].Color = _prevColor;
             }
 
             for (int i = 0; i < TargetPointLightVolumes.Length; i++) {
-                TargetPointLightVolumes[i].SetColor(_prevColor, PointLightVolumeIntensity);
+                TargetPointLightVolumes[i].Color = _prevColor;
             }
 
         }
