@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
+using UnityEditor;
 using UnityEngine;
 
 namespace VRCLightVolumes {
@@ -53,7 +54,7 @@ namespace VRCLightVolumes {
                     texs[i * 4] = result.data[0];
                     texs[i * 4 + 1] = result.data[1];
                     texs[i * 4 + 2] = result.data[2];
-                    textures[i * 4 + 3] = volumes[i].OcclusionTexture; // Occlusion texture remains unchanged
+                    texs[i * 4 + 3] = volumes[i].OcclusionTexture; // Occlusion texture remains unchanged
                 }
 
                 int count = texs.Length;
@@ -267,7 +268,9 @@ namespace VRCLightVolumes {
                 // Clear temporary 3D textures
                 if (texs != null) {
                     for (int i = 0; i < texs.Length; i++) {
-                        UnityEngine.Object.DestroyImmediate(texs[i]);
+                        if (!EditorUtility.IsPersistent(texs[i])) {
+                            UnityEngine.Object.DestroyImmediate(texs[i]);
+                        }
                     }
                 }
             }
