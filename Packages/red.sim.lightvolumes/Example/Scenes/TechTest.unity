@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: 18ac429f64391fd40b06f5d7c8d9079f, type: 2}
+  m_LightingDataAsset: {fileID: 112000000, guid: 31f06c92298db0246aded770267f6a18, type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: 6195b3bff73d8174b93a0ec4386aee68, type: 2}
 --- !u!196 &4
 NavMeshSettings:
@@ -461,7 +461,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 33498727}
   IsDynamic: 1
   PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 0.8798822, y: 3, z: 0.24705881, w: 0.8660254}
+  ColorData: {x: 0.20988724, y: 3, z: 0.022497095, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988
@@ -1462,7 +1462,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 154949970}
   IsDynamic: 1
   PositionData: {x: -8.787, y: 0.5800005, z: 17.861, w: -0.01}
-  ColorData: {x: 1, y: 0.8445727, z: 0.57169807, w: 0.70710677}
+  ColorData: {x: 1, y: 0.6821521, z: 0.2865063, w: 0.70710677}
   DirectionData: {x: -1.0000002, y: 0.0000043832724, z: -0.0000032186556, w: 3.4142134}
   CustomID: 4
   angle: 0.7853982
@@ -3369,7 +3369,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 377300961}
   IsDynamic: 1
   PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -0.01}
-  ColorData: {x: 1, y: 0.7589134, z: 0.2320754, w: -0.88294756}
+  ColorData: {x: 1, y: 0.53651494, z: 0.043993086, w: -0.88294756}
   DirectionData: {x: 0.9659258, y: 0.00000040007035, z: 0.25881994, w: 3.0931816}
   CustomID: 0
   angle: 2.6529005
@@ -3550,7 +3550,7 @@ MonoBehaviour:
   Bake: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 8
-  Resolution: {x: 74, y: 36, z: 134}
+  Resolution: {x: 62, y: 36, z: 98}
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 458847875}
@@ -3581,26 +3581,26 @@ MonoBehaviour:
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  BoundsUvwMin0: {x: 0.013157895, y: 0.02631579, z: 0.0016155089, w: 0.9736842}
-  BoundsUvwMin1: {x: 0.013157895, y: 0.02631579, z: 0.22132471, w: 0.9473684}
-  BoundsUvwMin2: {x: 0.013157895, y: 0.02631579, z: 0.44103393, w: 0.21647818}
-  BoundsUvwMax0: {x: 0.9868421, y: 0.9736842, z: 0.2180937, w: 0}
-  BoundsUvwMax1: {x: 0.9868421, y: 0.9736842, z: 0.4378029, w: 0}
-  BoundsUvwMax2: {x: 0.9868421, y: 0.9736842, z: 0.6575121, w: 0}
-  InvLocalEdgeSmoothing: {x: 36.99488, y: 18.058006, z: 67.00097, w: 0}
+  BoundsUvwMin0: {x: 0.015625, y: 0.02631579, z: 0.0019569471, w: 0.96875}
+  BoundsUvwMin1: {x: 0.015625, y: 0.02631579, z: 0.19765167, w: 0.9473684}
+  BoundsUvwMin2: {x: 0.015625, y: 0.02631579, z: 0.39334637, w: 0.19178084}
+  BoundsUvwMax0: {x: 0.984375, y: 0.9736842, z: 0.19373778, w: 0}
+  BoundsUvwMax1: {x: 0.984375, y: 0.9736842, z: 0.3894325, w: 0}
+  BoundsUvwMax2: {x: 0.984375, y: 0.9736842, z: 0.5851272, w: 0}
+  InvLocalEdgeSmoothing: {x: 30.947428, y: 18.058006, z: 49.122536, w: 0}
   InvWorldMatrix:
-    e00: 0.10812307
+    e00: 0.12925145
     e01: 0
     e02: 0
-    e03: 0.14858052
+    e03: 0.17922045
     e10: 0
     e11: 0.2215084
     e12: 0
     e13: -0.6107541
     e20: 0
     e21: 0
-    e22: 0.05970063
-    e23: -0.036204726
+    e22: 0.08142902
+    e23: 0.103080325
     e30: 0
     e31: 0
     e32: 0
@@ -3643,8 +3643,8 @@ Transform:
   m_GameObject: {fileID: 458847873}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.3741796, y: 2.7572503, z: 0.6064379}
-  m_LocalScale: {x: 9.24872, y: 4.5145016, z: 16.750242}
+  m_LocalPosition: {x: -1.386603, y: 2.7572503, z: -1.2658918}
+  m_LocalScale: {x: 7.736857, y: 4.5145016, z: 12.280634}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 834285434}
@@ -4369,7 +4369,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 569909709}
   IsDynamic: 1
   PositionData: {x: 2.198, y: 1.571, z: 1.022999, w: 1.0000002}
-  ColorData: {x: 5, y: 2.7026937, z: 0.9411764, w: 4}
+  ColorData: {x: 5, y: 1.2675006, z: 0.14778417, w: 4}
   DirectionData: {x: -0, y: -0.70710677, z: -0, w: 0.7071069}
   CustomID: 0
   angle: 0
@@ -4916,7 +4916,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 657256791}
   IsDynamic: 1
   PositionData: {x: 6.097, y: 0.58000046, z: -4.275, w: -0.01}
-  ColorData: {x: 10, y: 8.445727, z: 5.716981, w: 0.70710677}
+  ColorData: {x: 10, y: 6.821521, z: 2.865063, w: 0.70710677}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 3.4142134}
   CustomID: 3
   angle: 0.7853982
@@ -6074,7 +6074,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 832882188}
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -22, w: 0.027777778}
-  ColorData: {x: 1, y: 0.88851196, z: 0.109803915, w: 1}
+  ColorData: {x: 1, y: 0.7648705, z: 0.011612245, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   angle: 0
@@ -6284,7 +6284,7 @@ MonoBehaviour:
   - {fileID: 1036732748}
   - {fileID: 2070359847}
   - {fileID: 154949972}
-  Resolution: 512
+  Resolution: 256
   Format: 17
   AreaLightBrightnessCutoff: 0.35
   BakingMode: 0
@@ -7019,7 +7019,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 969307523}
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -22, w: 0.027777778}
-  ColorData: {x: 0.109803915, y: 0.6058649, z: 1, w: 1}
+  ColorData: {x: 0.011612245, y: 0.32543525, z: 1, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   angle: 0
@@ -7469,7 +7469,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 996561023}
   IsDynamic: 1
   PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 3, y: 0.35523212, z: 0.24339598, w: 0.8660254}
+  ColorData: {x: 3, y: 0.03936385, z: 0.022020133, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988
@@ -7793,7 +7793,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1036732746}
   IsDynamic: 1
   PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 0.24705881, y: 1.0225115, z: 3, w: 0.8660254}
+  ColorData: {x: 0.022497095, y: 0.28533506, z: 3, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988
@@ -8456,12 +8456,12 @@ MonoBehaviour:
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  BoundsUvwMin0: {x: 0.013157895, y: 0.02631579, z: 0.6607431, w: 0.78947365}
-  BoundsUvwMin1: {x: 0.013157895, y: 0.4473684, z: 0.6607431, w: 0.36842108}
-  BoundsUvwMin2: {x: 0.013157895, y: 0.02631579, z: 0.80775446, w: 0.14378029}
-  BoundsUvwMax0: {x: 0.80263156, y: 0.39473686, z: 0.8045234, w: 0}
-  BoundsUvwMax1: {x: 0.80263156, y: 0.81578946, z: 0.8045234, w: 0}
-  BoundsUvwMax2: {x: 0.80263156, y: 0.39473686, z: 0.95153475, w: 0}
+  BoundsUvwMin0: {x: 0.015625, y: 0.02631579, z: 0.5890411, w: 0.9375}
+  BoundsUvwMin1: {x: 0.015625, y: 0.4473684, z: 0.5890411, w: 0.36842108}
+  BoundsUvwMin2: {x: 0.015625, y: 0.02631579, z: 0.7671233, w: 0.17416829}
+  BoundsUvwMax0: {x: 0.953125, y: 0.39473686, z: 0.7632094, w: 0}
+  BoundsUvwMax1: {x: 0.953125, y: 0.81578946, z: 0.7632094, w: 0}
+  BoundsUvwMax2: {x: 0.953125, y: 0.39473686, z: 0.9412916, w: 0}
   InvLocalEdgeSmoothing: {x: 80.20979, y: 19.067492, z: 118.409515, w: 0}
   InvWorldMatrix:
     e00: 0.04986922
@@ -10655,12 +10655,12 @@ MonoBehaviour:
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  BoundsUvwMin0: {x: 0.6184211, y: 0.4473684, z: 0.80775446, w: 0.19736838}
-  BoundsUvwMin1: {x: 0.6184211, y: 0.4473684, z: 0.8723748, w: 0.28947368}
-  BoundsUvwMin2: {x: 0.6184211, y: 0.4473684, z: 0.93699515, w: 0.061389327}
-  BoundsUvwMax0: {x: 0.81578946, y: 0.7368421, z: 0.8691438, w: 0}
-  BoundsUvwMax1: {x: 0.81578946, y: 0.7368421, z: 0.93376416, w: 0}
-  BoundsUvwMax2: {x: 0.81578946, y: 0.7368421, z: 0.9983845, w: 0}
+  BoundsUvwMin0: {x: 0.734375, y: 0.4473684, z: 0.7671233, w: 0.234375}
+  BoundsUvwMin1: {x: 0.734375, y: 0.4473684, z: 0.84540117, w: 0.28947368}
+  BoundsUvwMin2: {x: 0.734375, y: 0.4473684, z: 0.92367905, w: 0.07436401}
+  BoundsUvwMax0: {x: 0.96875, y: 0.7368421, z: 0.8414873, w: 0}
+  BoundsUvwMax1: {x: 0.96875, y: 0.7368421, z: 0.9197652, w: 0}
+  BoundsUvwMax2: {x: 0.96875, y: 0.7368421, z: 0.99804306, w: 0}
   InvLocalEdgeSmoothing: {x: 80, y: 58, z: 200, w: 0}
   InvWorldMatrix:
     e00: 0.05
@@ -11889,7 +11889,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1541482805}
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -16, w: 0.027777778}
-  ColorData: {x: 0.2668302, y: 1, z: 0.109803915, w: 1}
+  ColorData: {x: 0.057875987, y: 1, z: 0.011612245, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   angle: 0
@@ -12137,12 +12137,12 @@ MonoBehaviour:
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
-  BoundsUvwMin0: {x: 0.013157895, y: 0.4473684, z: 0.80775446, w: 0.57894737}
-  BoundsUvwMin1: {x: 0.013157895, y: 0.4473684, z: 0.8642973, w: 0.26315787}
-  BoundsUvwMin2: {x: 0.013157895, y: 0.4473684, z: 0.9208401, w: 0.053311765}
-  BoundsUvwMax0: {x: 0.59210527, y: 0.7105263, z: 0.8610662, w: 0}
-  BoundsUvwMax1: {x: 0.59210527, y: 0.7105263, z: 0.91760904, w: 0}
-  BoundsUvwMax2: {x: 0.59210527, y: 0.7105263, z: 0.97415185, w: 0}
+  BoundsUvwMin0: {x: 0.015625, y: 0.4473684, z: 0.7671233, w: 0.6875}
+  BoundsUvwMin1: {x: 0.015625, y: 0.4473684, z: 0.8356164, w: 0.26315787}
+  BoundsUvwMin2: {x: 0.015625, y: 0.4473684, z: 0.9041096, w: 0.06457925}
+  BoundsUvwMax0: {x: 0.703125, y: 0.7105263, z: 0.83170253, w: 0}
+  BoundsUvwMax1: {x: 0.703125, y: 0.7105263, z: 0.9001957, w: 0}
+  BoundsUvwMax2: {x: 0.703125, y: 0.7105263, z: 0.96868885, w: 0}
   InvLocalEdgeSmoothing: {x: 59.195484, y: 13.075011, z: 43.505676, w: 0}
   InvWorldMatrix:
     e00: 0.06757272
@@ -12832,8 +12832,8 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1644032074}
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -16, w: 0.027777778}
-  ColorData: {x: 1, y: 0.111320674, z: 0.111320674, w: 1}
-  DirectionData: {x: 0, y: 0, z: 0, w: 0}
+  ColorData: {x: 1, y: 0.0118703935, z: 0.0118703935, w: 1}
+  DirectionData: {x: -0, y: -0, z: -0, w: 1}
   CustomID: 0
   angle: 0
 --- !u!114 &1644032074
@@ -20294,7 +20294,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 1773416814}
   IsDynamic: 1
   PositionData: {x: -2.17, y: 1.571, z: 1.0230011, w: 1.0000002}
-  ColorData: {x: 0.9411764, y: 2.4259558, z: 5, w: 4}
+  ColorData: {x: 0.14778417, y: 1.002947, z: 5, w: 4}
   DirectionData: {x: -0, y: 0.7071065, z: -0, w: 0.7071072}
   CustomID: 0
   angle: 0
@@ -23613,7 +23613,7 @@ MonoBehaviour:
   _udonSharpBackingUdonBehaviour: {fileID: 2088816032}
   IsDynamic: 1
   PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -0.01}
-  ColorData: {x: 3, y: 2.533718, z: 1.7150942, w: 0.8660254}
+  ColorData: {x: 3, y: 2.0464563, z: 0.8595189, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   angle: 0.5235988

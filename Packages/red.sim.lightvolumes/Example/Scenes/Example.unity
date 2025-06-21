@@ -673,16 +673,52 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevPos.x
+      value: -0.00287354
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevPos.y
+      value: 2.5031366
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevPos.z
+      value: -17.999878
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevScl.x
+      value: 8.543028
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevScl.y
+      value: 4.5051656
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevScl.z
+      value: 8.481981
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevShadows
+      value: -0.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevExposure
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: _prevHighlights
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: LightVolumeSetup
       value: 
       objectReference: {fileID: 446951793}
     - target: {fileID: 7656743471049202641, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: Color.b
-      value: 0.2235294
+      value: 0.0409152
       objectReference: {fileID: 0}
     - target: {fileID: 7656743471049202641, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: Color.g
-      value: 0.56268185
+      value: 0.2767131
       objectReference: {fileID: 0}
     - target: {fileID: 7656743471049202641, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: BoundsUvwMax0.z

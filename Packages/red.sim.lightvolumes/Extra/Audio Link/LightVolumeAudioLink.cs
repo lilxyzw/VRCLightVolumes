@@ -20,13 +20,26 @@ namespace VRCLightVolumes {
 
         public AudioLink.AudioLink AudioLink;
         public AudioLinkBand AudioBand = AudioLinkBand.Bass;
-        public float VolumeInrtensity = 1;
-        public float MaterialsInrtensity = 2;
+        [Range(0, 127)] public int Delay = 0;
+        public bool SmoothingEnabled = true;
+        [Range(0, 1)] public float Smoothing = 0.25f;
+        [Space]
+        public bool OverrideColor = false;
+        public Color Color = Color.white;
+        [Space]
+        public float LightVolumeIntensity = 1;
         public LightVolumeInstance[] TargetLightVolumes;
+        [Space]
+        public float PointLightVolumeIntensity = 1;
+        public PointLightVolumeInstance[] TargetPointLightVolumes;
+        [Space]
+        public float MaterialsIntensity = 2;
         public Renderer[] TargetMeshRenderers;
 
         private int _emissionColorID;
         private MaterialPropertyBlock _block;
+
+        private Color _prevColor;
 
         private void InitIDs() {
             _emissionColorID = VRCShader.PropertyToID("_EmissionColor");
@@ -35,20 +48,49 @@ namespace VRCLightVolumes {
         private void Start() {
             _block = new MaterialPropertyBlock();
             InitIDs();
+            _prevColor = Color.black;
         }
 
         private void Update() {
+
             int band = (int)AudioBand;
-            Color color = Vector4.Scale(AudioLink.GetDataAtPixel(15, 28 + band), AudioLink.GetDataAtPixel(band, 23));
-            Color volumeColor = color * VolumeInrtensity;
-            for (int i = 0; i < TargetLightVolumes.Length; i++) {
-                TargetLightVolumes[i].Color = volumeColor;
+            Color color;
+            if (OverrideColor) {
+                color = Vector4.Scale(AudioLink.GetDataAtPixel(Delay, band), Color);
+            } else {
+                color = Vector4.Scale(AudioLink.GetDataAtPixel(Delay, band), AudioLink.GetDataAtPixel(band, 23));
             }
-            _block.SetColor(_emissionColorID, color * MaterialsInrtensity);
+
+            if (SmoothingEnabled) {
+                float diff = ColorDifference(color, _prevColor); // Difference between prev and current color
+                float smoothing = Time.deltaTime / Mathf.Lerp(Mathf.Lerp(0.25f, 1f, Smoothing), Mathf.Lerp(1e-05f, 0.1f, Smoothing), Mathf.Pow(diff * 1.5f, 0.1f)); // Smoothing speed depends on the color difference
+                _prevColor = Color.Lerp(_prevColor, color, smoothing); // Actually smoothing colors
+            } else {
+                _prevColor = color;
+            }
+
+            Color lightVolumeColor = _prevColor * LightVolumeIntensity;
+            for (int i = 0; i < TargetLightVolumes.Length; i++) {
+                TargetLightVolumes[i].Color = lightVolumeColor;
+            }
+            for (int i = 0; i < TargetPointLightVolumes.Length; i++) {
+                TargetPointLightVolumes[i].SetColor(_prevColor, PointLightVolumeIntensity);
+            }
+            _block.SetColor(_emissionColorID, _prevColor * MaterialsIntensity);
             for (int i = 0; i < TargetMeshRenderers.Length; i++) {
                 TargetMeshRenderers[i].SetPropertyBlock(_block);
             }
+
         }
+
+        private float ColorDifference(Color colorA, Color colorB) {
+            float rmean = (colorA.r + colorB.r) * 0.5f;
+            float r = colorA.r - colorB.r;
+            float g = colorA.g - colorB.g;
+            float b = colorA.b - colorB.b;
+            return Mathf.Sqrt((2f + rmean) * r * r + 4f * g * g + (3f - rmean) * b * b) / 3;
+        }
+
 #endif
     }
 

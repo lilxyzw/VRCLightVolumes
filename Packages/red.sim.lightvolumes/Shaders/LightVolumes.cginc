@@ -28,7 +28,7 @@ uniform float _UdonLightVolumeSharpBounds;
 uniform float4 _UdonLightVolumeInvWorldMatrix3x4[96];
 
 // L1 SH quaternion rotation (relative to baked rotation)
-uniform float4 _UdonLightVolumeRotationQaternion[32];
+uniform float4 _UdonLightVolumeRotationQuaternion[32];
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[32];
@@ -603,7 +603,7 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     
     // Rotate if needed
     if (color.a != 0) {
-        float4 r = _UdonLightVolumeRotationQaternion[id];
+        float4 r = _UdonLightVolumeRotationQuaternion[id];
         L1r = LV_MultiplyVectorByQuaternion(L1r, r);
         L1g = LV_MultiplyVectorByQuaternion(L1g, r);
         L1b = LV_MultiplyVectorByQuaternion(L1b, r);

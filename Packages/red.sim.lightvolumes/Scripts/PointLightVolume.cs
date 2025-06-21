@@ -125,8 +125,6 @@ namespace VRCLightVolumes {
             } else if (Type == LightType.AreaLight) { // Area light
                 PointLightVolumeInstance.SetAreaLight();
             }
-
-            LVUtils.MarkDirty(PointLightVolumeInstance);
         }
 
         private void Reset() {
