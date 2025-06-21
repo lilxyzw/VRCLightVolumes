@@ -185,8 +185,7 @@ namespace VRCLightVolumes {
             // Searching for enabled volumes. Counting Additive volumes.
             _enabledCount = 0;
             _additiveCount = 0;
-            int maxLength = Mathf.Min(LightVolumeInstances.Length, 32);
-            for (int i = 0; i < maxLength; i++) {
+            for (int i = 0; i < LightVolumeInstances.Length && _enabledCount < 32; i++) {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance != null && instance.gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
@@ -262,8 +261,7 @@ namespace VRCLightVolumes {
 
             // Searching for enabled point light volumes
             _pointLightCount = 0;
-            int pointMaxLength = Mathf.Min(PointLightVolumeInstances.Length, 128);
-            for (int i = 0; i < pointMaxLength; i++) {
+            for (int i = 0; i < PointLightVolumeInstances.Length && _pointLightCount < 128; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[i];
                 if (instance != null && instance.gameObject.activeInHierarchy) {
 #if UNITY_EDITOR
