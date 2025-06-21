@@ -847,7 +847,7 @@ void PointLightSH(float3 worldPos, float4 occlusion, inout float3 L0, inout floa
     for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         float lightOcclusion = 1;
         float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
-        if (shadowmaskIndex >= 0) {
+        [branch] if (shadowmaskIndex >= 0) {
             float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
             lightOcclusion = dot(1, selector * occlusion);
         }
@@ -1097,7 +1097,7 @@ float3 PointLightSH_L0(float3 worldPos, float4 occlusion) {
     for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         float lightOcclusion = 1;
         float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
-        if (shadowmaskIndex >= 0) {
+        [branch] if (shadowmaskIndex >= 0) {
             float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
             lightOcclusion = dot(1, selector * occlusion);
         }
