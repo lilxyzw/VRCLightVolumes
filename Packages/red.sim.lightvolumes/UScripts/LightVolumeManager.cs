@@ -60,7 +60,7 @@ namespace VRCLightVolumes {
         private Vector4[] _pointLightPosition;
         private Vector4[] _pointLightColor;
         private Vector4[] _pointLightDirection;
-        private float[] _pointLightCustomId;
+        private Vector4[] _pointLightCustomId;
 
         // Legacy support Data
         private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
@@ -95,8 +95,6 @@ namespace VRCLightVolumes {
         private int _pointLightCountID;
         private int _pointLightCubeCountID;
         private int _pointLightTextureID;
-        private int _pointLightShadowmaskIndicesID;
-        private int _pointLightShadowmaskEnabledID;
         private int _areaLightBrightnessCutoffID;
         // Legacy support
         private int lightVolumeRotationID;
@@ -138,8 +136,6 @@ namespace VRCLightVolumes {
             _pointLightCustomIdID = VRCShader.PropertyToID("_UdonPointLightVolumeCustomID");
             _pointLightCubeCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCubeCount");
             _pointLightTextureID = VRCShader.PropertyToID("_UdonPointLightVolumeTexture");
-            _pointLightShadowmaskIndicesID = VRCShader.PropertyToID("_UdonPointLightShadowmaskIndices");
-            _pointLightShadowmaskEnabledID = VRCShader.PropertyToID("_UdonPointLightShadowmaskEnabled");
             _areaLightBrightnessCutoffID = VRCShader.PropertyToID("_UdonAreaLightBrightnessCutoff");
             // Legacy support
             lightVolumeRotationID = VRCShader.PropertyToID("_UdonLightVolumeRotation");
@@ -160,9 +156,7 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalVectorArray(_pointLightPositionID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightColorID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightDirectionID, new Vector4[128]);
-            VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, new float[128]);
-            VRCShader.SetGlobalFloatArray(_pointLightShadowmaskIndicesID, new float[11]);
-            VRCShader.SetGlobalFloatArray(_pointLightShadowmaskEnabledID, new float[6]);
+            VRCShader.SetGlobalVectorArray(_pointLightCustomIdID, new Vector4[128]);
             // Legacy support
             VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, new Matrix4x4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeRotationID, new Vector4[64]);
@@ -291,19 +285,18 @@ namespace VRCLightVolumes {
                 _pointLightPosition = new Vector4[_pointLightCount];
                 _pointLightColor = new Vector4[_pointLightCount];
                 _pointLightDirection = new Vector4[_pointLightCount];
-                _pointLightCustomId = new float[_pointLightCount];
+                _pointLightCustomId = new Vector4[_pointLightCount];
                 _lastPointLightCount = _pointLightCount;
             }
 
             // Filling arrays with enabled point light volumes
-            sbyte[] pointLightShadowmaskIndicesRaw = new sbyte[_pointLightCount];
             for (int i = 0; i < _pointLightCount; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[_enabledPointIDs[i]];
                 _pointLightPosition[i] = instance.PositionData;
                 _pointLightColor[i] = instance.ColorData;
                 _pointLightDirection[i] = instance.DirectionData;
-                _pointLightCustomId[i] = instance.CustomID;
-                pointLightShadowmaskIndicesRaw[i] = instance.ShadowmaskIndex;
+                _pointLightCustomId[i].x = instance.CustomID;
+                _pointLightCustomId[i].y = instance.ShadowmaskIndex;
             }
 
             bool isAtlas = LightVolumeAtlas != null;
@@ -360,25 +353,8 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightColorID, _pointLightColor);
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
-                VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
+                VRCShader.SetGlobalVectorArray(_pointLightCustomIdID, _pointLightCustomId);
                 VRCShader.SetGlobalFloat(_areaLightBrightnessCutoffID, AreaLightBrightnessCutoff);
-                
-                // Bitpack shadowmask indices
-                bool[] shadowmaskIndicesBits = new bool[256];
-                bool[] shadowmaskEnabledBits = new bool[128];
-                if (_pointLightCount > 0) {
-                    for (int i = 0; i < _pointLightCount; i++) {
-                        sbyte shadowmaskIndex = pointLightShadowmaskIndicesRaw[i];
-                        if (shadowmaskIndex < 0)
-                            continue;
-
-                        shadowmaskEnabledBits[i] = true;
-                        shadowmaskIndicesBits[i * 2 + 0] = (shadowmaskIndex & 0b10) != 0;
-                        shadowmaskIndicesBits[i * 2 + 1] = (shadowmaskIndex & 0b01) != 0;
-                    }
-                }
-                VRCShader.SetGlobalFloatArray(_pointLightShadowmaskIndicesID, PackBitsToFloatArray(shadowmaskIndicesBits));
-                VRCShader.SetGlobalFloatArray(_pointLightShadowmaskEnabledID, PackBitsToFloatArray(shadowmaskEnabledBits));
             }
             if(CustomTextures != null) {
                 VRCShader.SetGlobalTexture(_pointLightTextureID, CustomTextures);
@@ -387,22 +363,6 @@ namespace VRCLightVolumes {
             // Defines if Light Volumes enabled in scene. 0 if disabled. And a version number if enabled
             VRCShader.SetGlobalFloat(lightVolumeEnabledID, Version);
 
-        }
-        
-        private static float[] PackBitsToFloatArray(bool[] bits) {
-            float[] packedFloats = new float[(bits.Length + (24-1)) / 24];
-            for (int i = 0; i < packedFloats.Length; i++) {
-                uint packed = 0;
-                for (int j = 0; j < 24; j++) { // 24 bit per float
-                    int bitIdx = i * 24 + j;
-                    if (bitIdx >= bits.Length)
-                        break; // No more bits to pack
-                    if (bits[bitIdx])
-                        packed |= 1u << (23 - j);
-                }
-                packedFloats[i] = packed;
-            }
-            return packedFloats;
         }
     }
 }

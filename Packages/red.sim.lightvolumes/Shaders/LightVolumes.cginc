@@ -64,23 +64,17 @@ uniform float4 _UdonPointLightVolumeColor[128];
 // For area light: XYZW = Rotation quaternion
 uniform float4 _UdonPointLightVolumeDirection[128];
 
-// If parametric: Stores 0
-// If uses custom lut: Stores LUT ID with positive sign
-// If uses custom texture: Stores texture ID with negative sign
-uniform float _UdonPointLightVolumeCustomID[128];
+// X = Custom ID:
+//   If parametric: X stores 0
+//   If uses custom lut: X stores LUT ID with positive sign
+//   If uses custom texture: X stores texture ID with negative sign
+// Y = Shadowmask index. If light doesn't use shadowmask, the index will be negative.
+uniform float2 _UdonPointLightVolumeCustomID[128];
 
 // If we are far enough from an area light that the irradiance
 // is guaranteed lower than the threshold defined by this value,
 // we cull the light.
 uniform float _UdonAreaLightBrightnessCutoff;
-
-// Light shadowmask indices, 2 bits per lights.
-// Each float stores 24 bits, i.e. 12 lights
-uniform float _UdonPointLightShadowmaskIndices[11];
-
-// Light shadowmask toggle, 1 bit per light.
-// Each float stores 24 bits, i.e. 24 lights
-uniform float _UdonPointLightShadowmaskEnabled[6];
 
 #ifndef SHADER_TARGET_SURFACE_ANALYSIS
 }
@@ -319,7 +313,7 @@ void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, i
     float angle = color.w;
     float4 ldir = _UdonPointLightVolumeDirection[id]; // Dir + falloff or Rotation
     float coneFalloff = ldir.w;
-    int customId = (int) _UdonPointLightVolumeCustomID[id]; // Custom Texture ID
+    int customId = (int) _UdonPointLightVolumeCustomID[id].x; // Custom Texture ID
     
     float3 dirN = dir * rsqrt(sqlen);
     float dirRadius = sqlen * invSqRange;
@@ -418,7 +412,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, float occlusion, inout float3 L0
     float angle = color.w;
     float4 ldir = _UdonPointLightVolumeDirection[(uint) id];
     float coneFalloff = ldir.w;
-    int customId = (int) _UdonPointLightVolumeCustomID[id]; // Custom Texture ID
+    int customId = (int) _UdonPointLightVolumeCustomID[id].x; // Custom Texture ID
     
     float dirRadius = sqlen * invSqRange;
     
@@ -551,21 +545,6 @@ float3 LV_SampleLightProbe_L0() {
 // Linear single SH L1 channel evaluation
 float LV_EvaluateSH(float L0, float3 L1, float3 n) {
     return L0 + dot(L1, n);
-}
-
-// Check whether the light with the given ID uses shadowmasks (baked shadows).
-bool LV_LightHasShadowmask(uint id) {
-    uint bits = _UdonPointLightShadowmaskEnabled[id / 24u];
-    return bits & (1u << (23u - (id % 24u)));
-}
-
-// Returns a float4 with 1 in the channel used for shadowmasks by the light with the given ID,
-// and 0 in all other channels.
-float4 LV_GetLightShadowmaskSelector(uint id) {
-    uint bits = _UdonPointLightShadowmaskIndices[id / 12u];
-    uint bitOffset = (22u - ((id % 12u) * 2u));
-    uint masked = (bits & (3u << bitOffset)) >> bitOffset;
-    return float4(masked == 0, masked == 1, masked == 2, masked == 3);
 }
 
 // Samples a Volume with ID and Local UVW
@@ -867,8 +846,9 @@ void PointLightSH(float3 worldPos, float4 occlusion, inout float3 L0, inout floa
     [loop]
     for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         float lightOcclusion = 1;
-        if (LV_LightHasShadowmask(pid)) {
-            float4 selector = LV_GetLightShadowmaskSelector(pid);
+        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
+        if (shadowmaskIndex >= 0) {
+            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
             lightOcclusion = dot(1, selector * occlusion);
         }
         LV_PointLight(pid, worldPos, lightOcclusion, L0, L1r, L1g, L1b, pcount);
@@ -1116,8 +1096,9 @@ float3 PointLightSH_L0(float3 worldPos, float4 occlusion) {
     [loop]
     for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
         float lightOcclusion = 1;
-        if (LV_LightHasShadowmask(pid)) {
-            float4 selector = LV_GetLightShadowmaskSelector(pid);
+        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
+        if (shadowmaskIndex >= 0) {
+            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
             lightOcclusion = dot(1, selector * occlusion);
         }
         LV_PointLight_L0(pid, worldPos, lightOcclusion, L0, pcount);
