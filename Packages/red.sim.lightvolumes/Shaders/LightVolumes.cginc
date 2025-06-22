@@ -612,6 +612,7 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
     } else {
         return 1;
     }
+    
 }
 
 // Samples a Volume with ID and Local UVW, but L0 component only
