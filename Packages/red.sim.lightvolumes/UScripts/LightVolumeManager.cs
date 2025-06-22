@@ -45,6 +45,7 @@ namespace VRCLightVolumes {
         private int _enabledCount = 0;
         private int _lastEnabledCount = -1;
         private int _additiveCount = 0;
+        private int _occlusionCount = 0;
 
         private Vector4[] _invLocalEdgeSmooth = new Vector4[0];
         private Vector4[] _colors = new Vector4[0];
@@ -87,6 +88,7 @@ namespace VRCLightVolumes {
         private int lightVolumeInvWorldMatrix3x4ID;
         private int lightVolumeUvwScaleID;
         private int lightVolumeOcclusionUvwID;
+        private int lightVolumeOcclusionCountID;
         // Point Lights
         private int _pointLightPositionID;
         private int _pointLightColorID;
@@ -128,6 +130,7 @@ namespace VRCLightVolumes {
             lightVolumeInvWorldMatrix3x4ID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix3x4");
             lightVolumeUvwScaleID = VRCShader.PropertyToID("_UdonLightVolumeUvwScale");
             lightVolumeOcclusionUvwID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionUvw");
+            lightVolumeOcclusionCountID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionCount");
             // Point Lights
             _pointLightPositionID = VRCShader.PropertyToID("_UdonPointLightVolumePosition");
             _pointLightColorID = VRCShader.PropertyToID("_UdonPointLightVolumeColor");
@@ -189,6 +192,7 @@ namespace VRCLightVolumes {
             // Searching for enabled volumes. Counting Additive volumes.
             _enabledCount = 0;
             _additiveCount = 0;
+            _occlusionCount = 0;
             for (int i = 0; i < LightVolumeInstances.Length && _enabledCount < 32; i++) {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance != null && instance.gameObject.activeInHierarchy) {
@@ -198,6 +202,7 @@ namespace VRCLightVolumes {
                     if (instance.IsDynamic) instance.UpdateTransform();
 #endif
                     if (instance.IsAdditive) _additiveCount++;
+                    else if (instance.BakeOcclusion) _occlusionCount++;
                     _enabledIDs[_enabledCount] = i;
                     _enabledCount++;
                 }
@@ -319,6 +324,7 @@ namespace VRCLightVolumes {
             // Regular Light Volumes
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
+            VRCShader.SetGlobalFloat(lightVolumeOcclusionCountID, _occlusionCount);
             if (_enabledCount != 0) {
 
                 // Defines if Light Probes Blending enabled in scene
