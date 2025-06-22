@@ -37,7 +37,7 @@ namespace VRCLightVolumes {
                     textures[i * 4] = volumes[i].Texture0;
                     textures[i * 4 + 1] = volumes[i].Texture1;
                     textures[i * 4 + 2] = volumes[i].Texture2;
-                    textures[i * 4 + 3] = volumes[i].OcclusionTexture;
+                    textures[i * 4 + 3] = volumes[i].ShadowsTexture;
                 }
 
                 // Color coccecting and Linearizing SH
@@ -54,7 +54,7 @@ namespace VRCLightVolumes {
                     texs[i * 4] = result.data[0];
                     texs[i * 4 + 1] = result.data[1];
                     texs[i * 4 + 2] = result.data[2];
-                    texs[i * 4 + 3] = volumes[i].OcclusionTexture; // Occlusion texture remains unchanged
+                    texs[i * 4 + 3] = volumes[i].ShadowsTexture; // Occlusion texture remains unchanged
                 }
 
                 int count = texs.Length;

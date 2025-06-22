@@ -32,8 +32,8 @@ namespace VRCLightVolumes {
         public Texture3D Texture1;
         [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
         public Texture3D Texture2;
-        [Tooltip("Optional Texture3D with baked occlusion data for future atlas packing. It won't be uploaded to VRChat. Stores occlusion for up to 4 nearby lights.")]
-        public Texture3D OcclusionTexture;
+        [Tooltip("Optional Texture3D with baked shadows data for future atlas packing. It won't be uploaded to VRChat. Stores occlusion for up to 4 nearby point light volumes.")]
+        public Texture3D ShadowsTexture;
 
         [Header("Color Correction")]
         [Tooltip("Makes volume brighter or darker.\nUpdates volume color after atlas packing only!")]
@@ -46,10 +46,10 @@ namespace VRCLightVolumes {
         [Header("Baking Setup")]
         [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
         public bool Bake = true;
-        [Tooltip("Uncheck it if you don't want to rebake occlusion data required for baked point light shadows.")]
-        public bool BakeOcclusion = true;
-        [Tooltip("Post-processes the baked occlusion with a softening blur. This can help mitigate 'blocky' shadows caused by aliasing, but also makes shadows less crispy.")]
-        public bool BlurOcclusion = false;
+        [Tooltip("Uncheck it if you don't want to rebake occlusion data required for baked point light volumes shadows.")]
+        public bool PointLightShadows = true;
+        [Tooltip("Post-processes the baked occlusion texture with a softening blur. This can help mitigate 'blocky' shadows caused by aliasing, but also makes shadows less crispy.")]
+        public bool BlurShadows = true;
         [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
         public bool AdaptiveResolution = true;
         [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
@@ -163,13 +163,13 @@ namespace VRCLightVolumes {
         public void BakeOcclusionTexture() {
             // Occlusion data is optional, check if requested and needed
             // Additive volumes don't get occlusion, because adding occlusion values doesn't make any sense
-            bool needOcclusion = BakeOcclusion && !Additive && LightVolumeSetup.PointLightVolumes.Any(l => l.BakedShadows && !l.Dynamic);
+            bool needOcclusion = PointLightShadows && !Additive && LightVolumeSetup.PointLightVolumes.Any(l => l.BakedShadows && !l.Dynamic);
             if (!needOcclusion) {
-                if (OcclusionTexture != null)
+                if (ShadowsTexture != null)
                     LVUtils.MarkDirty(this);
                 if (LightVolumeInstance.BakeOcclusion)
                     LVUtils.MarkDirty(LightVolumeInstance);
-                OcclusionTexture = null;
+                ShadowsTexture = null;
                 LightVolumeInstance.BakeOcclusion = false;
                 return;
             }
@@ -202,13 +202,13 @@ namespace VRCLightVolumes {
                 shadowLightInfluenceRadii,
                 shadowLightRadii,
                 shadowLightArea,
-                BlurOcclusion);
+                BlurShadows);
             
             string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/Temp";
             if (occ != null)
-                LVUtils.SaveAsAsset(occ, $"{path}/{gameObject.name}_occ.asset");
+                LVUtils.SaveAsAsset(occ, $"{path}/{gameObject.name}_shadows.asset");
             
-            OcclusionTexture = occ;
+            ShadowsTexture = occ;
             LVUtils.MarkDirty(this);
             
             LightVolumeInstance.BakeOcclusion = occ != null;
