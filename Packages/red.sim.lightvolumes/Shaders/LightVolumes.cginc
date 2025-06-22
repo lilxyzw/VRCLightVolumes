@@ -828,13 +828,10 @@ void LV_LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out f
     
     // Clamping gloabal iteration counts
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
-    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
-    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
-        LV_SampleLightProbe(L0, L1r, L1g, L1b);
-        return;
-    }
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
+    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
+    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     
     uint volumeID_A = -1; // Main, dominant volume ID
     uint volumeID_B = -1; // Secondary volume ID to blend main with
@@ -1033,12 +1030,10 @@ float3 LV_LightVolumeAdditiveSHNoPointLights_L0(float3 worldPos, out float4 occl
     
     // Clamping gloabal iteration counts
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
-    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
-    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
-        return LV_SampleLightProbe_L0();
-    }
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
+    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return 0;
+    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     
     float3 L0 = float3(0, 0, 0);
     
