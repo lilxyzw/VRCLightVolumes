@@ -638,73 +638,54 @@ float LV_DistributionGGX(float NoH, float roughness) {
     return (roughness * roughness) / ((float) 3.141592653589793f * f * f);
 }
 
-// Calculates speculars for light volumes or any SH L1 data
-float3 LightVolumeSpecular(float3 f0, float smoothness, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+// Calculates L1 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
+void LV_PointLightVolumeSH(float3 worldPos, float4 occlusion, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
     
-    float3 specColor = max(float3(dot(reflect(-L1r, worldNormal), viewDir), dot(reflect(-L1g, worldNormal), viewDir), dot(reflect(-L1b, worldNormal), viewDir)), 0);
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     
-    float3 rDir = normalize(normalize(L1r) + viewDir);
-    float3 gDir = normalize(normalize(L1g) + viewDir);
-    float3 bDir = normalize(normalize(L1b) + viewDir);
-    
-    float rNh = saturate(dot(worldNormal, rDir));
-    float gNh = saturate(dot(worldNormal, gDir));
-    float bNh = saturate(dot(worldNormal, bDir));
-    
-    float roughness = 1 - smoothness * 0.9f;
-    float roughExp = roughness * roughness;
-    
-    float rSpec = LV_DistributionGGX(rNh, roughExp);
-    float gSpec = LV_DistributionGGX(gNh, roughExp);
-    float bSpec = LV_DistributionGGX(bNh, roughExp);
-    
-    float3 specs = (rSpec + gSpec + bSpec) * f0;
-    float3 coloredSpecs = specs * specColor;
-    
-    float3 a = coloredSpecs + specs * L0;
-    float3 b = coloredSpecs * 3;
-    
-    return max(lerp(a, b, smoothness), 0.0);
-    
-}
-
-float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
-    float3 specularf0 = lerp(0.04f, albedo, metallic);
-    return LightVolumeSpecular(specularf0, smoothness, worldNormal, viewDir, L0, L1r, L1g, L1b);
-}
-
-// Calculates speculars for light volumes or any SH L1 data, but simplified, with only one dominant direction
-float3 LightVolumeSpecularDominant(float3 f0, float smoothness, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
-    
-    float3 dominantDir = L1r + L1g + L1b;
-    float3 dir = normalize(normalize(dominantDir) + viewDir);
-    float nh = saturate(dot(worldNormal, dir));
-    
-    float roughness = 1 - smoothness * 0.9f;
-    float roughExp = roughness * roughness;
-    
-    float spec = LV_DistributionGGX(nh, roughExp);
-    
-    return max(spec * L0 * f0, 0.0) * 3;
-    
-}
-
-float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
-    float3 specularf0 = lerp(0.04f, albedo, metallic);
-    return LightVolumeSpecularDominant(specularf0, smoothness, worldNormal, viewDir, L0, L1r, L1g, L1b);
-}
-
-// Calculate Light Volume Color based on all SH components provided and the world normal
-float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
-    if (_UdonLightVolumeEnabled != 0) {
-        return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
-    } else { // No Light Volumes here in this scene. Scene is probably baked with Bakery, and overexposed light probes should be fixed. Just a stupid fix that kinda works.
-        return float3(LV_EvaluateSH(L0.r, L1r * 0.565f, worldNormal), LV_EvaluateSH(L0.g, L1g * 0.565f, worldNormal), LV_EvaluateSH(L0.b, L1b * 0.565f, worldNormal));
+    // Process Point Lights
+    uint pcount = 0;
+    [loop]
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
+        float lightOcclusion = 1;
+        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
+        [branch] if (shadowmaskIndex >= 0) {
+            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
+            lightOcclusion = dot(1, selector * occlusion);
+        }
+        LV_PointLight(pid, worldPos, lightOcclusion, L0, L1r, L1g, L1b, pcount);
     }
+    
+}
+
+// Calculates L0 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
+float3 LV_PointLightVolumeSH_L0(float3 worldPos, float4 occlusion) {
+    
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
+
+    float3 L0 = 0;
+    
+    // Process Point Lights
+    uint pcount = 0;
+    [loop]
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
+        float lightOcclusion = 1;
+        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
+        [branch] if (shadowmaskIndex >= 0) {
+            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
+            lightOcclusion = dot(1, selector * occlusion);
+        }
+        LV_PointLight_L0(pid, worldPos, lightOcclusion, L0, pcount);
+    }
+
+    return L0;
+    
 }
 
 // Calculates L1 SH and occlusion based on the world position. Only samples light volumes, not point lights.
-void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
+void LV_LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
 
     // Initializing output variables
     L0  = float3(0, 0, 0);
@@ -835,39 +816,9 @@ void LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, 
 
 }
 
-// Calculates L1 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
-void PointLightSH(float3 worldPos, float4 occlusion, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
-    
-    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
-    
-    // Process Point Lights
-    uint pcount = 0;
-    [loop]
-    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-        float lightOcclusion = 1;
-        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
-        [branch] if (shadowmaskIndex >= 0) {
-            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
-            lightOcclusion = dot(1, selector * occlusion);
-        }
-        LV_PointLight(pid, worldPos, lightOcclusion, L0, L1r, L1g, L1b, pcount);
-    }
-    
-}
-
-// Calculates L1 SH based on the world position. Samples both light volumes and point lights.
-void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
-    
-    float4 occlusion;
-    LightVolumeSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
-    PointLightSH(worldPos, occlusion, L0, L1r, L1g, L1b);
-    
-}
-
 // Calculates L1 SH based on the world position from additive volumes only. Only samples light volumes, not point lights.
 // Also returns an occlusion factor, which may be used for point light shadows.
-void LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
+void LV_LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
 
     // Initializing output variables
     L0  = float3(0, 0, 0);
@@ -971,17 +922,8 @@ void LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out floa
     
 }
 
-// Calculates L1 SH based on the world position from additive volumes only. Samples both light volumes and point lights.
-void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
-    
-    float4 occlusion;
-    LightVolumeAdditiveSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
-    PointLightSH(worldPos, occlusion, L0, L1r, L1g, L1b);
-    
-}
-
 // Calculates L0 SH and occlusion based on the world position. Only samples light volumes, not point lights.
-float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
+float3 LV_LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
 
     // Default to unoccluded
     occlusion = 1;
@@ -1083,44 +1025,9 @@ float3 LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
 
 }
 
-// Calculates L0 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
-float3 PointLightSH_L0(float3 worldPos, float4 occlusion) {
-    
-    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128); 
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
-
-    float3 L0 = 0;
-    
-    // Process Point Lights
-    uint pcount = 0;
-    [loop]
-    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-        float lightOcclusion = 1;
-        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
-        [branch] if (shadowmaskIndex >= 0) {
-            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
-            lightOcclusion = dot(1, selector * occlusion);
-        }
-        LV_PointLight_L0(pid, worldPos, lightOcclusion, L0, pcount);
-    }
-
-    return L0;
-    
-}
-
-// Calculates L0 SH based on the world position. Samples both light volumes and point lights.
-float3 LightVolumeSH_L0(float3 worldPos) {
-    
-    float4 occlusion;
-    float3 L0 = LightVolumeSHNoPointLights_L0(worldPos, occlusion);
-    L0 += PointLightSH_L0(worldPos, occlusion);
-    return L0;
-    
-}
-
 // Calculates L0 SH based on the world position from additive volumes only. Only samples light volumes, not point lights.
 // Also returns an occlusion factor, which may be used for point light shadows.
-float3 LightVolumeAdditiveSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
+float3 LV_LightVolumeAdditiveSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
 
     // Default to unoccluded
     occlusion = 1;
@@ -1218,12 +1125,105 @@ float3 LightVolumeAdditiveSHNoPointLights_L0(float3 worldPos, out float4 occlusi
     
 }
 
+// Calculates speculars for light volumes or any SH L1 data
+float3 LightVolumeSpecular(float3 f0, float smoothness, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+    
+    float3 specColor = max(float3(dot(reflect(-L1r, worldNormal), viewDir), dot(reflect(-L1g, worldNormal), viewDir), dot(reflect(-L1b, worldNormal), viewDir)), 0);
+    
+    float3 rDir = normalize(normalize(L1r) + viewDir);
+    float3 gDir = normalize(normalize(L1g) + viewDir);
+    float3 bDir = normalize(normalize(L1b) + viewDir);
+    
+    float rNh = saturate(dot(worldNormal, rDir));
+    float gNh = saturate(dot(worldNormal, gDir));
+    float bNh = saturate(dot(worldNormal, bDir));
+    
+    float roughness = 1 - smoothness * 0.9f;
+    float roughExp = roughness * roughness;
+    
+    float rSpec = LV_DistributionGGX(rNh, roughExp);
+    float gSpec = LV_DistributionGGX(gNh, roughExp);
+    float bSpec = LV_DistributionGGX(bNh, roughExp);
+    
+    float3 specs = (rSpec + gSpec + bSpec) * f0;
+    float3 coloredSpecs = specs * specColor;
+    
+    float3 a = coloredSpecs + specs * L0;
+    float3 b = coloredSpecs * 3;
+    
+    return max(lerp(a, b, smoothness), 0.0);
+    
+}
+
+float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+    float3 specularf0 = lerp(0.04f, albedo, metallic);
+    return LightVolumeSpecular(specularf0, smoothness, worldNormal, viewDir, L0, L1r, L1g, L1b);
+}
+
+// Calculates speculars for light volumes or any SH L1 data, but simplified, with only one dominant direction
+float3 LightVolumeSpecularDominant(float3 f0, float smoothness, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+    
+    float3 dominantDir = L1r + L1g + L1b;
+    float3 dir = normalize(normalize(dominantDir) + viewDir);
+    float nh = saturate(dot(worldNormal, dir));
+    
+    float roughness = 1 - smoothness * 0.9f;
+    float roughExp = roughness * roughness;
+    
+    float spec = LV_DistributionGGX(nh, roughExp);
+    
+    return max(spec * L0 * f0, 0.0) * 3;
+    
+}
+
+float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+    float3 specularf0 = lerp(0.04f, albedo, metallic);
+    return LightVolumeSpecularDominant(specularf0, smoothness, worldNormal, viewDir, L0, L1r, L1g, L1b);
+}
+
+// Calculate Light Volume Color based on all SH components provided and the world normal
+float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
+    if (_UdonLightVolumeEnabled != 0) {
+        return float3(LV_EvaluateSH(L0.r, L1r, worldNormal), LV_EvaluateSH(L0.g, L1g, worldNormal), LV_EvaluateSH(L0.b, L1b, worldNormal));
+    } else { // No Light Volumes here in this scene. Scene is probably baked with Bakery, and overexposed light probes should be fixed. Just a stupid fix that kinda works.
+        return float3(LV_EvaluateSH(L0.r, L1r * 0.565f, worldNormal), LV_EvaluateSH(L0.g, L1g * 0.565f, worldNormal), LV_EvaluateSH(L0.b, L1b * 0.565f, worldNormal));
+    }
+}
+
+// Calculates L1 SH based on the world position. Samples both light volumes and point lights.
+void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+    
+    float4 occlusion;
+    LV_LightVolumeSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
+    LV_PointLightVolumeSH(worldPos, occlusion, L0, L1r, L1g, L1b);
+    
+}
+
+// Calculates L1 SH based on the world position from additive volumes only. Samples both light volumes and point lights.
+void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
+    
+    float4 occlusion;
+    LV_LightVolumeAdditiveSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
+    LV_PointLightVolumeSH(worldPos, occlusion, L0, L1r, L1g, L1b);
+    
+}
+
+// Calculates L0 SH based on the world position. Samples both light volumes and point lights.
+float3 LightVolumeSH_L0(float3 worldPos) {
+    
+    float4 occlusion;
+    float3 L0 = LV_LightVolumeSHNoPointLights_L0(worldPos, occlusion);
+    L0 += LV_PointLightVolumeSH_L0(worldPos, occlusion);
+    return L0;
+    
+}
+
 // Calculates L0 SH based on the world position from additive volumes only. Samples both light volumes and point lights.
 float3 LightVolumeAdditiveSH_L0(float3 worldPos) {
     
     float4 occlusion;
-    float3 L0 = LightVolumeAdditiveSHNoPointLights_L0(worldPos, occlusion);
-    L0 += PointLightSH_L0(worldPos, occlusion);
+    float3 L0 = LV_LightVolumeAdditiveSHNoPointLights_L0(worldPos, occlusion);
+    L0 += LV_PointLightVolumeSH_L0(worldPos, occlusion);
     return L0;
     
 }
