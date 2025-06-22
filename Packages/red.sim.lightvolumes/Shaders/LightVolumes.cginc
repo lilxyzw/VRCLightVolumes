@@ -895,8 +895,8 @@ void LV_LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out f
         }
     }
 
-    // If no volumes found, we are done
-    if (isNoA) {
+    // If no volumes found, or we don't need the data, we are done
+    if (isNoA || _UdonLightVolumeOcclusionCount == 0) {
         return;
     }
     
@@ -1094,8 +1094,8 @@ float3 LV_LightVolumeAdditiveSHNoPointLights_L0(float3 worldPos, out float4 occl
         }
     }
 
-    // If no volumes found, we are done
-    if (isNoA) {
+    // If no volumes found, or we don't need the data, we are done
+    if (isNoA || _UdonLightVolumeOcclusionCount == 0) {
         return L0;
     }
     
