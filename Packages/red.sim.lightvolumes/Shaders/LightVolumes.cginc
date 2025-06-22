@@ -649,23 +649,17 @@ void LV_PointLightVolumeSH(float3 worldPos, float4 occlusion, inout float3 L0, i
     
     // Process Point Lights
     uint pcount = 0;
-    [branch]
-    if (_UdonLightVolumeOcclusionCount == 0) { // No occlusion, fast path
-        [loop]
-        for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-            LV_PointLight(pid, worldPos, 1, L0, L1r, L1g, L1b, pcount);
+
+    [loop]
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
+        float lightOcclusion = 1;
+        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
+        [branch]
+        if (_UdonLightVolumeOcclusionCount != 0 && shadowmaskIndex >= 0) {
+            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
+            lightOcclusion = dot(1, selector * occlusion);
         }
-    } else { // Need occlusion, slower path
-        [loop]
-        for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-            float lightOcclusion = 1;
-            float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
-            [branch] if (shadowmaskIndex >= 0) {
-                float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
-                lightOcclusion = dot(1, selector * occlusion);
-            }
-            LV_PointLight(pid, worldPos, lightOcclusion, L0, L1r, L1g, L1b, pcount);
-        }
+        LV_PointLight(pid, worldPos, lightOcclusion, L0, L1r, L1g, L1b, pcount);
     }
     
 }
@@ -680,22 +674,17 @@ float3 LV_PointLightVolumeSH_L0(float3 worldPos, float4 occlusion) {
     
     // Process Point Lights
     uint pcount = 0;
-    [branch]
-    if (_UdonLightVolumeOcclusionCount == 0) { // No occlusion, fast path
-        for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-            LV_PointLight_L0(pid, worldPos, 1, L0, pcount);
+
+    [loop]
+    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
+        float lightOcclusion = 1;
+        float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
+        [branch]
+        if (_UdonLightVolumeOcclusionCount != 0 && shadowmaskIndex >= 0) {
+            float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
+            lightOcclusion = dot(1, selector * occlusion);
         }
-    } else { // Need occlusion, slower path
-        [loop]
-        for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
-            float lightOcclusion = 1;
-            float shadowmaskIndex = _UdonPointLightVolumeCustomID[pid].y;
-            [branch] if (shadowmaskIndex >= 0) {
-                float4 selector = float4(shadowmaskIndex == 0, shadowmaskIndex == 1, shadowmaskIndex == 2, shadowmaskIndex == 3);
-                lightOcclusion = dot(1, selector * occlusion);
-            }
-            LV_PointLight_L0(pid, worldPos, lightOcclusion, L0, pcount);
-        }
+        LV_PointLight_L0(pid, worldPos, lightOcclusion, L0, pcount);
     }
 
     return L0;
