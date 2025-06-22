@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using Unity.Collections;
 using UnityEngine.Rendering;
@@ -31,6 +32,8 @@ namespace VRCLightVolumes {
         public Texture3D Texture1;
         [Tooltip("Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)")]
         public Texture3D Texture2;
+        [Tooltip("Optional Texture3D with baked occlusion data for future atlas packing. It won't be uploaded to VRChat. Stores occlusion for up to 4 nearby lights.")]
+        public Texture3D OcclusionTexture;
 
         [Header("Color Correction")]
         [Tooltip("Makes volume brighter or darker.\nUpdates volume color after atlas packing only!")]
@@ -43,6 +46,10 @@ namespace VRCLightVolumes {
         [Header("Baking Setup")]
         [Tooltip("Uncheck it if you don't want to rebake this volume's textures.")]
         public bool Bake = true;
+        [Tooltip("Uncheck it if you don't want to rebake occlusion data required for baked point light shadows.")]
+        public bool BakeOcclusion = true;
+        [Tooltip("Post-processes the baked occlusion with a softening blur. This can help mitigate 'blocky' shadows caused by aliasing, but also makes shadows less crispy.")]
+        public bool BlurOcclusion = false;
         [Tooltip("Automatically sets the resolution based on the Voxels Per Unit value.")]
         public bool AdaptiveResolution = true;
         [Tooltip("Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.")]
@@ -151,6 +158,61 @@ namespace VRCLightVolumes {
 
         public void RemoveAdditionalProbes(int id) {
             UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, new Vector3[0]);
+        }
+
+        public void BakeOcclusionTexture() {
+            // Occlusion data is optional, check if requested and needed
+            // Additive volumes don't get occlusion, because adding occlusion values doesn't make any sense
+            bool needOcclusion = BakeOcclusion && !Additive && LightVolumeSetup.PointLightVolumes.Any(l => l.BakedShadows && !l.Dynamic);
+            if (!needOcclusion) {
+                if (OcclusionTexture != null)
+                    LVUtils.MarkDirty(this);
+                if (LightVolumeInstance.BakeOcclusion)
+                    LVUtils.MarkDirty(LightVolumeInstance);
+                OcclusionTexture = null;
+                LightVolumeInstance.BakeOcclusion = false;
+                return;
+            }
+            
+            // Precompute some properties of each shadow casting light
+            LightVolumeOcclusionBaker.ComputeLightProperties(
+                LightVolumeSetup.PointLightVolumes,
+                Resolution,
+                transform.lossyScale, 
+                LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f,
+                out float[] shadowLightInfluenceRadii,
+                out float[] shadowLightRadii,
+                out Vector2[] shadowLightArea);
+            
+            // Compute shadowmask indices and apply them to lights
+            sbyte[] shadowmaskIndices = LightVolumeOcclusionBaker.ComputeShadowmaskIndices(LightVolumeSetup.PointLightVolumes, shadowLightInfluenceRadii);
+            for (int lightIdx = 0; lightIdx < LightVolumeSetup.PointLightVolumes.Count; lightIdx++) {
+                var instance = LightVolumeSetup.PointLightVolumes[lightIdx].PointLightVolumeInstance;
+                if (instance != null && instance.ShadowmaskIndex == shadowmaskIndices[lightIdx])
+                    continue;
+                instance.ShadowmaskIndex = shadowmaskIndices[lightIdx];
+                LVUtils.MarkDirty(instance);
+            }
+                
+            // Bake occlusion
+            Texture3D occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(
+                Resolution,
+                _probesPositions,
+                LightVolumeSetup.PointLightVolumes,
+                shadowLightInfluenceRadii,
+                shadowLightRadii,
+                shadowLightArea,
+                BlurOcclusion);
+            
+            string path = $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/Temp";
+            if (occ != null)
+                LVUtils.SaveAsAsset(occ, $"{path}/{gameObject.name}_occ.asset");
+            
+            OcclusionTexture = occ;
+            LVUtils.MarkDirty(this);
+            
+            LightVolumeInstance.BakeOcclusion = occ != null;
+            LVUtils.MarkDirty(LightVolumeInstance);
         }
 #endif
 

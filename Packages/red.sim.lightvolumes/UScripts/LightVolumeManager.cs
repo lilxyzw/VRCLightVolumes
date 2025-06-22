@@ -45,11 +45,13 @@ namespace VRCLightVolumes {
         private int _enabledCount = 0;
         private int _lastEnabledCount = -1;
         private int _additiveCount = 0;
+        private int _occlusionCount = 0;
 
         private Vector4[] _invLocalEdgeSmooth = new Vector4[0];
         private Vector4[] _colors = new Vector4[0];
         private Vector4[] _invWorldMatrix3x4 = new Vector4[0];
         private Vector4[] _boundsUvwScale = new Vector4[0];
+        private Vector4[] _boundsOcclusionUvw = new Vector4[0];
         private Vector4[] _relativeRotationQuaternion = new Vector4[0];
 
         // Point Lights Data
@@ -59,7 +61,7 @@ namespace VRCLightVolumes {
         private Vector4[] _pointLightPosition;
         private Vector4[] _pointLightColor;
         private Vector4[] _pointLightDirection;
-        private float[] _pointLightCustomId;
+        private Vector4[] _pointLightCustomId;
 
         // Legacy support Data
         private Matrix4x4[] _invWorldMatrix = new Matrix4x4[0];
@@ -85,6 +87,8 @@ namespace VRCLightVolumes {
         private int lightVolumeRotationQuaternionID;
         private int lightVolumeInvWorldMatrix3x4ID;
         private int lightVolumeUvwScaleID;
+        private int lightVolumeOcclusionUvwID;
+        private int lightVolumeOcclusionCountID;
         // Point Lights
         private int _pointLightPositionID;
         private int _pointLightColorID;
@@ -125,6 +129,8 @@ namespace VRCLightVolumes {
             lightVolumeRotationQuaternionID = VRCShader.PropertyToID("_UdonLightVolumeRotationQuaternion");
             lightVolumeInvWorldMatrix3x4ID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix3x4");
             lightVolumeUvwScaleID = VRCShader.PropertyToID("_UdonLightVolumeUvwScale");
+            lightVolumeOcclusionUvwID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionUvw");
+            lightVolumeOcclusionCountID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionCount");
             // Point Lights
             _pointLightPositionID = VRCShader.PropertyToID("_UdonPointLightVolumePosition");
             _pointLightColorID = VRCShader.PropertyToID("_UdonPointLightVolumeColor");
@@ -148,11 +154,12 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, new Vector4[96]);
             VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, new Vector4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, new Vector4[96]);
+            VRCShader.SetGlobalVectorArray(lightVolumeOcclusionUvwID, new Vector4[32]);
             // Point Lights
             VRCShader.SetGlobalVectorArray(_pointLightPositionID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightColorID, new Vector4[128]);
             VRCShader.SetGlobalVectorArray(_pointLightDirectionID, new Vector4[128]);
-            VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, new float[128]);
+            VRCShader.SetGlobalVectorArray(_pointLightCustomIdID, new Vector4[128]);
             // Legacy support
             VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, new Matrix4x4[32]);
             VRCShader.SetGlobalVectorArray(lightVolumeRotationID, new Vector4[64]);
@@ -185,6 +192,7 @@ namespace VRCLightVolumes {
             // Searching for enabled volumes. Counting Additive volumes.
             _enabledCount = 0;
             _additiveCount = 0;
+            _occlusionCount = 0;
             for (int i = 0; i < LightVolumeInstances.Length && _enabledCount < 32; i++) {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance != null && instance.gameObject.activeInHierarchy) {
@@ -194,6 +202,7 @@ namespace VRCLightVolumes {
                     if (instance.IsDynamic) instance.UpdateTransform();
 #endif
                     if (instance.IsAdditive) _additiveCount++;
+                    else if (instance.BakeOcclusion) _occlusionCount++;
                     _enabledIDs[_enabledCount] = i;
                     _enabledCount++;
                 }
@@ -205,6 +214,7 @@ namespace VRCLightVolumes {
                 _invWorldMatrix3x4 = new Vector4[_enabledCount * 3];
                 _relativeRotationQuaternion = new Vector4[_enabledCount];
                 _boundsUvwScale = new Vector4[_enabledCount * 3];
+                _boundsOcclusionUvw = new Vector4[_enabledCount];
                 _colors = new Vector4[_enabledCount];
 
                 // Legacy data arrays
@@ -246,6 +256,7 @@ namespace VRCLightVolumes {
                 _boundsScale[0] = instance.BoundsUvwMin0;
                 _boundsScale[1] = instance.BoundsUvwMin1;
                 _boundsScale[2] = instance.BoundsUvwMin2;
+                _boundsOcclusionUvw[i] = instance.BakeOcclusion ? instance.BoundsUvwMinOcclusion : -Vector4.one;
                 // Legacy
                 _bounds[0] = instance.BoundsUvwMin0;
                 _bounds[1] = instance.BoundsUvwMax0;
@@ -279,7 +290,7 @@ namespace VRCLightVolumes {
                 _pointLightPosition = new Vector4[_pointLightCount];
                 _pointLightColor = new Vector4[_pointLightCount];
                 _pointLightDirection = new Vector4[_pointLightCount];
-                _pointLightCustomId = new float[_pointLightCount];
+                _pointLightCustomId = new Vector4[_pointLightCount];
                 _lastPointLightCount = _pointLightCount;
             }
 
@@ -293,7 +304,8 @@ namespace VRCLightVolumes {
                 _pointLightColor[i] = c;
 
                 _pointLightDirection[i] = instance.DirectionData;
-                _pointLightCustomId[i] = instance.CustomID;
+                _pointLightCustomId[i].x = instance.CustomID;
+                _pointLightCustomId[i].y = instance.ShadowmaskIndex;
             }
 
             bool isAtlas = LightVolumeAtlas != null;
@@ -312,6 +324,7 @@ namespace VRCLightVolumes {
             // Regular Light Volumes
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
+            VRCShader.SetGlobalFloat(lightVolumeOcclusionCountID, _occlusionCount);
             if (_enabledCount != 0) {
 
                 // Defines if Light Probes Blending enabled in scene
@@ -323,6 +336,7 @@ namespace VRCLightVolumes {
 
                 // All light volumes UVW
                 VRCShader.SetGlobalVectorArray(lightVolumeUvwScaleID, _boundsUvwScale);
+                VRCShader.SetGlobalVectorArray(lightVolumeOcclusionUvwID, _boundsOcclusionUvw);
 
                 // Volume Transform Matrix
                 VRCShader.SetGlobalVectorArray(lightVolumeInvWorldMatrix3x4ID, _invWorldMatrix3x4);
@@ -349,7 +363,7 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightColorID, _pointLightColor);
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
-                VRCShader.SetGlobalFloatArray(_pointLightCustomIdID, _pointLightCustomId);
+                VRCShader.SetGlobalVectorArray(_pointLightCustomIdID, _pointLightCustomId);
                 VRCShader.SetGlobalFloat(_areaLightBrightnessCutoffID, AreaLightBrightnessCutoff);
             }
             if(CustomTextures != null) {

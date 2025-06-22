@@ -31,6 +31,8 @@ namespace VRCLightVolumes {
         public float Angle;
         [Tooltip("For point light: Cos of angle (for LUT).\nFor spot light: Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: 2 + Height.")]
         public float AngleData;
+        [Tooltip("Index of the shadowmask channel used by this light. -1 means no shadowmask.")]
+        public sbyte ShadowmaskIndex = -1;
 
         // Checks if it's a spotlight
         public bool IsSpotLight() {

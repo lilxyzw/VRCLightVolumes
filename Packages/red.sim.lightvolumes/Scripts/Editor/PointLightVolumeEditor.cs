@@ -23,6 +23,17 @@ namespace VRCLightVolumes {
 
             List<string> hiddenFields = new List<string> { "m_Script", "CustomID", "PointLightVolumeInstance", "LightVolumeSetup" };
 
+            // Dynamic lights can't have baked shadows
+            if (PointLightVolume.Dynamic) {
+                hiddenFields.Add("BakedShadows");
+                hiddenFields.Add("BakedShadowRadius");
+            }
+
+            // Only show shadow radius if user requested baked shadows. Also area lights don't have shadow radius - it's implicit. 
+            if (!PointLightVolume.BakedShadows || PointLightVolume.Type == PointLightVolume.LightType.AreaLight) {
+                hiddenFields.Add("BakedShadowRadius");
+            }
+            
             if(PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
                 hiddenFields.Add("Angle");
                 hiddenFields.Add("Falloff");

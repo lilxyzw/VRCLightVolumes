@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
+using UnityEditor;
 using UnityEngine;
 
 namespace VRCLightVolumes {
@@ -23,7 +24,7 @@ namespace VRCLightVolumes {
             try {
 
                 // Stacking textures into array
-                Texture3D[] textures = new Texture3D[volumes.Length * 3];
+                Texture3D[] textures = new Texture3D[volumes.Length * 4];
                 for (int i = 0; i < volumes.Length; i++) {
                     if (volumes[i] == null) {
                         Debug.LogError("[LightVolumeSetup] One of the light volumes is not setuped!");
@@ -33,15 +34,16 @@ namespace VRCLightVolumes {
                         Debug.LogError($"[LightVolumeSetup] Light volume \"{volumes[i].gameObject.name}\" is not baked!");
                         yield break;
                     }
-                    textures[i * 3] = volumes[i].Texture0;
-                    textures[i * 3 + 1] = volumes[i].Texture1;
-                    textures[i * 3 + 2] = volumes[i].Texture2;
+                    textures[i * 4] = volumes[i].Texture0;
+                    textures[i * 4 + 1] = volumes[i].Texture1;
+                    textures[i * 4 + 2] = volumes[i].Texture2;
+                    textures[i * 4 + 3] = volumes[i].OcclusionTexture;
                 }
 
                 // Color coccecting and Linearizing SH
                 texs = new Texture3D[textures.Length];
-                for (int i = 0; i < textures.Length / 3; ++i) {
-                    Texture3D[] bundle = { textures[i * 3], textures[i * 3 + 1], textures[i * 3 + 2] };
+                for (int i = 0; i < textures.Length / 4; ++i) {
+                    Texture3D[] bundle = { textures[i * 4], textures[i * 4 + 1], textures[i * 4 + 2] };
 
                     float dark = -volumes[i].Shadows * 0.5f;
                     float bright = 1 - volumes[i].Highlights * 0.5f;
@@ -49,9 +51,10 @@ namespace VRCLightVolumes {
                     Texture3DPostprocessResult result = new Texture3DPostprocessResult();
                     yield return PostProcessSphericalHarmonics(bundle, result, dark, bright, volumes[i].Exposure);
 
-                    texs[i * 3] = result.data[0];
-                    texs[i * 3 + 1] = result.data[1];
-                    texs[i * 3 + 2] = result.data[2];
+                    texs[i * 4] = result.data[0];
+                    texs[i * 4 + 1] = result.data[1];
+                    texs[i * 4 + 2] = result.data[2];
+                    texs[i * 4 + 3] = volumes[i].OcclusionTexture; // Occlusion texture remains unchanged
                 }
 
                 int count = texs.Length;
@@ -63,6 +66,11 @@ namespace VRCLightVolumes {
 
                 for (int i = 0; i < count; ++i) {
                     Texture3D t = texs[i];
+                    if (t == null) {
+                        origToUnique[i] = -1; // Missing optional texture
+                        continue;
+                    }
+                    
                     NativeArray<byte> raw = t.GetPixelData<byte>(0);
                     Hash128 hash = Hash128.Compute(raw);
                     string key = $"{hash}_{t.width}_{t.height}_{t.depth}";
@@ -239,6 +247,9 @@ namespace VRCLightVolumes {
                 Vector3[] boundsMax = new Vector3[count];
                 for (int i = 0; i < count; ++i) {
                     int u = origToUnique[i];
+                    if (u < 0)
+                        continue; // Missing optional texture
+                    
                     boundsMin[i] = uniqueBoundsMin[u];
                     boundsMax[i] = uniqueBoundsMax[u];
                 }
@@ -257,7 +268,9 @@ namespace VRCLightVolumes {
                 // Clear temporary 3D textures
                 if (texs != null) {
                     for (int i = 0; i < texs.Length; i++) {
-                        UnityEngine.Object.DestroyImmediate(texs[i]);
+                        if (!EditorUtility.IsPersistent(texs[i])) {
+                            UnityEngine.Object.DestroyImmediate(texs[i]);
+                        }
                     }
                 }
             }
