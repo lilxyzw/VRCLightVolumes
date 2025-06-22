@@ -25,16 +25,12 @@ namespace VRCLightVolumes {
         [Range(0, 1)] public float Smoothing = 0.25f;
         [Space]
         public bool OverrideColor = false;
-        public Color Color = Color.white;
+        [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Space]
-        public float LightVolumeIntensity = 1;
         public LightVolumeInstance[] TargetLightVolumes;
-        [Space]
-        public float PointLightVolumeIntensity = 1;
         public PointLightVolumeInstance[] TargetPointLightVolumes;
-        [Space]
-        public float MaterialsIntensity = 2;
         public Renderer[] TargetMeshRenderers;
+        public float MaterialsIntensity = 2;
 
         private int _emissionColorID;
         private MaterialPropertyBlock _block;
@@ -69,12 +65,11 @@ namespace VRCLightVolumes {
                 _prevColor = color;
             }
 
-            Color lightVolumeColor = _prevColor * LightVolumeIntensity;
             for (int i = 0; i < TargetLightVolumes.Length; i++) {
-                TargetLightVolumes[i].Color = lightVolumeColor;
+                TargetLightVolumes[i].Color = _prevColor;
             }
             for (int i = 0; i < TargetPointLightVolumes.Length; i++) {
-                TargetPointLightVolumes[i].SetColor(_prevColor, PointLightVolumeIntensity);
+                TargetPointLightVolumes[i].Color = _prevColor;
             }
             _block.SetColor(_emissionColorID, _prevColor * MaterialsIntensity);
             for (int i = 0; i < TargetMeshRenderers.Length; i++) {

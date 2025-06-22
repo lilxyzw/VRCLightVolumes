@@ -66,10 +66,10 @@ namespace VRCLightVolumes {
 
         private TextureArrayResolution _resolutionPrev = TextureArrayResolution._128x128;
         private TextureArrayFormat _formatPrev = TextureArrayFormat.RGBAHalf;
-
+#if UNITY_EDITOR
         private EditorCoroutine _generateAtlasCoroutine = null;
         private EditorCoroutine _generateTextureArrayCoroutine = null;
-
+#endif
         public void RefreshVolumesList() {
             // Searching for all light volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);

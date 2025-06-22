@@ -238,7 +238,7 @@ namespace VRCLightVolumes {
 
                 _invLocalEdgeSmooth[i] = instance.InvLocalEdgeSmoothing; // Setting volume edge smoothing
 
-                Vector4 c = instance.Color; // Changing volume color
+                Vector4 c = instance.Color.linear * instance.ColorIntensity; // Changing volume color
                 c.w = instance.IsRotated ? 1 : 0; // Color alpha stores if volume rotated or not
                 _colors[i] = c;
 
@@ -293,7 +293,11 @@ namespace VRCLightVolumes {
             for (int i = 0; i < _pointLightCount; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[_enabledPointIDs[i]];
                 _pointLightPosition[i] = instance.PositionData;
-                _pointLightColor[i] = instance.ColorData;
+
+                Vector4 c = instance.Color.linear * instance.ColorIntensity;
+                c.w = instance.AngleData;
+                _pointLightColor[i] = c;
+
                 _pointLightDirection[i] = instance.DirectionData;
                 _pointLightCustomId[i].x = instance.CustomID;
                 _pointLightCustomId[i].y = instance.ShadowmaskIndex;
