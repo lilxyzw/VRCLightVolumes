@@ -609,10 +609,9 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
         float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
         float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
         return 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion + uvwScaled, 0));
+    } else {
+        return 1;
     }
-
-    return 1;
-    
 }
 
 // Samples a Volume with ID and Local UVW, but L0 component only
