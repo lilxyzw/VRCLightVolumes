@@ -90,9 +90,9 @@ uniform float _UdonLightVolumeOcclusionCount;
 
 // Main 3D Texture atlas
 uniform Texture3D _UdonLightVolume;
-SamplerState sampler_UdonLightVolume;
+uniform SamplerState sampler_UdonLightVolume;
 // First elements must be cubemap faces (6 face textures per cubemap). Then goes other textures
-Texture2DArray _UdonPointLightVolumeTexture;
+uniform Texture2DArray _UdonPointLightVolumeTexture;
 // Samples a texture using mip 0, and reusing a single sampler
 #define LV_SAMPLE(tex, uvw) tex.SampleLevel(sampler_UdonLightVolume, uvw, 0)
 
