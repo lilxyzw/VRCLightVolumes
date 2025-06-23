@@ -135,14 +135,14 @@ namespace VRCLightVolumes {
                 DrawAreaLight(origin, t.rotation, x, y);
 
                 if(pointLightVolume.DebugRange)
-                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff);
+                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
                 DrawAreaLight(origin, t.rotation, x, y);
 
                 if (pointLightVolume.DebugRange)
-                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff);
+                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
 
             }
 
@@ -201,7 +201,7 @@ namespace VRCLightVolumes {
             Vector3 forward = rotation * Vector3.forward;
 
             // Calculate the bounding sphere of the area light given the cutoff irradiance
-            float minSolidAngle = cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity);
+            float minSolidAngle = Mathf.Clamp(cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity), -Mathf.PI * 2f, Mathf.PI * 2);
             float sqMaxDist = ComputeAreaLightSquaredBoundingSphere(width, height, minSolidAngle);
             float radius = Mathf.Sqrt(sqMaxDist);
 

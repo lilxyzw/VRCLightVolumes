@@ -235,8 +235,8 @@ namespace VRCLightVolumes
 
         // Matches behavior of LV_ComputeAreaLightSquaredBoundingSphere() in LightVolumes.cginc
         private static float ComputeAreaLightBoundingRadius(float width, float height, Color color, float areaLightBrightnessCutoff) {
-            
-            float minSolidAngle = areaLightBrightnessCutoff / Mathf.Max(color.r, Mathf.Max(color.g, color.b));
+
+            float minSolidAngle = Mathf.Clamp(areaLightBrightnessCutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b))), -Mathf.PI * 2f, Mathf.PI * 2);
             float A = width * height;
             float w2 = width * width;
             float h2 = height * height;

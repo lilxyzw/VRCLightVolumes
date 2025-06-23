@@ -103,6 +103,9 @@ uniform Texture2DArray _UdonPointLightVolumeTexture;
 
 #endif
 
+#define LV_PI 3.141592653589793f
+#define LV_PI2 6.283185307179586f
+
 // Checks if Light Volumes are used in this scene. Returns 0 if not, returns 1, 2 or other number if there are light volumes. Number represents the light volumes system internal version number.
 float LightVolumesEnabled() {
     return _UdonLightVolumeEnabled;
@@ -129,9 +132,9 @@ float3 LV_MultiplyVectorByMatrix2x3(float3 v, float3 r0, float3 r1) {
 // From https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
 float LV_FastAcos(float x) {
     float absX = abs(x); 
-    float res = -0.156583f * absX + (3.141592653589793f * 0.5f); 
+    float res = -0.156583f * absX + LV_PI * 0.5f;
     res *= sqrt(1.0f - absX); 
-    return (x >= 0) ? res : 3.141592653589793f - res; 
+    return (x >= 0) ? res : (LV_PI - res);
 }
 
 // Samples a cubemap from _UdonPointLightVolumeTexture array
@@ -201,11 +204,11 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
         surfaceIntegral.y += gamma * dot(zhDir1, mu);
         surfaceIntegral.z += gamma * dot(zhDir2, mu);
     }
-    solidAngle = solidAngle - (4 - 2) * 3.141592653589793f;
+    solidAngle = solidAngle - LV_PI2;
     surfaceIntegral *= 0.5;
 
     // The L0 term is just the projection of the solid angle onto the L0 basis function.
-    const float normalizationL0 = 0.5f * sqrt(1.0f / 3.141592653589793f);
+    const float normalizationL0 = 0.5f * sqrt(1.0f / LV_PI);
     float l0 = normalizationL0 * solidAngle;
     
     // Combine each surface (sub)integral with the associated weights to get
@@ -223,10 +226,10 @@ float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVerti
     //     We need to divide by PI to match this 'incorrect' behavior.
     // (3) Unity stores SH coefficients (unity_SHAr..unity_SHC) pre-multiplied with the constant
     //     part of each SH basis function, so we need to multiply by constant part to match it.
-    const float cosineKernelL0 = 3.141592653589793f; // (1)
-    const float cosineKernelL1 = 2.0f * 3.141592653589793f / 3.0f; // (1)
-    const float oneOverPi = 1.0f / 3.141592653589793f; // (2)
-    const float normalizationL1 = 0.5f * sqrt(3.0f / 3.141592653589793f); // (3)
+    const float cosineKernelL0 = LV_PI; // (1)
+    const float cosineKernelL1 = LV_PI2 / 3.0f; // (1)
+    const float oneOverPi = 1.0f / LV_PI; // (2)
+    const float normalizationL1 = 0.5f * sqrt(3.0f / LV_PI); // (3)
     const float weightL0 = cosineKernelL0 * normalizationL0 * oneOverPi; // (1), (2), (3)
     const float weightL1 = cosineKernelL1 * normalizationL1 * oneOverPi; // (1), (2), (3)
     l0 *= weightL0;
@@ -279,7 +282,8 @@ void LV_QuadLight(
 
     // Calculate the bounding sphere of the area light given the cutoff irradiance
     // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
-    float minSolidAngle = _UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)));
+    float minSolidAngle = clamp(_UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b))), - LV_PI2, LV_PI2);
+    
     float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
     float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
     [branch] if (sqCutoffDist < 0)
@@ -673,7 +677,7 @@ float3 LV_SampleVolume_L0(uint id, float3 localUVW, out float4 occlusion) {
 // Forms specular based on roughness
 float LV_DistributionGGX(float NoH, float roughness) {
     float f = (roughness - 1) * ((roughness + 1) * (NoH * NoH)) + 1;
-    return (roughness * roughness) / ((float) 3.141592653589793f * f * f);
+    return (roughness * roughness) / ((float) LV_PI * f * f);
 }
 
 // Calculates L1 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
