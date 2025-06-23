@@ -459,12 +459,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 33498727}
+  Color: {r: 0.29329407, g: 1, b: 0.082352936, a: 1}
+  ColorIntensity: 3
   IsDynamic: 1
   PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 0.20988724, y: 3, z: 0.022497095, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
-  angle: 0.5235988
+  Angle: 0.5235988
+  AngleData: 0.8660254
+  ShadowmaskIndex: -1
 --- !u!114 &33498727
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -518,6 +521,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 0.29329407, g: 1, b: 0.082352936, a: 1}
@@ -770,6 +775,8 @@ MonoBehaviour:
   useAssignedLayers: 0
   DynamicPrefabs: []
   DynamicMaterials:
+  - {fileID: 2100000, guid: d102c05e48d614a489538849889bb3bd, type: 2}
+  - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
   - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
   - {fileID: 2100000, guid: 3285df4c4c04df644ad487357baa6686, type: 2}
   - {fileID: 2100000, guid: 39587cf21953c2a459a9f90d27b451ea, type: 2}
@@ -780,9 +787,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 12a5139a31f84464381c92aad42d14a9, type: 2}
   - {fileID: 2100000, guid: 7cd8219b2223a14459b4fcc39e1e0edb, type: 2}
   - {fileID: 2100000, guid: 3e18d5d47ac91fd40bad6504f8058659, type: 2}
-  - {fileID: 2100000, guid: d102c05e48d614a489538849889bb3bd, type: 2}
-  - {fileID: 2100000, guid: 67c474ef6e8fdaa4886e7b308214842a, type: 2}
-  - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
   LightMapsNear: []
   LightMapsFar: []
   LightMode: 0
@@ -950,10 +954,6 @@ MonoBehaviour:
     - VRC.Udon.UdonBehaviour
   - gameObject: {fileID: 355306799}
     ID: 67
-    SerializedTypeNames:
-    - VRC.Udon.UdonBehaviour
-  - gameObject: {fileID: 0}
-    ID: 71
     SerializedTypeNames:
     - VRC.Udon.UdonBehaviour
   - gameObject: {fileID: 160393086}
@@ -1460,12 +1460,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 154949970}
+  Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
+  ColorIntensity: 1
   IsDynamic: 1
   PositionData: {x: -8.787, y: 0.5800005, z: 17.861, w: -0.01}
-  ColorData: {x: 1, y: 0.6821521, z: 0.2865063, w: 0.70710677}
   DirectionData: {x: -1.0000002, y: 0.0000043832724, z: -0.0000032186556, w: 3.4142134}
   CustomID: 4
-  angle: 0.7853982
+  Angle: 0.7853982
+  AngleData: 0.70710677
+  ShadowmaskIndex: -1
 --- !u!114 &154949970
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -1519,6 +1522,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
@@ -2900,12 +2905,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 309589256}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 3
   IsDynamic: 1
   PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -0.014206138}
-  ColorData: {x: 3, y: 3, z: 3, w: 0.38386405}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
   CustomID: -4
-  angle: 0.36651915
+  Angle: 0.36651915
+  AngleData: 0.38386405
+  ShadowmaskIndex: -1
 --- !u!114 &309589256
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -2959,6 +2967,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 8.39
   Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3253,12 +3263,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 355306801}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 50
   IsDynamic: 1
   PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 0.015625}
-  ColorData: {x: 50, y: 50, z: 50, w: 0.8660254}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
   CustomID: -1
-  angle: 0.5235988
+  Angle: 0
+  AngleData: 0
+  ShadowmaskIndex: -1
 --- !u!114 &355306803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3272,6 +3285,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 0
   Range: 8
   Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3367,12 +3382,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 377300961}
+  Color: {r: 1, g: 0.7589134, b: 0.2320754, a: 1}
+  ColorIntensity: 1
   IsDynamic: 1
   PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -0.01}
-  ColorData: {x: 1, y: 0.53651494, z: 0.043993086, w: -0.88294756}
   DirectionData: {x: 0.9659258, y: 0.00000040007035, z: 0.25881994, w: 3.0931816}
   CustomID: 0
-  angle: 2.6529005
+  Angle: 2.6529005
+  AngleData: -0.88294756
+  ShadowmaskIndex: -1
 --- !u!114 &377300963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3386,6 +3404,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 1, g: 0.7589134, b: 0.2320754, a: 1}
@@ -3544,10 +3564,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: d6c0c3d573115f8478df3c1ca76d9636, type: 2}
   Texture1: {fileID: 11700000, guid: c8371d85574c8e84fb696d2cc52262a6, type: 2}
   Texture2: {fileID: 11700000, guid: f0393f386e04445458bfb4d48f5ac1ad, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 8
   Resolution: {x: 62, y: 36, z: 98}
@@ -3578,12 +3601,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 458847876}
   Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.015625, y: 0.02631579, z: 0.0019569471, w: 0.96875}
   BoundsUvwMin1: {x: 0.015625, y: 0.02631579, z: 0.19765167, w: 0.9473684}
   BoundsUvwMin2: {x: 0.015625, y: 0.02631579, z: 0.39334637, w: 0.19178084}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.984375, y: 0.9736842, z: 0.19373778, w: 0}
   BoundsUvwMax1: {x: 0.984375, y: 0.9736842, z: 0.3894325, w: 0}
   BoundsUvwMax2: {x: 0.984375, y: 0.9736842, z: 0.5851272, w: 0}
@@ -3609,6 +3634,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &458847876
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -4367,12 +4393,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 569909709}
+  Color: {r: 1, g: 0.5405387, b: 0.18823528, a: 1}
+  ColorIntensity: 5
   IsDynamic: 1
   PositionData: {x: 2.198, y: 1.571, z: 1.022999, w: 1.0000002}
-  ColorData: {x: 5, y: 1.2675006, z: 0.14778417, w: 4}
   DirectionData: {x: -0, y: -0.70710677, z: -0, w: 0.7071069}
   CustomID: 0
-  angle: 0
+  Angle: 0
+  AngleData: 4
+  ShadowmaskIndex: -1
 --- !u!114 &569909709
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -4426,6 +4455,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 2
   Range: 5
   Color: {r: 1, g: 0.5405387, b: 0.18823528, a: 1}
@@ -4914,12 +4945,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 657256791}
+  Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
+  ColorIntensity: 10
   IsDynamic: 1
   PositionData: {x: 6.097, y: 0.58000046, z: -4.275, w: -0.01}
-  ColorData: {x: 10, y: 6.821521, z: 2.865063, w: 0.70710677}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 3.4142134}
   CustomID: 3
-  angle: 0.7853982
+  Angle: 0.7853982
+  AngleData: 0.70710677
+  ShadowmaskIndex: -1
 --- !u!114 &657256791
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -4973,6 +5007,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
@@ -6072,12 +6108,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 832882188}
+  Color: {r: 1, g: 0.88851196, b: 0.109803915, a: 1}
+  ColorIntensity: 1
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -22, w: 0.027777778}
-  ColorData: {x: 1, y: 0.7648705, z: 0.011612245, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
-  angle: 0
+  Angle: 0
+  AngleData: 1
+  ShadowmaskIndex: -1
 --- !u!114 &832882188
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -6131,6 +6170,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 0
   Range: 6
   Color: {r: 1, g: 0.88851196, b: 0.109803915, a: 1}
@@ -6767,12 +6808,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 938222482}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 3
   IsDynamic: 1
   PositionData: {x: -4.154, y: 1.787, z: 14.23, w: 0.01}
-  ColorData: {x: 3, y: 3, z: 3, w: 0.8660254}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
   CustomID: -2
-  angle: 0.5235988
+  Angle: 0
+  AngleData: 0
+  ShadowmaskIndex: -1
 --- !u!114 &938222482
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -6826,6 +6870,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 0
   Range: 10
   Color: {r: 1, g: 1, b: 1, a: 1}
@@ -7017,12 +7063,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 969307523}
+  Color: {r: 0.109803915, g: 0.6058649, b: 1, a: 1}
+  ColorIntensity: 1
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -22, w: 0.027777778}
-  ColorData: {x: 0.011612245, y: 0.32543525, z: 1, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
-  angle: 0
+  Angle: 0
+  AngleData: 1
+  ShadowmaskIndex: -1
 --- !u!114 &969307523
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7076,6 +7125,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 0
   Range: 6
   Color: {r: 0.109803915, g: 0.6058649, b: 1, a: 1}
@@ -7467,12 +7518,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 996561023}
+  Color: {r: 1, g: 0.11841071, b: 0.081131995, a: 1}
+  ColorIntensity: 3
   IsDynamic: 1
   PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 3, y: 0.03936385, z: 0.022020133, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
-  angle: 0.5235988
+  Angle: 0.5235988
+  AngleData: 0.8660254
+  ShadowmaskIndex: -1
 --- !u!114 &996561023
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7526,6 +7580,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 1, g: 0.11841071, b: 0.081131995, a: 1}
@@ -7791,12 +7847,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1036732746}
+  Color: {r: 0.082352936, g: 0.34083718, b: 1, a: 1}
+  ColorIntensity: 3
   IsDynamic: 1
   PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -0.01}
-  ColorData: {x: 0.022497095, y: 0.28533506, z: 3, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
-  angle: 0.5235988
+  Angle: 0.5235988
+  AngleData: 0.8660254
+  ShadowmaskIndex: -1
 --- !u!114 &1036732746
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7850,6 +7909,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 0.082352936, g: 0.34083718, b: 1, a: 1}
@@ -8419,10 +8480,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: edda7178f55a7b94d8129b07bc9fdaa1, type: 2}
   Texture1: {fileID: 11700000, guid: 873fadb69991de64fb71d4838063bf4b, type: 2}
   Texture2: {fileID: 11700000, guid: 3c7dcdf0b9c637944998533fffc43c67, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 3
   Resolution: {x: 60, y: 14, z: 89}
@@ -8453,12 +8517,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1137550076}
   Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.015625, y: 0.02631579, z: 0.5890411, w: 0.9375}
   BoundsUvwMin1: {x: 0.015625, y: 0.4473684, z: 0.5890411, w: 0.36842108}
   BoundsUvwMin2: {x: 0.015625, y: 0.02631579, z: 0.7671233, w: 0.17416829}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.953125, y: 0.39473686, z: 0.7632094, w: 0}
   BoundsUvwMax1: {x: 0.953125, y: 0.81578946, z: 0.7632094, w: 0}
   BoundsUvwMax2: {x: 0.953125, y: 0.39473686, z: 0.9412916, w: 0}
@@ -8484,6 +8550,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &1137550076
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -10618,10 +10685,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 7c929de8fc4e31641a7a85bfda421068, type: 2}
   Texture1: {fileID: 11700000, guid: 744ef49cb7c6b1e42b53005245197fb4, type: 2}
   Texture2: {fileID: 11700000, guid: 254d69863c2d47c43a176a35c3c6a28f, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 0.75
   Resolution: {x: 15, y: 11, z: 38}
@@ -10652,12 +10722,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1400850658}
   Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.734375, y: 0.4473684, z: 0.7671233, w: 0.234375}
   BoundsUvwMin1: {x: 0.734375, y: 0.4473684, z: 0.84540117, w: 0.28947368}
   BoundsUvwMin2: {x: 0.734375, y: 0.4473684, z: 0.92367905, w: 0.07436401}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.96875, y: 0.7368421, z: 0.8414873, w: 0}
   BoundsUvwMax1: {x: 0.96875, y: 0.7368421, z: 0.9197652, w: 0}
   BoundsUvwMax2: {x: 0.96875, y: 0.7368421, z: 0.99804306, w: 0}
@@ -10683,6 +10755,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &1400850658
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -11887,12 +11960,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1541482805}
+  Color: {r: 0.2668302, g: 1, b: 0.109803915, a: 1}
+  ColorIntensity: 1
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -16, w: 0.027777778}
-  ColorData: {x: 0.057875987, y: 1, z: 0.011612245, w: 1}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
-  angle: 0
+  Angle: 0
+  AngleData: 1
+  ShadowmaskIndex: -1
 --- !u!114 &1541482805
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -11946,6 +12022,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 0
   Range: 6
   Color: {r: 0.2668302, g: 1, b: 0.109803915, a: 1}
@@ -12134,12 +12212,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1548001776}
   Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.015625, y: 0.4473684, z: 0.7671233, w: 0.6875}
   BoundsUvwMin1: {x: 0.015625, y: 0.4473684, z: 0.8356164, w: 0.26315787}
   BoundsUvwMin2: {x: 0.015625, y: 0.4473684, z: 0.9041096, w: 0.06457925}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.703125, y: 0.7105263, z: 0.83170253, w: 0}
   BoundsUvwMax1: {x: 0.703125, y: 0.7105263, z: 0.9001957, w: 0}
   BoundsUvwMax2: {x: 0.703125, y: 0.7105263, z: 0.96868885, w: 0}
@@ -12165,6 +12245,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &1548001778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12185,10 +12266,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 553ff5dd88ebc7740a285e7a11422015, type: 2}
   Texture1: {fileID: 11700000, guid: bbb76d4304a70cc4d89a0f420249b06d, type: 2}
   Texture2: {fileID: 11700000, guid: aade6f074ffeab142b1df7f6a20947ec, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 3
   Resolution: {x: 44, y: 10, z: 33}
@@ -12830,12 +12914,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1644032074}
+  Color: {r: 1, g: 0.111320674, b: 0.111320674, a: 1}
+  ColorIntensity: 1
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -16, w: 0.027777778}
-  ColorData: {x: 1, y: 0.0118703935, z: 0.0118703935, w: 1}
   DirectionData: {x: -0, y: -0, z: -0, w: 1}
   CustomID: 0
-  angle: 0
+  Angle: 0
+  AngleData: 1
+  ShadowmaskIndex: -1
 --- !u!114 &1644032074
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -12889,6 +12976,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 0
   Range: 6
   Color: {r: 1, g: 0.111320674, b: 0.111320674, a: 1}
@@ -19834,12 +19923,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1748442015}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: 3
   IsDynamic: 1
   PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -0.014206138}
-  ColorData: {x: 3, y: 3, z: 3, w: 0.38386405}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
   CustomID: -5
-  angle: 0.36651915
+  Angle: 0.36651915
+  AngleData: 0.38386405
+  ShadowmaskIndex: -1
 --- !u!114 &1748442015
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -19893,6 +19985,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 8.39
   Color: {r: 1, g: 1, b: 1, a: 1}
@@ -20292,12 +20386,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1773416814}
+  Color: {r: 0.18823528, g: 0.48519114, b: 1, a: 1}
+  ColorIntensity: 5
   IsDynamic: 1
   PositionData: {x: -2.17, y: 1.571, z: 1.0230011, w: 1.0000002}
-  ColorData: {x: 0.14778417, y: 1.002947, z: 5, w: 4}
   DirectionData: {x: -0, y: 0.7071065, z: -0, w: 0.7071072}
   CustomID: 0
-  angle: 0
+  Angle: 0
+  AngleData: 4
+  ShadowmaskIndex: -1
 --- !u!114 &1773416816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20311,6 +20408,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 2
   Range: 5
   Color: {r: 0.18823528, g: 0.48519114, b: 1, a: 1}
@@ -23358,12 +23457,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2070359845}
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  ColorIntensity: -3
   IsDynamic: 1
   PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -0.01}
-  ColorData: {x: -3, y: -3, z: -3, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
-  angle: 0.5235988
+  Angle: 0.5235988
+  AngleData: 0.8660254
+  ShadowmaskIndex: -1
 --- !u!114 &2070359845
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -23417,6 +23519,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 1, g: 1, b: 1, a: 1}
@@ -23611,12 +23715,15 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2088816032}
+  Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
+  ColorIntensity: 3
   IsDynamic: 1
   PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -0.01}
-  ColorData: {x: 3, y: 2.0464563, z: 0.8595189, w: 0.8660254}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
-  angle: 0.5235988
+  Angle: 0.5235988
+  AngleData: 0.8660254
+  ShadowmaskIndex: -1
 --- !u!114 &2088816032
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -23670,6 +23777,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dynamic: 1
+  BakedShadows: 0
+  BakedShadowRadius: 0.1
   Type: 1
   Range: 10
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
