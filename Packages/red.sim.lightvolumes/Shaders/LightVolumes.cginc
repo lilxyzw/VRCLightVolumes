@@ -24,17 +24,19 @@ uniform float _UdonLightVolumeProbesBlend;
 // Should volumes be with sharp edges when not blending with each other
 uniform float _UdonLightVolumeSharpBounds;
 
-// World to Local (-0.5, 0.5) UVW Matrix 3x4
-uniform float4 _UdonLightVolumeInvWorldMatrix3x4[96];
+// World to Local (-0.5, 0.5) UVW Matrix 4x4
+uniform float4x4 _UdonLightVolumeInvWorldMatrix[32];
 
 // L1 SH quaternion rotation (relative to baked rotation)
-uniform float4 _UdonLightVolumeRotationQuaternion[32];
+//uniform float4 _UdonLightVolumeRotationQuaternion[32];
+uniform float4 _UdonLightVolumeRotation[64]; // Legacy! Used in this version to have back compatibility with older worlds. Array commented above will be used in future releases! Legacy!
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
 uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[32];
 
 // AABB Bounds of islands on the 3D Texture atlas. XYZ: UvwMin, W: Scale per axis
-uniform float4 _UdonLightVolumeUvwScale[96];
+// uniform float4 _UdonLightVolumeUvwScale[96];
+uniform float3 _UdonLightVolumeUvw[192]; // Legacy! AABB Bounds of islands on the 3D Texture atlas. Array commented above will be used in future releases! Legacy!
 
 // AABB Bounds of islands on the 3D Texture atlas storing occlusion.
 // This is optional data. If the volume has no occlusion, the value will be (-1, -1, -1, -1).
@@ -104,6 +106,12 @@ float LV_Smoothstep01(float x) {
 float3 LV_MultiplyVectorByQuaternion(float3 v, float4 q) {
     float3 t = 2.0 * cross(q.xyz, v);
     return v + q.w * t + cross(q.xyz, t);
+}
+
+// Rotates vector by Matrix 2x3
+float3 LV_MultiplyVectorByMatrix2x3(float3 v, float3 r0, float3 r1) {
+    float3 r2 = cross(r0, r1);
+    return float3(dot(v, r0), dot(v, r1), dot(v, r2));
 }
 
 // Fast approximate inverse cosine. Max absolute error = 0.009.
@@ -493,15 +501,6 @@ void LV_PointLight_L0(uint id, float3 worldPos, float occlusion, inout float3 L0
 
 }
 
-// Gets current rotation matrix by volume ID
-float4x4 LV_Matrix(uint id) {
-    int id3 = id * 3;
-    float4 row0 = _UdonLightVolumeInvWorldMatrix3x4[id3];
-    float4 row1 = _UdonLightVolumeInvWorldMatrix3x4[id3 + 1];
-    float4 row2 = _UdonLightVolumeInvWorldMatrix3x4[id3 + 2];
-    return float4x4(row0, row1, row2, float4(0, 0, 0, 1));
-}
-
 // Checks if local UVW point is in bounds from -0.5 to +0.5
 bool LV_PointLocalAABB(float3 localUVW){
     return all(abs(localUVW) <= 0.5);
@@ -509,7 +508,7 @@ bool LV_PointLocalAABB(float3 localUVW){
 
 // Calculates local UVW using volume ID
 float3 LV_LocalFromVolume(uint volumeID, float3 worldPos) {
-    return mul(LV_Matrix(volumeID), float4(worldPos, 1.0)).xyz;
+    return mul(_UdonLightVolumeInvWorldMatrix[volumeID], float4(worldPos, 1.0)).xyz;
 }
 
 // Samples 3 SH textures and packing them into L1 channels
@@ -555,17 +554,24 @@ float LV_EvaluateSH(float L0, float3 L1, float3 n) {
 void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
     
     // Additive UVW
-    uint uvwID = id * 3;
-    float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
-    float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
-    float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
-    float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
+    //uint uvwID = id * 3;
+    //float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
+    //float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
+    //float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
+    //float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
     
-    float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
-    float3 uvw0 = uvwPos0.xyz + uvwScaled;
-    float3 uvw1 = uvwPos1.xyz + uvwScaled;
-    float3 uvw2 = uvwPos2.xyz + uvwScaled;
-                
+    //float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
+    //float3 uvw0 = uvwPos0.xyz + uvwScaled;
+    //float3 uvw1 = uvwPos1.xyz + uvwScaled;
+    //float3 uvw2 = uvwPos2.xyz + uvwScaled;
+    
+    // Legacy! Commented code above will be used in future releases! Legacy!
+    uint uvwID = id * 6;
+    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
+    float3 uvw0 = uvwScaled + _UdonLightVolumeUvw[uvwID].xyz;
+    float3 uvw1 = uvwScaled + _UdonLightVolumeUvw[uvwID + 2].xyz;
+    float3 uvw2 = uvwScaled + _UdonLightVolumeUvw[uvwID + 4].xyz;
+    
     // Sample additive
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, L0, L1r, L1g, L1b);
 
@@ -587,10 +593,17 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     
     // Rotate if needed
     if (color.a != 0) {
-        float4 r = _UdonLightVolumeRotationQuaternion[id];
-        L1r = LV_MultiplyVectorByQuaternion(L1r, r);
-        L1g = LV_MultiplyVectorByQuaternion(L1g, r);
-        L1b = LV_MultiplyVectorByQuaternion(L1b, r);
+        //float4 r = _UdonLightVolumeRotationQuaternion[id];
+        //L1r = LV_MultiplyVectorByQuaternion(L1r, r);
+        //L1g = LV_MultiplyVectorByQuaternion(L1g, r);
+        //L1b = LV_MultiplyVectorByQuaternion(L1b, r);
+        
+        // Legacy to support older light volumes worlds! Commented code above will be used in future releases! Legacy!
+        float3 r0 = _UdonLightVolumeRotation[id * 2];
+        float3 r1 = _UdonLightVolumeRotation[id * 2 + 1];
+        L1r = LV_MultiplyVectorByMatrix2x3(L1r, r0, r1);
+        L1g = LV_MultiplyVectorByMatrix2x3(L1g, r0, r1);
+        L1b = LV_MultiplyVectorByMatrix2x3(L1b, r0, r1);
     }
                 
 }
@@ -602,12 +615,17 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
     
     [branch]
     if (uvwOcclusion.x >= 0) {
-        uint uvwID = id * 3;
-        float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
-        float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
-        float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
-        float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
-        float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
+        //uint uvwID = id * 3;
+        //float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
+        //float4 uvwPos1 = _UdonLightVolumeUvwScale[uvwID + 1];
+        //float4 uvwPos2 = _UdonLightVolumeUvwScale[uvwID + 2];
+        //float3 uvwScale = float3(uvwPos0.w, uvwPos1.w, uvwPos2.w);
+        //float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
+        
+        // Legacy to support older light volumes worlds! Commented code above will be used in future releases! Legacy!
+        uint uvwID = id * 6;
+        float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
+        
         return 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion + uvwScaled, 0));
     } else {
         return 1;
@@ -617,11 +635,17 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
 
 // Samples a Volume with ID and Local UVW, but L0 component only
 float3 LV_SampleVolume_L0(uint id, float3 localUVW, out float4 occlusion) {
-    uint uvwID = id * 3;
-    float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
-    float3 uvwScale = float3(uvwPos0.w, _UdonLightVolumeUvwScale[uvwID + 1].w, _UdonLightVolumeUvwScale[uvwID + 2].w);
-    float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
-    float3 uvw0 = uvwPos0.xyz + uvwScaled;
+    
+    //uint uvwID = id * 3;
+    //float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
+    //float3 uvwScale = float3(uvwPos0.w, _UdonLightVolumeUvwScale[uvwID + 1].w, _UdonLightVolumeUvwScale[uvwID + 2].w);
+    //float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
+    //float3 uvw0 = uvwPos0.xyz + uvwScaled;
+    
+    // Legacy! Commented code above will be used in future releases! Legacy!
+    uint uvwID = id * 6;
+    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
+    float3 uvw0 = uvwScaled + _UdonLightVolumeUvw[uvwID].xyz;
 
     // Sample occlusion
     float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz;
@@ -704,7 +728,8 @@ void LV_LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1
     // Clamping gloabal iteration counts
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
-    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
+    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
+    if (volumesCount == 0 && pointCount == 0) { // Legacy! Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support. Legacy!
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
         return;
     }
@@ -837,7 +862,8 @@ void LV_LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out f
     // Clamping gloabal iteration counts
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
     uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
-    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
+    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
+    if (additiveCount == 0 && pointCount == 0) return; // Legacy!
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     
@@ -935,7 +961,8 @@ float3 LV_LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
     // Clamping gloabal iteration counts
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
-    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
+    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
+    if (volumesCount == 0 && pointCount == 0) { // Legacy! Fallback to default light probes if Light Volume are not enabled. Legacy!
         return LV_SampleLightProbe_L0();
     }
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
@@ -1039,7 +1066,8 @@ float3 LV_LightVolumeAdditiveSHNoPointLights_L0(float3 worldPos, out float4 occl
     // Clamping gloabal iteration counts
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
     uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
-    if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return 0;
+    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return 0;
+    if (additiveCount == 0 && pointCount == 0) return 0; // Legacy!
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     
