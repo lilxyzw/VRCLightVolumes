@@ -282,7 +282,7 @@ void LV_QuadLight(
 
     // Calculate the bounding sphere of the area light given the cutoff irradiance
     // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
-    float minSolidAngle = clamp(_UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b))), - LV_PI2, LV_PI2);
+    float minSolidAngle = min(abs(_UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)))), LV_PI2);
     
     float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
     float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
@@ -308,13 +308,17 @@ void LV_QuadLight(
     float lenL1 = length(areaLightSH.xyz);
     if (lenL1 > areaLightSH.w)
         areaLightSH.xyz *= areaLightSH.w / lenL1;
-    
-    // Accumulate SH coefficients
-    L0 += areaLightSH.w * color.rgb * occlusion;
-    L1r += areaLightSH.xyz * color.r * occlusion;
-    L1g += areaLightSH.xyz * color.g * occlusion;
-    L1b += areaLightSH.xyz * color.b * occlusion;
 
+    // Accumulate SH coefficients
+    float3 l0 = areaLightSH.w * color.rgb * occlusion;
+    float3 l1 = areaLightSH.xyz * occlusion;
+    float3 stp = step(l0, 0);
+    
+    L0 = lerp(L0 + l0, L0 * saturate(1 + l0), stp);
+    L1r = lerp(L1r + l1 * color.r, L1r * saturate(1 + l0), stp);
+    L1g = lerp(L1g + l1 * color.g, L1g * saturate(1 + l0), stp);
+    L1b = lerp(L1b + l1 * color.b, L1b * saturate(1 + l0), stp);
+    
     count++;
 }
 
@@ -407,12 +411,17 @@ void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, i
         
     }
 
-    // Finnally adding SH components and incrementing counter
+    // Accumulate SH coefficients
+    float3 l0 = att * occlusion;
+    float3 l1 = dirN * occlusion;
+    float3 stp = step(l0, 0);
+    
+    L0 = lerp(L0 + l0, L0 * saturate(1 + l0), stp);
+    L1r = lerp(L1r + l1 * att.r, L1r * saturate(1 + l0), stp);
+    L1g = lerp(L1g + l1 * att.g, L1g * saturate(1 + l0), stp);
+    L1b = lerp(L1b + l1 * att.b, L1b * saturate(1 + l0), stp);
+    
     count++;
-    L0 += att * occlusion;
-    L1r += dirN * att.r * occlusion;
-    L1g += dirN * att.g * occlusion;
-    L1b += dirN * att.b * occlusion;
 
 }
 
