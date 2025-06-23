@@ -86,11 +86,22 @@ uniform float _UdonLightVolumeOcclusionCount;
 }
 #endif
 
-// Main 3D Texture atlas
-uniform sampler3D _UdonLightVolume;
+#ifndef SHADER_TARGET_SURFACE_ANALYSIS
 
+// Main 3D Texture atlas
+uniform Texture3D _UdonLightVolume;
+uniform SamplerState sampler_UdonLightVolume;
 // First elements must be cubemap faces (6 face textures per cubemap). Then goes other textures
-UNITY_DECLARE_TEX2DARRAY(_UdonPointLightVolumeTexture);
+uniform Texture2DArray _UdonPointLightVolumeTexture;
+// Samples a texture using mip 0, and reusing a single sampler
+#define LV_SAMPLE(tex, uvw) tex.SampleLevel(sampler_UdonLightVolume, uvw, 0)
+
+#else
+
+// Dummy macro definition to satisfy MojoShader (surface shaders).
+#define LV_SAMPLE(tex, uvw) float4(0,0,0,0)
+
+#endif
 
 // Checks if Light Volumes are used in this scene. Returns 0 if not, returns 1, 2 or other number if there are light volumes. Number represents the light volumes system internal version number.
 float LightVolumesEnabled() {
@@ -139,7 +150,7 @@ float4 LV_SampleCubemapArray(uint id, float3 dir) {
         uv = float2((dir.z > 0 ? dir.x : -dir.x), -dir.y) * rcp(absDir.z);
     }
     float3 uvid = float3(uv * 0.5 + 0.5, id * 6 + face);
-    return UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0);
+    return LV_SAMPLE(_UdonPointLightVolumeTexture, uvid);
 }
 
 // Projects irradiance from a planar quad with uniform radiant exitance into L1 spherical harmonics.
@@ -341,7 +352,7 @@ void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, i
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
             uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId - 1;
             float3 uvid = float3(sqrt(float2(spot, dirRadius)), id);
-            att *= UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
+            att *= LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else if (customId < 0) { // If uses cookie
             
@@ -351,7 +362,7 @@ void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, i
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
             uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId - 1;
             float3 uvid = float3(uv * 0.5 + 0.5, id);
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -372,7 +383,7 @@ void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, i
             
             uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
             float3 uvid = float3(sqrt(float2(0, dirRadius)), id);
-            att *= UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
+            att *= LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -441,7 +452,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, float occlusion, inout float3 L0
             float spot = 1 - saturate(spotMask * rcp(1 - angle));
             uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId - 1;
             float3 uvid = float3(sqrt(float2(spot, dirRadius)), id);
-            att *= UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
+            att *= LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else if (customId < 0) { // If uses cookie
             
@@ -451,7 +462,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, float occlusion, inout float3 L0
             if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return;
             uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId - 1;
             float3 uvid = float3(uv * 0.5 + 0.5, id);
-            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
+            att *= saturate((1 - dirRadius) * rcp(dirRadius * 60 + 1.732f)) * LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -474,7 +485,7 @@ void LV_PointLight_L0(uint id, float3 worldPos, float occlusion, inout float3 L0
             
             uint id = (uint) _UdonPointLightVolumeCubeCount * 5 + customId;
             float3 uvid = float3(sqrt(float2(0, dirRadius)), id);
-            att *= UNITY_SAMPLE_TEX2DARRAY_LOD(_UdonPointLightVolumeTexture, uvid, 0).xyz;
+            att *= LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
             
         } else { // If it uses default parametric attenuation
             
@@ -514,9 +525,9 @@ float3 LV_LocalFromVolume(uint volumeID, float3 worldPos) {
 // Samples 3 SH textures and packing them into L1 channels
 void LV_SampleLightVolumeTex(float3 uvw0, float3 uvw1, float3 uvw2, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     // Sampling 3D Atlas
-    float4 tex0 = tex3Dlod(_UdonLightVolume, float4(uvw0, 0));
-    float4 tex1 = tex3Dlod(_UdonLightVolume, float4(uvw1, 0));
-    float4 tex2 = tex3Dlod(_UdonLightVolume, float4(uvw2, 0));
+    float4 tex0 = LV_SAMPLE(_UdonLightVolume, uvw0);
+    float4 tex1 = LV_SAMPLE(_UdonLightVolume, uvw1);
+    float4 tex2 = LV_SAMPLE(_UdonLightVolume, uvw2);
     // Packing final data
     L0 = tex0.rgb;
     L1r = float3(tex1.r, tex2.r, tex0.a);
@@ -579,7 +590,7 @@ void LV_SampleVolume(uint id, float3 localUVW, out float3 L0, out float3 L1r, ou
     float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz;
     [branch]
     if (uvwOcclusion.x >= 0) {
-        occlusion = 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion + uvwScaled, 0));
+        occlusion = 1.0f-LV_SAMPLE(_UdonLightVolume, uvwOcclusion + uvwScaled);
     } else {
         occlusion = 1;
     }
@@ -626,7 +637,7 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
         uint uvwID = id * 6;
         float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
         
-        return 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion + uvwScaled, 0));
+        return 1.0f-LV_SAMPLE(_UdonLightVolume, uvwOcclusion + uvwScaled);
     } else {
         return 1;
     }
@@ -651,12 +662,12 @@ float3 LV_SampleVolume_L0(uint id, float3 localUVW, out float4 occlusion) {
     float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz;
     [branch]
     if (uvwOcclusion.x >= 0) {
-        occlusion = 1.0f-tex3Dlod(_UdonLightVolume, float4(uvwOcclusion + uvwScaled, 0));
+        occlusion = 1.0f-LV_SAMPLE(_UdonLightVolume, uvwOcclusion + uvwScaled);
     } else {
         occlusion = 1;
     }
     
-    return tex3Dlod(_UdonLightVolume, float4(uvw0, 0)).rgb * _UdonLightVolumeColor[id].rgb;
+    return LV_SAMPLE(_UdonLightVolume, uvw0).rgb * _UdonLightVolumeColor[id].rgb;
 }
 
 // Forms specular based on roughness
