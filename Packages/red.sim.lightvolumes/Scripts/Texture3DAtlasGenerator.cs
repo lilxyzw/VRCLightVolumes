@@ -265,6 +265,7 @@ namespace VRCLightVolumes {
                 onComplete?.Invoke(new Atlas3D { Texture = atlasTexture, BoundsUvwMin = boundsMin, BoundsUvwMax = boundsMax });
 
             } finally {
+#if UNITY_EDITOR
                 // Clear temporary 3D textures
                 if (texs != null) {
                     for (int i = 0; i < texs.Length; i++) {
@@ -273,6 +274,7 @@ namespace VRCLightVolumes {
                         }
                     }
                 }
+#endif
             }
 
         }
