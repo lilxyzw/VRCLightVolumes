@@ -163,7 +163,7 @@ namespace VRCLightVolumes {
         public void BakeOcclusionTexture() {
             // Occlusion data is optional, check if requested and needed
             // Additive volumes don't get occlusion, because adding occlusion values doesn't make any sense
-            bool needOcclusion = PointLightShadows && !Additive && LightVolumeSetup.PointLightVolumes.Any(l => l.BakedShadows && !l.Dynamic);
+            bool needOcclusion = PointLightShadows && !Additive && LightVolumeSetup.PointLightVolumes.Any(l => l.BakedShadows);
             if (!needOcclusion) {
                 if (ShadowsTexture != null)
                     LVUtils.MarkDirty(this);

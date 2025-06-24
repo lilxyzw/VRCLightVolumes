@@ -271,7 +271,7 @@ namespace VRCLightVolumes
             for (int lightIdx = 0; lightIdx < shadowLights.Count; lightIdx++) {
                 // Don't care about non-shadow casting lights
                 var light = shadowLights[lightIdx];
-                if (light.Dynamic || !light.BakedShadows)
+                if (!light.BakedShadows)
                     continue;
                 
                 float lightInfluenceRadius = light.Range;
@@ -310,7 +310,7 @@ namespace VRCLightVolumes
                 
                 // Skip non-shadow casting lights
                 var light = pixelLights[lightIdx];
-                if (light.Dynamic || !light.BakedShadows)
+                if (!light.BakedShadows)
                     continue;
                 
                 // Get the bounding sphere
@@ -322,7 +322,7 @@ namespace VRCLightVolumes
                 for (int otherLightIdx = 0; otherLightIdx < pixelLights.Count; otherLightIdx++) {
                     // Skip self and non-shadow casting lights
                     var otherLight = pixelLights[otherLightIdx];
-                    if (light == otherLight || otherLight.Dynamic || !otherLight.BakedShadows)
+                    if (light == otherLight || !otherLight.BakedShadows)
                         continue;
                     
                     // If the distance between the lights is less than the sum of their radii, they overlap
