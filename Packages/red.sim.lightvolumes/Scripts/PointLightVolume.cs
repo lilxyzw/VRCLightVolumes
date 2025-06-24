@@ -165,11 +165,6 @@ namespace VRCLightVolumes {
             SyncUdonScript();
         }
 
-        // Delete self in play mode
-        private void Start() {
-            if (Application.isPlaying) Destroy(this);
-        }
-
         public enum LightShape {
             Parametric,
             LUT,

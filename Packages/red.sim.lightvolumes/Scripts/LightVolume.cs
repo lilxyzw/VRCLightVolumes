@@ -619,17 +619,5 @@ namespace VRCLightVolumes {
         }
 #endif
 
-        // Delete self in play mode
-        private void Start() {
-            if (Application.isPlaying) {
-#if BAKERY_INCLUDED
-                if (BakeryVolume != null) {
-                    Destroy(BakeryVolume.gameObject);
-                }
-#endif
-                Destroy(this);
-            }
-        }
-
     }
 }
