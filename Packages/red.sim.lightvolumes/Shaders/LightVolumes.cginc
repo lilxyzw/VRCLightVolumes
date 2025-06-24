@@ -310,14 +310,19 @@ void LV_QuadLight(
         areaLightSH.xyz *= areaLightSH.w / lenL1;
 
     // Accumulate SH coefficients
-    float3 l0 = areaLightSH.w * color.rgb * occlusion;
-    float3 l1 = areaLightSH.xyz * occlusion;
-    float3 stp = step(l0, 0);
+    //float3 l0 = areaLightSH.w * color.rgb * occlusion;
+    //float3 l1 = areaLightSH.xyz * occlusion;
+    //float3 stp = step(l0, 0);
     
-    L0 = lerp(L0 + l0, L0 * saturate(1 + l0), stp);
-    L1r = lerp(L1r + l1 * color.r, L1r * saturate(1 + l0), stp);
-    L1g = lerp(L1g + l1 * color.g, L1g * saturate(1 + l0), stp);
-    L1b = lerp(L1b + l1 * color.b, L1b * saturate(1 + l0), stp);
+    //L0 = lerp(L0 + l0, L0 * saturate(1 + l0), stp);
+    //L1r = lerp(L1r + l1 * color.r, L1r * saturate(1 + l0), stp);
+    //L1g = lerp(L1g + l1 * color.g, L1g * saturate(1 + l0), stp);
+    //L1b = lerp(L1b + l1 * color.b, L1b * saturate(1 + l0), stp);
+    
+    L0 += areaLightSH.w * color.rgb * occlusion;
+    L1r += areaLightSH.xyz * color.r * occlusion;
+    L1g += areaLightSH.xyz * color.g * occlusion;
+    L1b += areaLightSH.xyz * color.b * occlusion;
     
     count++;
 }
@@ -412,14 +417,19 @@ void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, i
     }
 
     // Accumulate SH coefficients
-    float3 l0 = att * occlusion;
-    float3 l1 = dirN * occlusion;
-    float3 stp = step(l0, 0);
+    //float3 l0 = att * occlusion;
+    //float3 l1 = dirN * occlusion;
+    //float3 stp = step(l0, 0);
     
-    L0 = lerp(L0 + l0, L0 * saturate(1 + l0), stp);
-    L1r = lerp(L1r + l1 * att.r, L1r * saturate(1 + l0), stp);
-    L1g = lerp(L1g + l1 * att.g, L1g * saturate(1 + l0), stp);
-    L1b = lerp(L1b + l1 * att.b, L1b * saturate(1 + l0), stp);
+    //L0 = lerp(L0 + l0, L0 * saturate(1 + l0), stp);
+    //L1r = lerp(L1r + l1 * att.r, L1r * saturate(1 + l0), stp);
+    //L1g = lerp(L1g + l1 * att.g, L1g * saturate(1 + l0), stp);
+    //L1b = lerp(L1b + l1 * att.b, L1b * saturate(1 + l0), stp);
+    
+    L0 += att * occlusion;
+    L1r += dirN * att.r * occlusion;
+    L1g += dirN * att.g * occlusion;
+    L1b += dirN * att.b * occlusion;
     
     count++;
 
