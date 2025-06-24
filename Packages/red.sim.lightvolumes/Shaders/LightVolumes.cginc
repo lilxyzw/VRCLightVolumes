@@ -464,11 +464,6 @@ void LV_SampleLightProbe(out float3 L0, out float3 L1r, out float3 L1g, out floa
     L1b = unity_SHAb.xyz;
 }
 
-// Default light probes L0 only
-float3 LV_SampleLightProbe_L0() {
-    return float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-}
-
 // Linear single SH L1 channel evaluation
 float LV_EvaluateSH(float L0, float3 L1, float3 n) {
     return L0 + dot(L1, n);
@@ -557,32 +552,6 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
     
 }
 
-// Samples a Volume with ID and Local UVW, but L0 component only
-float3 LV_SampleVolume_L0(uint id, float3 localUVW, out float4 occlusion) {
-    
-    //uint uvwID = id * 3;
-    //float4 uvwPos0 = _UdonLightVolumeUvwScale[uvwID];
-    //float3 uvwScale = float3(uvwPos0.w, _UdonLightVolumeUvwScale[uvwID + 1].w, _UdonLightVolumeUvwScale[uvwID + 2].w);
-    //float3 uvwScaled = saturate(localUVW + 0.5) * uvwScale;
-    //float3 uvw0 = uvwPos0.xyz + uvwScaled;
-    
-    // Legacy! Commented code above will be used in future releases! Legacy!
-    uint uvwID = id * 6;
-    float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
-    float3 uvw0 = uvwScaled + _UdonLightVolumeUvw[uvwID].xyz;
-
-    // Sample occlusion
-    float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz;
-    [branch]
-    if (uvwOcclusion.x >= 0) {
-        occlusion = 1.0f-LV_SAMPLE(_UdonLightVolume, uvwOcclusion + uvwScaled);
-    } else {
-        occlusion = 1;
-    }
-    
-    return LV_SAMPLE(_UdonLightVolume, uvw0).rgb * _UdonLightVolumeColor[id].rgb;
-}
-
 // Forms specular based on roughness
 float LV_DistributionGGX(float NoH, float roughness) {
     float f = (roughness - 1) * ((roughness + 1) * (NoH * NoH)) + 1;
@@ -610,7 +579,7 @@ void LV_PointLightVolumeSH(float3 worldPos, float4 occlusion, inout float3 L0, i
 }
 
 // Calculates L1 SH and occlusion based on the world position. Only samples light volumes, not point lights.
-void LV_LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
+void LV_LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
 
     // Initializing output variables
     L0  = float3(0, 0, 0);
@@ -744,7 +713,7 @@ void LV_LightVolumeSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1
 
 // Calculates L1 SH based on the world position from additive volumes only. Only samples light volumes, not point lights.
 // Also returns an occlusion factor, which may be used for point light shadows.
-void LV_LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
+void LV_LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b, out float4 occlusion) {
 
     // Initializing output variables
     L0  = float3(0, 0, 0);
@@ -846,209 +815,6 @@ void LV_LightVolumeAdditiveSHNoPointLights(float3 worldPos, out float3 L0, out f
     
 }
 
-// Calculates L0 SH and occlusion based on the world position. Only samples light volumes, not point lights.
-float3 LV_LightVolumeSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
-
-    // Default to unoccluded
-    occlusion = 1;
-    
-    // Clamping gloabal iteration counts
-    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
-    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
-    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (volumesCount == 0 && pointCount == 0)) { // Fallback to default light probes if Light Volume are not enabled
-    if (volumesCount == 0 && pointCount == 0) { // Legacy! Fallback to default light probes if Light Volume are not enabled. Legacy!
-        return LV_SampleLightProbe_L0();
-    }
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
-    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
-    bool lightProbesBlend = _UdonLightVolumeProbesBlend;
-    
-    float3 L0 = float3(0, 0, 0);
-    
-    uint volumeID_A = -1; // Main, dominant volume ID
-    uint volumeID_B = -1; // Secondary volume ID to blend main with
-
-    float3 localUVW   = float3(0, 0, 0); // Last local UVW to use in disabled Light Probes mode
-    float3 localUVW_A = float3(0, 0, 0); // Main local UVW for Y Axis and Free rotations
-    float3 localUVW_B = float3(0, 0, 0); // Secondary local UVW
-    
-    // Are A and B volumes NOT found?
-    bool isNoA = true;
-    bool isNoB = true;
-    
-    // Additive volumes variables
-    uint addVolumesCount = 0;
-    
-    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
-    [loop]
-    for (uint id = 0; id < volumesCount; id++) {
-        localUVW = LV_LocalFromVolume(id, worldPos);
-        if (LV_PointLocalAABB(localUVW)) { // Intersection test
-            if (id < additiveCount) { // Sampling additive volumes
-                if (addVolumesCount < maxOverdraw) {
-                    float4 unusedOcclusion;
-                    L0 += LV_SampleVolume_L0(id, localUVW, unusedOcclusion);
-                    addVolumesCount++;
-                } 
-            } else if (isNoA) { // First, searching for volume A
-                volumeID_A = id;
-                localUVW_A = localUVW;
-                isNoA = false;
-            } else { // Next, searching for volume B if A found
-                volumeID_B = id;
-                localUVW_B = localUVW;
-                isNoB = false;
-                break;
-            }
-        }
-    }
-
-    // If no volumes found, using Light Probes as fallback
-    if (isNoA && lightProbesBlend) {
-        return L0 + LV_SampleLightProbe_L0();
-    }
-        
-    // Fallback to lowest weight light volume if outside of every volume
-    localUVW_A = isNoA ? localUVW : localUVW_A;
-    volumeID_A = isNoA ? volumesCount - 1 : volumeID_A;
-
-    // Sampling Light Volume A
-    float4 occlusion_A;
-    float3 L0_A = LV_SampleVolume_L0(volumeID_A, localUVW_A, occlusion_A);
-    
-    float mask = LV_BoundsMask(localUVW_A, _UdonLightVolumeInvLocalEdgeSmooth[volumeID_A]);
-    if (mask == 1 || isNoA || (_UdonLightVolumeSharpBounds && isNoB)) { // Returning SH A result if it's the center of mask or out of bounds
-        occlusion = occlusion_A;
-        return L0 + L0_A;
-    }
-    
-    // Volume B L0
-    float3 L0_B  = float3(1, 1, 1);
-    float4 occlusion_B = 1;
-
-    if (isNoB && lightProbesBlend) { // No Volume found and light volumes blending enabled
-
-        // Sample Light Probes B
-        L0_B = LV_SampleLightProbe_L0();
-
-    } else { // Blending Volume A and Volume B
-            
-        // If no volume b found, use last one found to fallback
-        localUVW_B = isNoB ? localUVW : localUVW_B;
-        volumeID_B = isNoB ? volumesCount - 1 : volumeID_B;
-            
-        // Sampling Light Volume B
-        L0_B = LV_SampleVolume_L0(volumeID_B, localUVW_B, occlusion_B);
-        
-    }
-
-    // Lerping occlusion
-    occlusion = lerp(occlusion_B, occlusion_A, mask);
-    
-    // Lerping L0
-    return L0 + lerp(L0_B,  L0_A,  mask);
-
-}
-
-// Calculates L0 SH based on the world position from additive volumes only. Only samples light volumes, not point lights.
-// Also returns an occlusion factor, which may be used for point light shadows.
-float3 LV_LightVolumeAdditiveSHNoPointLights_L0(float3 worldPos, out float4 occlusion) {
-
-    // Default to unoccluded
-    occlusion = 1;
-    
-    // Clamping gloabal iteration counts
-    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
-    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
-    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return 0;
-    if (additiveCount == 0 && pointCount == 0) return 0; // Legacy!
-    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
-    
-    float3 L0 = float3(0, 0, 0);
-    
-    uint volumeID_A = -1; // Main, dominant volume ID
-    uint volumeID_B = -1; // Secondary volume ID to blend main with
-
-    float3 localUVW   = float3(0, 0, 0); // Last local UVW to use in disabled Light Probes mode
-    float3 localUVW_A = float3(0, 0, 0); // Main local UVW for Y Axis and Free rotations
-    float3 localUVW_B = float3(0, 0, 0); // Secondary local UVW
-    
-    // Are A and B volumes NOT found?
-    bool isNoA = true;
-    bool isNoB = true;
-    
-    // Additive volumes variables
-    uint addVolumesCount = 0;
-
-    // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
-    [loop]
-    for (uint id = 0; id < volumesCount; id++) {
-        localUVW = LV_LocalFromVolume(id, worldPos);
-        if (LV_PointLocalAABB(localUVW)) { // Intersection test
-            if (id < additiveCount) { // Sampling additive volumes
-                if (addVolumesCount < maxOverdraw) {
-                    float4 unusedOcclusion;
-                    L0 += LV_SampleVolume_L0(id, localUVW, unusedOcclusion);
-                    addVolumesCount++;
-                } 
-            } else if (isNoA) { // First, searching for volume A
-                volumeID_A = id;
-                localUVW_A = localUVW;
-                isNoA = false;
-            } else { // Next, searching for volume B if A found
-                volumeID_B = id;
-                localUVW_B = localUVW;
-                isNoB = false;
-                break;
-            }
-        }
-    }
-
-    // If no volumes found, or we don't need the data, we are done
-    if (isNoA || _UdonLightVolumeOcclusionCount == 0) {
-        return L0;
-    }
-    
-    // Fallback to lowest weight light volume if outside of every volume
-    localUVW_A = isNoA ? localUVW : localUVW_A;
-    volumeID_A = isNoA ? volumesCount - 1 : volumeID_A;
-
-    // Sampling Light Volume A
-    float4 occlusion_A = LV_SampleVolumeOcclusion(volumeID_A, localUVW_A);
-
-    float mask = LV_BoundsMask(localUVW_A, _UdonLightVolumeInvLocalEdgeSmooth[volumeID_A]);
-    if (mask == 1 || isNoA || (_UdonLightVolumeSharpBounds && isNoB)) { // Returning A result if it's the center of mask or out of bounds
-        occlusion = occlusion_A;
-        return L0;
-    }
-
-    // Volume B L0
-    float4 occlusion_B = 1;
-
-    if (isNoB) { // No Volume found
-
-        occlusion = occlusion_A;
-        return L0;
-
-    } else { // Blending Volume A and Volume B
-        
-        // If no volume b found, use last one found to fallback
-        localUVW_B = isNoB ? localUVW : localUVW_B;
-        volumeID_B = isNoB ? volumesCount - 1 : volumeID_B;
-        
-        // Sampling Light Volume B
-        occlusion_B = LV_SampleVolumeOcclusion(volumeID_B, localUVW_B);
-    
-    }
-
-    // Lerping occlusion
-    occlusion = lerp(occlusion_B, occlusion_A, mask);
-
-    return L0;
-    
-}
-
 // Calculates speculars for light volumes or any SH L1 data
 float3 LightVolumeSpecular(float3 f0, float smoothness, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b) {
     
@@ -1117,14 +883,14 @@ float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g
 // Calculates L1 SH based on the world position. Samples both light volumes and point lights.
 void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     float4 occlusion;
-    LV_LightVolumeSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
+    LV_LightVolumeSH(worldPos, L0, L1r, L1g, L1b, occlusion);
     LV_PointLightVolumeSH(worldPos, occlusion, L0, L1r, L1g, L1b);
 }
 
 // Calculates L1 SH based on the world position from additive volumes only. Samples both light volumes and point lights.
 void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b) {
     float4 occlusion;
-    LV_LightVolumeAdditiveSHNoPointLights(worldPos, L0, L1r, L1g, L1b, occlusion);
+    LV_LightVolumeAdditiveSH(worldPos, L0, L1r, L1g, L1b, occlusion);
     LV_PointLightVolumeSH(worldPos, occlusion, L0, L1r, L1g, L1b);
 }
 
@@ -1132,7 +898,8 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
 float3 LightVolumeSH_L0(float3 worldPos) {
     float4 occlusion;
     float3 unused_L1; // Let's just pray that compiler will strip everything x.x
-    float3 L0 = LV_LightVolumeSHNoPointLights_L0(worldPos, occlusion);
+    float3 L0;
+    LV_LightVolumeSH(worldPos, L0, unused_L1, unused_L1, unused_L1, occlusion);
     LV_PointLightVolumeSH(worldPos, occlusion, L0, unused_L1, unused_L1, unused_L1);
     return L0;
 }
@@ -1141,7 +908,8 @@ float3 LightVolumeSH_L0(float3 worldPos) {
 float3 LightVolumeAdditiveSH_L0(float3 worldPos) {
     float4 occlusion;
     float3 unused_L1; // Let's just pray that compiler will strip everything x.x
-    float3 L0 = LV_LightVolumeAdditiveSHNoPointLights_L0(worldPos, occlusion);
+    float3 L0;
+    LV_LightVolumeAdditiveSH(worldPos, L0, unused_L1, unused_L1, unused_L1, occlusion);
     LV_PointLightVolumeSH(worldPos, occlusion, L0, unused_L1, unused_L1, unused_L1);
     return L0;
 }
