@@ -2,20 +2,19 @@
 
 # How to Use
 
-**[VRC Light Volumes System](../Documentation/HowToUse.md)**
-
-**[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)**
-
-[Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
-
-**[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)**
-
-**TV Screens Integration**
-
-- [TV Screen Quick Setup](#TV-Screen-Quick-Setup)
-- [Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description)
-
-
+> [VRC Light Volumes System](../Documentation/HowToUse.md)
+>
+> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
+>
+> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
+>
+> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
+>
+> **TV Screens Integration**
+>
+> - [TV Screen Quick Setup](#TV-Screen-Quick-Setup)
+> - [Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description)
+>
 
 ## TV Screens Integration
 
@@ -31,8 +30,6 @@ It works visually similar to [LTCGI](https://github.com/PiMaker/ltcgi) in some c
 #### Limitations
 - Doesn't make screen reflections like LTCGI
 - Only projects a **single average screen color**
-
-
 
 ## TV Screen Quick Setup
 
@@ -58,8 +55,6 @@ It works visually similar to [LTCGI](https://github.com/PiMaker/ltcgi) in some c
 8. Done! The system will now update the light color at runtime, even affecting avatars.
 
 If you see unwanted **sharp color transitions** in your additive volume, try adjusting the **Color Correction** settings in the Light Volume component. Lowering `Shadows` in color correction section usually helps.
-
-
 
 ## Light Volume TVGI Component Description
 

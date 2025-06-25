@@ -2,29 +2,25 @@
 
 # How to Use
 
-**[VRC Light Volumes System](../Documentation/HowToUse.md)**
-
-**Regular Light Volumes**
-
-- [Light Volumes Placement](#Light-Volumes-Placement)
-- [Auto Light Probes Placement](#Auto-Light-Probes-Placement)
-- [Additive Light Volumes](#Additive-Light-Volumes)
-- [Light Volumes Color Correction](#Light-Volumes-Color-Correction)
-- [Light Volume Component Description](#Light Volume-Component-Description)
-
-[Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
-
-**[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)**
-
-**[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)**
-
-
+> [VRC Light Volumes System](../Documentation/HowToUse.md)
+>
+> **Regular Light Volumes**
+>
+> - [Light Volumes Placement](#Light-Volumes-Placement)
+> - [Auto Light Probes Placement](#Auto-Light-Probes-Placement)
+> - [Additive Light Volumes](#Additive-Light-Volumes)
+> - [Light Volumes Color Correction](#Light-Volumes-Color-Correction)
+> - [Light Volume Component Description](#Light-Volume-Component-Description)
+>
+> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
+>
+> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
+>
+> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
 
 ## Regular Light Volumes
 
 Light Volumes is a fast and optimized solution that replaces Unity's light probes with a better per-pixel voxel based lighting. It's similar to Adaptive Probe Volumes (APV) in Unity 6, but with manual ReflectionProbe-like volumes placement and some other extra features.
-
-
 
 ## Light Volumes Placement
 
@@ -40,8 +36,6 @@ A good practice is to place one large, low-resolution Light Volume to cover the 
 
 If you already have **Reflection Probes** in your scene, you'll probably want your **Light Volumes** to match their bounds. To do this, right-click the Reflection Probe in the Hierarchy and create **Light Volume** as a child. Any volume created under any reflection probe will automatically inherit its bounds.
 
-
-
 ## Auto Light Probes Placement
 
 Even though **Light Volumes** are designed to replace **Light Probes**, you should still include **Light Probes** in your scene to ensure proper lighting for avatars that do not support **VRC Light Volumes**.
@@ -51,8 +45,6 @@ Since Unity does not provide an easy way to automatically place **Light Probes**
 Simply click the `Generate Light Probes` button in the Light Volume component. This will open a small configuration window and display a preview of the probes that will be placed in your scene. The probes will be arranged in a cuboid shape within the bounds of your Light Volume. The **Light Probe** density is usually much lower than the Light Volume density, but you can adjust it in the configuration window as needed.
 
 Once you're happy with the settings, click the `Create Light Probe Group` button. This will create a Light Probe Group as a child of the Light Volume. You can manually edit or remove any unwanted probes, and you can also move the Light Probe Group out of the Light Volume hierarchy if you prefer.
-
-
 
 ## Additive Light Volumes
 
@@ -95,8 +87,6 @@ You can control how many additive volumes affect a pixel using the `Additive Max
 
 > ⚠️ Note: `Additive Max Overdraw` parameter limits how many **additive volumes** are sampled **per pixel**, not how many can exist in the scene overall. The more additive volumes **intersect**, the higher the performance cost.
 
-
-
 ## Light Volumes Color Correction
 
 The Light Volume component includes a simple color correction section. It's mainly useful for adjusting the brightness of your baked data, since it sometimes won’t match exactly how it appears in baked lightmaps.
@@ -108,8 +98,6 @@ The `Exposure` property adjusts the overall brightness of the baked data, simila
 The `Shadows` and `Highlights` properties adjust the brightness of dark and bright regions, respectively. These settings are helpful for correcting underexposed or overexposed areas of the baked data.
 
 Each time you change a value in this section, the **Light Volumes Atlas** will be automatically repacked. This process can take a few seconds, or longer if your atlas is large.
-
-
 
 ## Light Volume Component Description
 

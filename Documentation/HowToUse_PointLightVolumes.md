@@ -2,28 +2,24 @@
 
 # How to Use
 
-**[VRC Light Volumes System](../Documentation/HowToUse.md)**
-
-**[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)**
-
-**Point Light Volumes**
-
-- [Point Light Volumes Placement](#Point-Light-Volumes-Placement)
-- [Light Shape](#Light-Shape)
-- [Baked Point Light Volume Shadows](#Baked-Point-Light-Volume-Shadows)
-- [Point Light Volume Component Description](#Point-Light-Volume-Component-Description)
-
-**[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)**
-
-**[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)**
-
-
+> [VRC Light Volumes System](../Documentation/HowToUse.md)
+>
+> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
+>
+> **Point Light Volumes**
+>
+> - [Point Light Volumes Placement](#Point-Light-Volumes-Placement)
+> - [Light Shape](#Light-Shape)
+> - [Baked Point Light Volume Shadows](#Baked-Point-Light-Volume-Shadows)
+> - [Point Light Volume Component Description](#Point-Light-Volume-Component-Description)
+>
+> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
+>
+> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
 
 ## Point Light Volumes
 
 **Point Light Volumes** is a fast and optimized custom lighting system that has it's own parametric Point Light, Spot Lights and Area Lights. Point Light Volumes are not voxel based, they forms the light parametrically, or based on special LUT textures (similar to IES). They can project light cookies or cubemaps. It can be up to 128 point lights visible in one scene at the same time. However, this system does not support real-time shadows.
-
-
 
 ## Point Light Volumes Placement
 
@@ -38,8 +34,6 @@ Note that more point lights you have active in your scene, the less performance 
 The more point light volumes overlap, the less performance you'll have. Try not to make an insanely huge range for your lights. Use `Debug Range` flag in your Point Light Volume component to preview the region affected by your point light.
 
 **Point light Volume** in `Area Light` mode calculates the **range** automatically based on its size, brightness and the `Area Light Brightness Cutoff` parameter in Light Volume Setup component.
-
-
 
 ## Light Shape
 
@@ -79,8 +73,6 @@ Duplicated LUTs, Cubemaps, and Cookie textures are only uploaded to VRChat once 
 - **`RGBA Half`** – The recommended format for most cases. Supports HDR and works well with LUTs. It uses half precision, so minimal banding may still be visible, but usually unnoticeable.
 - **`RGBA Float`** – The highest quality format with full HDR support and no banding. It’s also the most memory-heavy and is typically overkill for general use.
 
-
-
 ## Baked Point Light Volume Shadows
 
 **Point Light Volumes** do not support real-time shadows. However, you can bake static shadows for them. While this goes against the idea of Point Light Volumes being fully movable, it can still be useful for static lights or lights that move only slightly. That said, this feature is intended for rare and specific use cases.
@@ -92,8 +84,6 @@ Keep in mind that baked shadows are voxel-based and are stored directly inside e
 > ⚠️ **Note:** Each Light Volume can support a maximum of **4 shadow-casting point lights** that intersects with each other.
 
 To bake shadows for Point Light Volumes, simply rebake your scene lighting.
-
-
 
 ## Point Light Volume Component Description
 

@@ -2,21 +2,19 @@
 
 # How to Use
 
-**VRC Light Volumes System**
-
-- [Light Volumes for Avatars](#Light-Volumes-for-Avatars)
-- [Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)
-- [Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup)
-
-**[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)**
-
-[Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
-
-**[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)**
-
-**[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)**
-
-
+> **VRC Light Volumes System**
+>
+> - [Light Volumes for Avatars](#Light-Volumes-for-Avatars)
+> - [Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)
+> - [Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup)
+>
+> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
+>
+> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
+>
+> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
+>
+> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
 
 ## VRC Light Volumes System
 
@@ -28,15 +26,11 @@ VRC Light Volumes is fast and optimized nextgen lighting solution for VRChat. It
 
 [**Point Light Volumes**](#Point-Light-Volumes-Quick-World-Setup) is a fast and optimized custom lighting system that has it's own parametric Point Light, Spot Lights and Area Lights. Point Light Volumes are not voxel based, they forms the light parametrically, or based on special LUT textures (similar to IES). They can project light cookies or cubemaps. It can be up to 128 point lights visible in one scene at the same time. However, this system does not support realtime shadows.
 
-
-
 ## Light Volumes for Avatars
 
 You just need to use a [shader that has VRC Light Volumes support](/Documentation/CompatibleShaders.md) and that's it. Nothing else to do!
 
 > ⚠️ Note: Unfortunately, there is no way to make avatars cast light volumes light, it can only be integrated into worlds.
-
-
 
 ## Light Volumes Quick World Setup
 
@@ -59,8 +53,6 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 10. For reference, check out the `Example` scene in the `Packages/VRC Light Volumes/Example` folder to see a working setup.
 
 > ⚠️ Note: The number of active Light Volumes is limited to 32 per scene at a time. However, you can dynamically enable and disable volumes at runtime to work with more than 32 total, just not simultaneously.
-
-
 
 ## Point Light Volumes Quick World Setup
 

@@ -2,28 +2,24 @@
 
 # How to Use
 
-**[VRC Light Volumes System](../Documentation/HowToUse.md)**
-
-**[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)**
-
-[Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
-
-**Audio Link Integration**
-
-- [Audio Link Quick Setup](#Audio-Link-Quick-Setup)
-- [Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description)
-
-**[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)**
-
-
+> [VRC Light Volumes System](../Documentation/HowToUse.md)
+>
+> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
+>
+> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
+>
+> **Audio Link Integration**
+>
+> - [Audio Link Quick Setup](#Audio-Link-Quick-Setup)
+> - [Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description)
+>
+> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
 
 ## Audio Link Integration
 
 This package includes a [AudioLink](https://github.com/llealloo/audiolink/) integration Udon script. 
 
 **LightVolumeAudioLink** component can change Light Volumes, Point light Volumes and Mesh Renderers materials colors in runtime based on AudioLink.
-
-
 
 ## Audio Link Quick Setup
 
@@ -47,8 +43,6 @@ This package includes a [AudioLink](https://github.com/llealloo/audiolink/) inte
 
 9. Done! You should now see visual changes reacting to audio.
    Add more **LightVolumeAudioLink** components to control other AudioLink bands.
-
-
 
 ## Light Volume Audio Link Component Description
 
