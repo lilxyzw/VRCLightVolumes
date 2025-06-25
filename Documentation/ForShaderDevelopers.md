@@ -1,4 +1,5 @@
-[VRC Light Volumes](/README.md) | [How to Use](/Documentation/HowToUse.md) | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | **For Shader Developers** | [Compatible Shaders](/Documentation/CompatibleShaders.md)
+[VRC Light Volumes](../README.md) | [How to Use](../Documentation/HowToUse.md) | [Best Practices](../Documentation/BestPractices.md) | [Udon Sharp API](../Documentation/UdonSharpAPI.md) | **For Shader Developers** | [Compatible Shaders](../Documentation/CompatibleShaders.md)
+
 # For shader developers
 
 If you are a shader developer, it should be easy to integrate Light Volumes support into your shader.

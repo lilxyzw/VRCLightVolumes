@@ -1,4 +1,5 @@
-[VRC Light Volumes](/README.md) | [How to Use](/Documentation/HowToUse.md) | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | [For Shader Developers](/Documentation/ForShaderDevelopers.md) | **Compatible Shaders**
+[VRC Light Volumes](../README.md) | [How to Use](../Documentation/HowToUse.md) | [Best Practices](../Documentation/BestPractices.md) | [Udon Sharp API](../Documentation/UdonSharpAPI.md) | [For Shader Developers](../Documentation/ForShaderDevelopers.md) | **Compatible Shaders**
+
 # Compatible Shaders
 - [lilToon Shader](https://github.com/lilxyzw/lilToon) (v.1.10.0)
 - [Poiyomi Toon Shader](https://github.com/poiyomi/PoiyomiToonShader) (v.9.2)
