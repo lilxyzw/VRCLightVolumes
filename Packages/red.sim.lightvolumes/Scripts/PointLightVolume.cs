@@ -23,9 +23,9 @@ namespace VRCLightVolumes {
         public LightShape Shape = LightShape.Parametric;
         [Tooltip("Angle of a spotlight cone in degrees.")]
         [Range(0.1f, 360)] public float Angle = 60f;
-        [Tooltip("Cone falloff.")]
+        [Tooltip("Spotlight cone falloff.")]
         [Range(0.001f, 1)] public float Falloff = 1f;
-        [Tooltip("X - cone falloff, Y - attenuation. No compression and RGBA Float or RGBA Half format is recommended.")]
+        [Tooltip("Texture that defines custom light shape. X - cone falloff, Y - attenuation. No compression and RGBA Float or RGBA Half format is recommended.")]
         public Texture2D FalloffLUT = null;
         [Tooltip("Projects a square texture for spot lights.")]
         public Texture2D Cookie = null;
@@ -101,7 +101,7 @@ namespace VRCLightVolumes {
             SetupDependencies();
             PointLightVolumeInstance.IsDynamic = Dynamic;
             PointLightVolumeInstance.Color = Color;
-            PointLightVolumeInstance.ColorIntensity = Intensity;
+            PointLightVolumeInstance.Intensity = Intensity;
 
             if(Type == LightType.PointLight) { // Point light
                 PointLightVolumeInstance.SetRange(Range);

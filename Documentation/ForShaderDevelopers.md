@@ -2,6 +2,10 @@
 
 # For shader developers
 
+> - [Integrating Light Volumes with Amplify Shader Editor (ASE)](#Integrating-Light-Volumes-with-Amplify-Shader-Editor-(ASE))
+> - [Light Volume integration through shader code](#Light-Volume-integration-through-shader-code)
+> - [Shader Functions](#Shader-Functions)
+
 If you are a shader developer, it should be easy to integrate Light Volumes support into your shader.
 
 Both shader code way with a .cginc file and Amplify Shader Editor way with special nodes are available!
@@ -86,7 +90,7 @@ Required to get the Spherical Harmonics components. Using the output values you 
 
 Also this values are required to calculate the final light you get from the light volume.
 
-```
+```hlsl
 void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b)
 ```
 
@@ -96,25 +100,22 @@ void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1
 
 `out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
 
-### float3 LightVolumeEvaluate()
-Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
+### float3 LightVolumeSH_L0()
 
-You should usually multiply it by your "Albedo" and add to the final color, as an emission.
+Returns ambient color L0, without calculating L1. Cheaper then LightVolumeSH(). Should be used where directionality is not important, like particles or volumetric fog.
 
+```hlsl
+float3 LightVolumeSH_L0(float3 worldPos)
 ```
-float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b)
-```
 
-`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
-
-`float3 L0`, `float3 L1r`, `float3 L1g`, `float3 L1b` - Spherical Harmonics components you got from the LightVolumeSH() function.
+`float3 worldPos` - World position of the current fragment
 
 ### void LightVolumeAdditiveSH()
 Returns Spherical Harmonics components, just as LightVolumeSH() does, but only for volumes that work in additive mode. This function is much lighter than LightVolumeSH(), and useful for shaders that can be used in baked lightmaps mode.
 
 Evaluate it and add to your lightmaps color if you want to implement the additive volumes support for the baked lightmaps.
 
-```
+```hlsl
 void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b)
 ```
 
@@ -124,12 +125,38 @@ void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out f
 
 `out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
 
+### float3 LightVolumeAdditiveSH_L0()
+
+Returns ambient color L0, without calculating L1, just as LightVolumeSH_L0() does, but only for volumes that work in additive mode. This function is much lighter than LightVolumeSH_L0(), and useful for shaders that can be used in baked lightmaps mode.
+
+Evaluate it and add to your lightmaps color if you want to implement the additive volumes support for the baked lightmaps.
+
+```hlsl
+float3 LightVolumeAdditiveSH_L0(float3 worldPos)
+```
+
+`float3 worldPos` - World position of the current fragment
+
+### float3 LightVolumeEvaluate()
+
+Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
+
+You should usually multiply it by your "Albedo" and add to the final color, as an emission.
+
+```hlsl
+float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b)
+```
+
+`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
+
+`float3 L0`, `float3 L1r`, `float3 L1g`, `float3 L1b` - Spherical Harmonics components you got from the LightVolumeSH() function.
+
 ### float3 LightVolumeSpecular()
 Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
 
 Usually works much better for avatars, because can show several color speculars at the same time for each of R, G, B light directions. Slightly less performant than LightVolumeSpecularDominant()
 
-```
+```hlsl
 float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
@@ -149,7 +176,7 @@ float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, floa
 
 You can also provide the surface's specular color directly.
 
-```
+```hlsl
 float3 LightVolumeSpecular(float3 specColor, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
@@ -160,7 +187,7 @@ Calculates approximated speculars based on SH components. Can be used with Light
 
 Usually works better for static PBR surfaces, because can show a one color specular for the dominant light direction. Slightly more performant than LightVolumeSpecular()
 
-```
+```hlsl
 float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
@@ -180,7 +207,7 @@ float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metall
 
 You can also provide the surface's specular color directly.
 
-```
+```hlsl
 float3 LightVolumeSpecularDominant(float3 specColor, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 

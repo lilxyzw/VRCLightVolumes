@@ -2,52 +2,60 @@
 
 # Best Practices
 
-This article covers some non-intuitive features of VRC Light Volumes.
+> - [Regular Light Volumes Use Cases](#Regular-Light-Volumes-Use-Cases)
+> - [Point Light Volumes Use Cases](#Point-Light-Volumes-Use-Cases)
+> - [Naming Light Volumes](#Quick-Light-Probe-Setup)
+> - [Volume Bounds Smoothing](#Volume-Bounds-Smoothing)
+> - [Culling Light Volumes](#Culling-Light-Volumes)
+> - [Moving Light Volumes](#Moving-Light-Volumes)
+> - [Movable Volumes As Light Sources](Movable-Volumes-As-Light-Sources)
+> - [Bakery Volume Rotation](#Bakery-Volume-Rotation)
+> - [Fixing Bakery Light Probes](#Fixing-Bakery-Light-Probes)
 
-## Use Cases
-
-Light Volumes are a modern solution for lighting dynamic meshes, including avatars, props, and more!
+## Regular Light Volumes Use Cases
 
 - Use them with small static props that usually require very high lightmap resolution to avoid visible seams. Light Volumes produce no seams at all, as they are voxel-based.
 - Dynamic batching support: if you have tons of low-poly dynamic props across your scene using the same material, and their Mesh Renderers have Light Probes and Reflection Probes disabled, they can be dynamically batched at runtime, potentially improving performance.
 - Combine Light Volumes with particles to create stunning volumetric fog effects.
 - Switch between two Light Volumes at runtime to create toggleable lighting for rooms or other areas in your scene.
-- Create dynamic disco balls or projectors for clubs and music worlds — move, rotate, and even animate their colors in real time.
+- TV Screens dynamic Global Illumination
+- Audio Link Dynamic Lights
 - And much more!
 
-## Quick Volume Setup
+## Point Light Volumes Use Cases
 
-If you already have Reflection Probes in your scene, you'll probably want your Light Volumes to match their bounds. To do this, right-click the Reflection Probe in the Hierarchy and create **Light Volume** as a child. Any volume created under any probe will automatically use its bounds.
-
-## Quick Light Probe Setup
-
-If you’ve set up Light Volumes but still need Unity’s default Light Probe Groups for shaders without VRC Light Volumes support, you can generate them from your volumes. Select a Light Volume, then click **Generate Light Probes** in its inspector. In the popup window, adjust probes density. You'll see the probes positions as a preview in your scene. When you’re ready, click **Create Light Probe Group**. A new group will appear as a child object of the selected volume.
+- Spot Lights as portable flashlights
+- Point Lights as other dynamic light sources
+- Area Lights as studio light soft boxes
+- Moving blinking lighting for clubs
+- Image and cubemaps projectors
+- TV Screens dynamic Global Illumination
+- Audio Link Dynamic Lights
+- And much more!
 
 ## Naming Light Volumes
 
-Ensure every Light Volume you bake has a unique game object name. The generated 3D textures inherit these names and can conflict. If you duplicate baked volumes or use prefab instances with the **Bake** flag disabled, you don’t need to rename them.
+Ensure every Light Volume you bake has a unique game object name. The generated 3D textures inherit these names and can conflict. If you duplicate baked volumes or use prefab instances with the `Bake` flag disabled, you don’t need to rename them.
 
 ## Volume Bounds Smoothing
 
-Overlap intersecting volumes slightly (about 0.25 m) to hide seams. The **Smooth Blending** parameter controls edge falloff - keep it smaller than your overlap.
+Overlap intersecting volumes slightly (about 0.25 m) to hide seams. The `Smooth Blending` parameter controls edge falloff - keep it smaller than your overlap.
 
-To smooth between a volume and uncovered areas, disable **Sharp Bounds** in Light Volume Setup. This applies smoothing to all edges, so you might need to scale up your volumes to keep the softened edges outside of the intended area.
+To smooth between a volume and uncovered areas, disable `Sharp Bounds` in Light Volume Setup. This applies smoothing to all edges, so you might need to scale up your volumes to keep the softened edges outside of the intended area.
 
 ## Culling Light Volumes
 
 At runtime, you can disable any Light Volume to exclude it from rendering. This works even on non-dynamic volumes. Manually culling unused volumes can significantly boost performance in large scenes.
 
+Disabling **Light Volumes Manager** object disables all the Light Volumes system and fallbacks all the shaders to light probes.
+
 ## Moving Light Volumes
 
-To update a volume’s transform at runtime, enable **Dynamic** on its component and check **Auto Update Volumes** in Light Volume Setup. Otherwise, you must manually update  positions of Dynamic volumes via an Udon script. If you don’t need runtime updates, leave both options off for better performance.
+To update a volume’s transform at runtime, enable **Dynamic** on its component and check **Auto Update Volumes** in Light Volume Setup. Otherwise, you must manually update positions of Dynamic volumes via an Udon script. If you don’t need runtime updates, leave both options off for better performance.
 
-## Movable Volumes As Light Sources
+## Movable Volumes
 
-For dynamic lighting (e.g., flashlights, disco balls), set the volume to **Additive** so it layers on top of others and also affects lightmapped static meshes with a compatible shader. Minimize overlapping additive volumes to reduce overhead. Use **Max Additive Overdraw** value in Light Volume Setup to limit how many additive volumes render (prioritizing those with higher weight). Setting it to zero disables additive volumes entirely.
-
-## Baking Additive Volumes
-
-Bake additive volumes separately from your main scene so they include only their own direct lighting. See the **Additive Baking Example** scene included with this asset. After baking, copy the volume game object into your main scene.
+For dynamic lighting, set the volume to **Additive** so it layers on top of others and also affects lightmapped static meshes with a compatible shader. Minimize overlapping additive volumes to reduce overhead. Use **Max Additive Overdraw** value in Light Volume Setup to limit how many additive volumes render (prioritizing those with higher weight). Setting it to zero disables additive volumes entirely.
 
 ## Bakery Volume Rotation
 
@@ -55,8 +63,4 @@ Bake additive volumes separately from your main scene so they include only their
 
 ## Fixing Bakery Light Probes
 
-Bakery optimizes L1 probes for "Geometrics SH Evaluation", which can cause overexposure and underexposure issues. Enable **Fix Light Probes L1** in Light Volume Setup to correct the probes after each bake. This may reduce overall contrast slightly but prevents over or underexposure.
-
-## Color Correcting Volumes 
-
-Color correction is a feature that changes light balance of a baked volume. It can NOT be changed in runtime and only applies when you press "Pack Light Volumes" in Light Volume Setup component, or rebake the scene. Very useful when you bake additive lights in your scene and some undesirable dim light bakes into the volume. "Exposure" makes everything brighter or darker. "Dark Lights" and "Bright Lights" shifts the darkest or brightest volume values to cut out the undesirable light.
+Bakery bakes L1 probes to work with "Geometrics SH Evaluation", which can cause overexposure and underexposure issues. Enable **Fix Light Probes L1** in Light Volume Setup to correct the probes after each bake. This may reduce overall contrast slightly but prevents over or underexposure.

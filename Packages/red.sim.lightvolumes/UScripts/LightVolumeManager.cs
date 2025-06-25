@@ -289,7 +289,7 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[_enabledPointIDs[i]];
                 _pointLightPosition[i] = instance.PositionData;
 
-                Vector4 c = instance.Color.linear * instance.ColorIntensity;
+                Vector4 c = instance.Color.linear * instance.Intensity;
                 c.w = instance.AngleData;
                 _pointLightColor[i] = c;
 

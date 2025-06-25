@@ -2,10 +2,14 @@
 
 # Udon Sharp API
 
-There are only a two udon scritps you can control:
+> - [Light Volume Manager](#LightVolumeManager)
+> - [Light Volume Instance](#LightVolumeInstance)
+> - [Point Light Volume Instance](#PointLightVolumeInstance)
 
-### LightVolumeManager
+## LightVolumeManager
 Stores the light volumes 3D atlas and references to all of the Light Volume Instances. Controls and updates all the Light Volumes in your scene
+
+#### Public Fields
 
 `Texture3D LightVolumeAtlas` - 3D Texture atlas that is an atlas that contains all the Light Volumes SH baked data.
 
@@ -19,11 +23,15 @@ Stores the light volumes 3D atlas and references to all of the Light Volume Inst
 
 `LightVolumeInstance[] LightVolumeInstances` - All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance.
 
+#### Public Methods
+
 `void UpdateVolumes()` - Method that updates all the volumes gloabal shader parameters. Useful if you want manually update volumes instead of having **AutoUpdateVolumes** enabled.
 
 
-### LightVolumeInstance
+## LightVolumeInstance
 Stores all the volume configuration including 3D UVs, world transform, color, etc.
+
+#### Public Fields
 
 `Color Color` - Multiplies volumes color by this value. Changing the color is useful for animating Additive volumes. You can even control the R, G, B channels separately this way.
 
@@ -55,6 +63,64 @@ Stores all the volume configuration including 3D UVs, world transform, color, et
 
 `bool IsRotated` - True if there is any relative rotation. No relative rotation improves performance. Recalculated via the **UpdateRotation()** method.
 
+#### Public Methods
+
 `void SetSmoothBlending(float radius)` - Calculates **InvLocalEdgeSmoothing** value. Execute it if you want to control edge smoothing in runtime. You can even control every direction independent if it's needed.
 
 `void UpdateRotation()` - Recalculates **InvWorldMatrix**, **RelativeRotationRow0** and **RelativeRotationRow1**. Executes automatically from **LightVolumeManager.UpdateDynamicVolumes()** or while **LightVolumeManager.AutoUpdateVolumes** enabled. Usually don't need to be executed manually.
+
+## PointLightVolumeInstance
+
+Stores all the point light volume configuration including Color, Position, Direction, Custom Texture ID, etc.
+
+#### Public Fields
+
+`Color Color` - Point light volume color.
+
+`float Intensity` - Color multiplies by this value.
+
+`bool IsDynamic` - Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance.
+
+`Vector4 PositionData` - **For point light:** XYZ = Position, W = Inverse squared range. **For spot light:** XYZ = Position, W = Inverse squared range, negated. **For area light:** XYZ = Position, W = Width.
+
+`Vector4 DirectionData` - **For point light:** XYZW = Rotation quaternion. **For spot light:** XYZ = Direction, W = Cone falloff. **For area light:** XYZW = Rotation quaternion.
+
+`float CustomID` - **If parametric:** Stores 0. **If uses custom LUT**: Stores LUT ID with positive sign. **If uses custom texture:** Stores texture ID with negative sign.
+
+`float Angle` - Half-angle of the spotlight cone, in radians.
+
+`float AngleData` - **For point light:** Cos of angle (for LUT). **For spot light:** Cos of outer angle if no custom texture, tan of outer angle otherwise. **For area light:** 2 + Height.
+
+`sbyte ShadowmaskIndex` - Index of the shadowmask channel used by this light. -1 means no shadowmask.
+
+#### Public Methods
+
+`bool IsSpotLight()` - Checks if it's a spotlight
+
+`bool IsPointLight()` - Checks if it's a point light
+
+`bool IsAreaLight()` - Checks if it's an area light
+
+`bool IsCustomTexture()` - Checks if uses custom texture
+
+`bool IsLut()` - Checks if uses LUT
+
+`bool IsParametric()` - Checks if uses Parametric mode
+
+`void SetRange(float range)` - Sets range data which is actually an inverted squared range
+
+`void SetLut(int id)` - Sets LUT ID
+
+`void SetCustomTexture(int id)` - Sets Cubemap or a Cookie ID
+
+`void SetParametric()` - Sets light into parametric mode
+
+`void SetPointLight()` - Sets light into the point light type
+
+`void SetSpotLight(float angleDeg, float falloff)` - Sets light into the spot light type with both angle and falloff because angle required to determine falloff anyway
+
+`void SetSpotLight(float angleDeg)` - Sets light into the spot light type with angle specified
+
+`void SetAreaLight()` - Sets light into the area light type
+
+`void UpdateTransform()` - Manually updates data required for shader
