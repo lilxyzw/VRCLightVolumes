@@ -566,7 +566,7 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
 void LV_PointLightVolumeSH(float3 worldPos, float4 occlusion, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
     
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
-    if (pointCount == 0) return;
+    if (_UdonLightVolumeEnabled == 0 || pointCount == 0) return;
     
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
     uint pcount = 0; // Point lights counter
@@ -594,7 +594,7 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
     
     //if (_UdonLightVolumeEnabled < VRCLV_VERSION || volumesCount == 0 ) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
-    if (volumesCount == 0) { // Legacy! Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support. Legacy!
+    if (_UdonLightVolumeEnabled == 0 || volumesCount == 0) { // Legacy! Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support. Legacy!
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
         return;
     }
@@ -717,7 +717,8 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
     uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
     
     //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
-    if (additiveCount == 0 && pointCount == 0) return; // Legacy!
+    if (_UdonLightVolumeEnabled == 0 || additiveCount == 0 && pointCount == 0)
+        return; // Legacy!
 
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
     uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
