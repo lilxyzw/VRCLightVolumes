@@ -15,7 +15,7 @@ namespace VRCLightVolumes {
         [Header("Volume Setup")]
         [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance.")]
         public bool Dynamic;
-        [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
+        [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable and togglable lights. They can also project light onto static lightmapped objects if the surface shader supports it.")]
         public bool Additive;
         [Tooltip("Multiplies the volume’s color by this value.")]
         [ColorUsage(showAlpha: false)]
