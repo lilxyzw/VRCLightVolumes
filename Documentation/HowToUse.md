@@ -2,26 +2,19 @@
 
 # How to Use
 
-**[VRC Light Volumes System](#VRC-Light-Volumes-System)**
-
-- [Light Volumes for Avatars](#Light-Volumes-for-Avatars)
-- [Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)
-- [Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup)
-
-**[Additive Light Volumes](#Additive-Light-Volumes)**
-
-- [What Are Additive Volumes?](#What-Are-Additive-Volumes?)
-- [How to Bake an Additive Light Volume](#How-to-Bake-an-Additive-Light-Volume)
-
-**[Audio Link Integration](#Audio-Link-Integration)**
-
-- [Audio Link Quick Setup](#Audio-Link-Quick-Setup)
-- [Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description)
-
-**[TV Screens Integration](#TV-Screens-Integration)**
-
-- [TV Screen Quick Setup](#TV-Screen-Quick-Setup)
-- [Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description)
+- **[VRC Light Volumes System](#VRC-Light-Volumes-System)**
+  - [Light Volumes for Avatars](#Light-Volumes-for-Avatars)
+  - [Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)
+  - [Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup)
+- **[Additive Light Volumes](#Additive-Light-Volumes)**
+  - [What Are Additive Volumes?](#What-Are-Additive-Volumes?)
+  - [How to Bake an Additive Light Volume](#How-to-Bake-an-Additive-Light-Volume)
+- **[Audio Link Integration](#Audio-Link-Integration)**
+  - [Audio Link Quick Setup](#Audio-Link-Quick-Setup)
+  - [Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description)
+- **[TV Screens Integration](#TV-Screens-Integration)**
+  - [TV Screen Quick Setup](#TV-Screen-Quick-Setup)
+  - [Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description)
 
 
 
