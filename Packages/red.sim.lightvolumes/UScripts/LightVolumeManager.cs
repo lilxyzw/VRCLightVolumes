@@ -191,7 +191,7 @@ namespace VRCLightVolumes {
             _occlusionCount = 0;
             for (int i = 0; i < LightVolumeInstances.Length && _enabledCount < 32; i++) {
                 LightVolumeInstance instance = LightVolumeInstances[i];
-                if (instance != null && instance.gameObject.activeInHierarchy) {
+                if (instance != null && instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
@@ -233,7 +233,7 @@ namespace VRCLightVolumes {
                 _invWorldMatrix[i] = instance.InvWorldMatrix;
                 _invLocalEdgeSmooth[i] = instance.InvLocalEdgeSmoothing; // Setting volume edge smoothing
 
-                Vector4 c = instance.Color.linear * instance.ColorIntensity; // Changing volume color
+                Vector4 c = instance.Color.linear * instance.Intensity; // Changing volume color
                 c.w = instance.IsRotated ? 1 : 0; // Color alpha stores if volume rotated or not
                 _colors[i] = c;
 
@@ -264,7 +264,7 @@ namespace VRCLightVolumes {
             _pointLightCount = 0;
             for (int i = 0; i < PointLightVolumeInstances.Length && _pointLightCount < 128; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[i];
-                if (instance != null && instance.gameObject.activeInHierarchy) {
+                if (instance != null && instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
@@ -289,7 +289,7 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[_enabledPointIDs[i]];
                 _pointLightPosition[i] = instance.PositionData;
 
-                Vector4 c = instance.Color.linear * instance.ColorIntensity;
+                Vector4 c = instance.Color.linear * instance.Intensity;
                 c.w = instance.AngleData;
                 _pointLightColor[i] = c;
 

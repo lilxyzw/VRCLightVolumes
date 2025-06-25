@@ -569,7 +569,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 33498727}
   Color: {r: 0.29329407, g: 1, b: 0.082352936, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -0.01}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
@@ -1150,6 +1150,10 @@ MonoBehaviour:
     SerializedTypeNames:
     - VRC.SDK3.Components.VRCPickup
     - VRC.SDK3.Components.VRCObjectSync
+  - gameObject: {fileID: 1038735941}
+    ID: 71
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   PlayerPersistence: []
@@ -1572,7 +1576,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 154949970}
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 1
   PositionData: {x: -8.787, y: 0.5800005, z: 17.861, w: -0.01}
   DirectionData: {x: -1.0000002, y: 0.0000043832724, z: -0.0000032186556, w: 3.4142134}
@@ -3096,7 +3100,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 309589256}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -0.014206138}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
@@ -3454,7 +3458,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 355306801}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 50
+  Intensity: 50
   IsDynamic: 1
   PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 0.015625}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
@@ -3573,7 +3577,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 377300961}
   Color: {r: 1, g: 0.7589134, b: 0.2320754, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 1
   PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -0.01}
   DirectionData: {x: 0.9659258, y: 0.00000040007035, z: 0.25881994, w: 3.0931816}
@@ -3791,7 +3795,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 458847876}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -4490,7 +4494,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 569909709}
   Color: {r: 1, g: 0.5405387, b: 0.18823528, a: 1}
-  ColorIntensity: 5
+  Intensity: 5
   IsDynamic: 1
   PositionData: {x: 2.198, y: 1.571, z: 1.022999, w: 1.0000002}
   DirectionData: {x: -0, y: -0.70710677, z: -0, w: 0.7071069}
@@ -5042,7 +5046,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 657256791}
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  ColorIntensity: 10
+  Intensity: 10
   IsDynamic: 1
   PositionData: {x: 6.097, y: 0.58000046, z: -4.275, w: -0.01}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 3.4142134}
@@ -6122,7 +6126,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 832882188}
   Color: {r: 1, g: 0.88851196, b: 0.109803915, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -22, w: 0.027777778}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
@@ -6730,7 +6734,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 938222482}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: -4.154, y: 1.787, z: 14.23, w: 0.01}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
@@ -6985,7 +6989,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 969307523}
   Color: {r: 0.109803915, g: 0.6058649, b: 1, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -22, w: 0.027777778}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
@@ -7440,7 +7444,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 996561023}
   Color: {r: 1, g: 0.11841071, b: 0.081131995, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -0.01}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
@@ -7769,7 +7773,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1036732746}
   Color: {r: 0.082352936, g: 0.34083718, b: 1, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -0.01}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
@@ -7928,7 +7932,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1038735943}
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: -8.090002, y: 1.5800012, z: 0.71112424, w: -0.0025}
   DirectionData: {x: 0.8660247, y: 0.000004213666, z: -0.50000226, w: 3.9833612}
@@ -8549,7 +8553,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1137550076}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -10765,7 +10769,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1400850658}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -12294,7 +12298,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1541482805}
   Color: {r: 0.2668302, g: 1, b: 0.109803915, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 1
   PositionData: {x: -4, y: 2, z: -16, w: 0.027777778}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
@@ -12545,7 +12549,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1548001776}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -13248,7 +13252,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1644032074}
   Color: {r: 1, g: 0.111320674, b: 0.111320674, a: 1}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 1
   PositionData: {x: 4, y: 2, z: -16, w: 0.027777778}
   DirectionData: {x: -0, y: -0, z: -0, w: 1}
@@ -20439,7 +20443,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1748442015}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -0.014206138}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
@@ -20808,7 +20812,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1773416814}
   Color: {r: 0.18823528, g: 0.48519114, b: 1, a: 1}
-  ColorIntensity: 5
+  Intensity: 5
   IsDynamic: 1
   PositionData: {x: -2.17, y: 1.571, z: 1.0230011, w: 1.0000002}
   DirectionData: {x: -0, y: 0.7071065, z: -0, w: 0.7071072}
@@ -23691,7 +23695,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2070359845}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  ColorIntensity: -3
+  Intensity: -3
   IsDynamic: 1
   PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -0.01}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
@@ -23949,7 +23953,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2088816032}
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  ColorIntensity: 3
+  Intensity: 3
   IsDynamic: 1
   PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -0.01}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}

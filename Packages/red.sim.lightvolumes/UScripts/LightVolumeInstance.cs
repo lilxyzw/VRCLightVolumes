@@ -15,7 +15,7 @@ namespace VRCLightVolumes {
         [Tooltip("Changing the color is useful for animating Additive volumes. You can even control the R, G, B channels separately this way.")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Tooltip("Color multiplies by this value.")]
-        public float ColorIntensity = 1;
+        public float Intensity = 1;
         [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance. You can even change it in runtime.")]
         public bool IsDynamic = false;
         [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]

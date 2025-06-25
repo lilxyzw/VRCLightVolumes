@@ -481,7 +481,7 @@ namespace VRCLightVolumes {
             LightVolumeInstance.IsDynamic = Dynamic;
             LightVolumeInstance.IsAdditive = Additive;
             LightVolumeInstance.Color = Color;
-            LightVolumeInstance.ColorIntensity = Intensity;
+            LightVolumeInstance.Intensity = Intensity;
             LightVolumeInstance.SetSmoothBlending(SmoothBlending);
         }
 

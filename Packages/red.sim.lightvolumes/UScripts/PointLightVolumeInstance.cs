@@ -18,7 +18,7 @@ namespace VRCLightVolumes {
         [Tooltip("Point light volume color")]
         [ColorUsage(showAlpha: false)] public Color Color;
         [Tooltip("Color multiplies by this value.")]
-        public float ColorIntensity = 1;
+        public float Intensity = 1;
         [Tooltip("Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance.")]
         public bool IsDynamic = false;
         [Tooltip("For point light: XYZ = Position, W = Inverse squared range.\nFor spot light: XYZ = Position, W = Inverse squared range, negated.\nFor area light: XYZ = Position, W = Width.")]

@@ -180,12 +180,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 42751784}
   Color: {r: 1, g: 1, b: 1, a: 0}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.014285714, y: 0.5, z: 0.76256984, w: 0.2857143}
   BoundsUvwMin1: {x: 0.014285714, y: 0.65789473, z: 0.9357542, w: 0.31578946}
   BoundsUvwMin2: {x: 0.014285714, y: 0.5, z: 0.82402235, w: 0.055865884}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.3, y: 0.81578946, z: 0.8184357, w: 0}
   BoundsUvwMax1: {x: 0.3, y: 0.9736842, z: 0.9916201, w: 0}
   BoundsUvwMax2: {x: 0.3, y: 0.81578946, z: 0.8798883, w: 0}
@@ -211,6 +213,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &42751782
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,10 +234,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 179a7704eb03068448e6823cf9bdf033, type: 2}
   Texture1: {fileID: 11700000, guid: fdfd648dc6994ff4c9f435ae410445f0, type: 2}
   Texture2: {fileID: 11700000, guid: 9411b35f244775045a967a7428ff3a79, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 20, y: 12, z: 20}
@@ -324,12 +330,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 110763778}
   Color: {r: 1, g: 1, b: 1, a: 0}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.78571427, y: 0.5, z: 0.9357542, w: 0.11428571}
   BoundsUvwMin1: {x: 0.78571427, y: 0.5, z: 0.76256984, w: 0.2631579}
   BoundsUvwMin2: {x: 0.78571427, y: 0.02631579, z: 0.9357542, w: 0.061452508}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.9, y: 0.7631579, z: 0.9972067, w: 0}
   BoundsUvwMax1: {x: 0.9, y: 0.7631579, z: 0.82402235, w: 0}
   BoundsUvwMax2: {x: 0.9, y: 0.28947368, z: 0.9972067, w: 0}
@@ -355,6 +363,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &110763776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -375,10 +384,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 44547d51170f50940a5bc9302ed04ae9, type: 2}
   Texture1: {fileID: 11700000, guid: 5ac37e379668bc34a93329a8e445220e, type: 2}
   Texture2: {fileID: 11700000, guid: f9aa1fb0afac9aa4c96beff3d9107b86, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 8, y: 10, z: 22}
@@ -2367,12 +2379,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1665989579}
   Color: {r: 1, g: 1, b: 1, a: 0}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.014285714, y: 0.02631579, z: 0.96927375, w: 0.35714287}
   BoundsUvwMin1: {x: 0.4, y: 0.02631579, z: 0.9357542, w: 0.57894737}
   BoundsUvwMin2: {x: 0.014285714, y: 0.02631579, z: 0.9357542, w: 0.027932942}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.37142858, y: 0.6052632, z: 0.9972067, w: 0}
   BoundsUvwMax1: {x: 0.75714284, y: 0.6052632, z: 0.9636871, w: 0}
   BoundsUvwMax2: {x: 0.37142858, y: 0.6052632, z: 0.9636871, w: 0}
@@ -2398,6 +2412,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!4 &1665989577
 Transform:
   m_ObjectHideFlags: 0
@@ -2433,10 +2448,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 7adbfeffd5b4b5d42b2f256d71b4e796, type: 2}
   Texture1: {fileID: 11700000, guid: 4be1b0d9b6971fc42be784889dbcdd69, type: 2}
   Texture2: {fileID: 11700000, guid: 4b7a1d3aa49261642b89c555478eeb2b, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 25, y: 22, z: 10}
@@ -2810,12 +2828,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1819868272}
   Color: {r: 1, g: 1, b: 1, a: 0}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.014285714, y: 0.02631579, z: 0.58938545, w: 0.8571428}
   BoundsUvwMin1: {x: 0.014285714, y: 0.5, z: 0.58938545, w: 0.42105263}
   BoundsUvwMin2: {x: 0.014285714, y: 0.02631579, z: 0.76256984, w: 0.16759777}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.87142855, y: 0.4473684, z: 0.7569832, w: 0}
   BoundsUvwMax1: {x: 0.87142855, y: 0.92105263, z: 0.7569832, w: 0}
   BoundsUvwMax2: {x: 0.87142855, y: 0.4473684, z: 0.9301676, w: 0}
@@ -2841,6 +2861,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &1819868270
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2861,10 +2882,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 0e65c37b8700b8c4b954bea61c25489a, type: 2}
   Texture1: {fileID: 11700000, guid: 597866e8c10019a409729aaebd6e4ea3, type: 2}
   Texture2: {fileID: 11700000, guid: 17f0ed40c5ecf4342876ea0041316818, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 6
   Resolution: {x: 60, y: 16, z: 60}
@@ -2954,12 +2978,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1900080574}
   Color: {r: 1, g: 1, b: 1, a: 0}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.4, y: 0.5, z: 0.88547486, w: 0.22857144}
   BoundsUvwMin1: {x: 0.4, y: 0.65789473, z: 0.9357542, w: 0.21052629}
   BoundsUvwMin2: {x: 0.4, y: 0.5, z: 0.82402235, w: 0.044692755}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.62857145, y: 0.7105263, z: 0.9301676, w: 0}
   BoundsUvwMax1: {x: 0.62857145, y: 0.8684211, z: 0.98044693, w: 0}
   BoundsUvwMax2: {x: 0.62857145, y: 0.7105263, z: 0.8687151, w: 0}
@@ -2985,6 +3011,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &1900080572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3005,10 +3032,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: d77214637bf96a740877805bee2ae039, type: 2}
   Texture1: {fileID: 11700000, guid: d483636375fe1a3449a9a4fda407a426, type: 2}
   Texture2: {fileID: 11700000, guid: a15c1613de40f4b4f9a030629c2b063b, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 2
   Resolution: {x: 16, y: 8, z: 16}
@@ -3223,12 +3253,14 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1964208430}
   Color: {r: 1, g: 1, b: 1, a: 0}
+  ColorIntensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
   BoundsUvwMin0: {x: 0.014285714, y: 0.5, z: 0.88547486, w: 0.2857143}
   BoundsUvwMin1: {x: 0.4, y: 0.02631579, z: 0.96927375, w: 0.4736842}
   BoundsUvwMin2: {x: 0.4, y: 0.5, z: 0.76256984, w: 0.027932942}
+  BoundsUvwMinOcclusion: {x: 0, y: 0, z: 0, w: 0}
   BoundsUvwMax0: {x: 0.3, y: 0.9736842, z: 0.9134078, w: 0}
   BoundsUvwMax1: {x: 0.6857143, y: 0.5, z: 0.9972067, w: 0}
   BoundsUvwMax2: {x: 0.6857143, y: 0.9736842, z: 0.7905028, w: 0}
@@ -3254,6 +3286,7 @@ MonoBehaviour:
   RelativeRotationRow0: {x: 1, y: 0, z: 0}
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
+  BakeOcclusion: 0
 --- !u!114 &1964208428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3274,10 +3307,13 @@ MonoBehaviour:
   Texture0: {fileID: 11700000, guid: 49d454ed6e8b5a640a5950f4e523b8e8, type: 2}
   Texture1: {fileID: 11700000, guid: d911867c68a54b349a7f57cb9204f412, type: 2}
   Texture2: {fileID: 11700000, guid: 23a8ebdb2fd773e42b8da6192d78b1e7, type: 2}
+  ShadowsTexture: {fileID: 0}
   Exposure: 0
   Shadows: 0
   Highlights: 0
   Bake: 1
+  PointLightShadows: 1
+  BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 10
   Resolution: {x: 20, y: 18, z: 10}

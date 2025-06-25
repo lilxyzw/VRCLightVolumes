@@ -101,7 +101,7 @@ namespace VRCLightVolumes {
             SetupDependencies();
             PointLightVolumeInstance.IsDynamic = Dynamic;
             PointLightVolumeInstance.Color = Color;
-            PointLightVolumeInstance.ColorIntensity = Intensity;
+            PointLightVolumeInstance.Intensity = Intensity;
 
             if(Type == LightType.PointLight) { // Point light
                 PointLightVolumeInstance.SetRange(Range);
