@@ -2,22 +2,22 @@
 
 # How to Use
 
-> **[VRC Light Volumes System](#VRC-Light-Volumes-System)**
-> 	[Light Volumes for Avatars](#Light-Volumes-for-Avatars)
-> 	[Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)
-> 	[Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup)
->
-> **[Additive Light Volumes](#Additive-Light-Volumes)**
-> 	[What Are Additive Volumes?](#What-Are-Additive-Volumes?)
-> 	[How to Bake an Additive Light Volume](#How-to-Bake-an-Additive-Light-Volume)
->
-> **[Audio Link Integration](#Audio-Link-Integration)**
-> 	[Audio Link Quick Setup](#Audio-Link-Quick-Setup)
-> 	[Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description)
->
-> **[TV Screens Integration](#TV-Screens-Integration)**
-> 	[TV Screen Quick Setup](#TV-Screen-Quick-Setup)
-> 	[Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description)
+**[VRC Light Volumes System](#VRC-Light-Volumes-System)**
+	[Light Volumes for Avatars](#Light-Volumes-for-Avatars)
+	[Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)
+	[Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup)
+
+**[Additive Light Volumes](#Additive-Light-Volumes)**
+	[What Are Additive Volumes?](#What-Are-Additive-Volumes?)
+	[How to Bake an Additive Light Volume](#How-to-Bake-an-Additive-Light-Volume)
+
+**[Audio Link Integration](#Audio-Link-Integration)**
+	[Audio Link Quick Setup](#Audio-Link-Quick-Setup)
+	[Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description)
+
+**[TV Screens Integration](#TV-Screens-Integration)**
+	[TV Screen Quick Setup](#TV-Screen-Quick-Setup)
+	[Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description)
 
 
 
@@ -27,9 +27,9 @@ VRC Light Volumes is fast and optimized nextgen lighting solution for VRChat. It
 
 #### VRC Light Volumes system consists of two main parts:
 
-[Regular **Light Volumes**](#Light-Volumes-Quick-World-Setup) is a fast and optimized solution that replaces Unity's light probes with a better per-pixel voxel based lighting. It's similar to [Adaptive Probe Volumes (APV)](https://docs.unity3d.com/6000.1/Documentation/Manual/urp/probevolumes-concept.html) in Unity 6, but with manual ReflectionProbe-like volumes placement and some other extra features.
+[Regular **Light Volumes**](#Light-Volumes-Quick-World-Setup) is a fast and optimized solution that replaces Unity's light probes with a better per-pixel voxel based lighting. It's similar to Adaptive Probe Volumes (APV) in Unity 6, but with manual ReflectionProbe-like volumes placement and some other extra features.
 
-[**Point Light Volumes**]() is a fast and optimized custom lighting system that has it's own parametric Point Light, Spot Lights and Area Lights. Point Light Volumes are not voxel based, they forms the light parametrically, or based on special LUT textures (similar to IES). They can project light cookies or cubemaps. It can be up to 128 point lights visible in one scene at the same time. However, this system does not support realtime shadows.
+[**Point Light Volumes**](#Point-Light-Volumes-Quick-World-Setup) is a fast and optimized custom lighting system that has it's own parametric Point Light, Spot Lights and Area Lights. Point Light Volumes are not voxel based, they forms the light parametrically, or based on special LUT textures (similar to IES). They can project light cookies or cubemaps. It can be up to 128 point lights visible in one scene at the same time. However, this system does not support realtime shadows.
 
 ### Light Volumes for Avatars
 
