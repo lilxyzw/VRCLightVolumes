@@ -5,6 +5,7 @@
 - [Poiyomi Toon Shader](https://github.com/poiyomi/PoiyomiToonShader) (v.9.2)
 - [Filamented by Silent](https://gitlab.com/s-ilent/filamented) (v.1.4.0)
 - [Silent Cel Shading Shader](https://gitlab.com/s-ilent/SCSS/-/tree/crosstone-testing?ref_type=heads) (May 21, 2025)
+- [Unity Standard Particles Plus by Silent](https://github.com/s-ilent/unity-standard-particles-plus)
 - [Mochies-Unity-Shaders](https://github.com/MochiesCode/Mochies-Unity-Shaders) (v.1.61)
 - [Graphlit Shaders and Shader Editor by z3y](https://github.com/z3y/Graphlit) (v.2.0.1)
 - [GeneLit by Momoma](https://github.com/momoma-null/GeneLit) (v.1.0.7)
