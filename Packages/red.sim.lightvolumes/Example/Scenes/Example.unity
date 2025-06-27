@@ -180,7 +180,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 42751784}
   Color: {r: 1, g: 1, b: 1, a: 0}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -330,7 +330,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 110763778}
   Color: {r: 1, g: 1, b: 1, a: 0}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -1432,14 +1432,14 @@ MonoBehaviour:
   useAssignedLayers: 0
   DynamicPrefabs: []
   DynamicMaterials:
-  - {fileID: 2100000, guid: 12a5139a31f84464381c92aad42d14a9, type: 2}
-  - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
   - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
   - {fileID: 2100000, guid: 39587cf21953c2a459a9f90d27b451ea, type: 2}
   - {fileID: 2100000, guid: 64028782a454b1f46ae8c6b415024546, type: 2}
   - {fileID: 2100000, guid: 7cd8219b2223a14459b4fcc39e1e0edb, type: 2}
+  - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
   - {fileID: 2100000, guid: d05590ed9a5a6d143a1fcee2fc90b71b, type: 2}
   - {fileID: 2100000, guid: d102c05e48d614a489538849889bb3bd, type: 2}
+  - {fileID: 2100000, guid: 12a5139a31f84464381c92aad42d14a9, type: 2}
   LightMapsNear: []
   LightMapsFar: []
   LightMode: 0
@@ -2379,7 +2379,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1665989579}
   Color: {r: 1, g: 1, b: 1, a: 0}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -2828,7 +2828,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1819868272}
   Color: {r: 1, g: 1, b: 1, a: 0}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -2978,7 +2978,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1900080574}
   Color: {r: 1, g: 1, b: 1, a: 0}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -3253,7 +3253,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1964208430}
   Color: {r: 1, g: 1, b: 1, a: 0}
-  ColorIntensity: 1
+  Intensity: 1
   IsDynamic: 0
   IsAdditive: 0
   InvBakedRotation: {x: 0, y: 0, z: 0, w: 1}

@@ -3754,7 +3754,7 @@ MonoBehaviour:
   Additive: 0
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 1
-  SmoothBlending: 0.25
+  SmoothBlending: 0.4
   Texture0: {fileID: 11700000, guid: d6c0c3d573115f8478df3c1ca76d9636, type: 2}
   Texture1: {fileID: 11700000, guid: c8371d85574c8e84fb696d2cc52262a6, type: 2}
   Texture2: {fileID: 11700000, guid: f0393f386e04445458bfb4d48f5ac1ad, type: 2}
@@ -3767,7 +3767,7 @@ MonoBehaviour:
   BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 8
-  Resolution: {x: 62, y: 36, z: 98}
+  Resolution: {x: 62, y: 38, z: 98}
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 458847875}
@@ -3806,16 +3806,16 @@ MonoBehaviour:
   BoundsUvwMax0: {x: 0.984375, y: 0.88095236, z: 0.15068494, w: 0}
   BoundsUvwMax1: {x: 0.984375, y: 0.88095236, z: 0.30289194, w: 0}
   BoundsUvwMax2: {x: 0.984375, y: 0.88095236, z: 0.45509893, w: 0}
-  InvLocalEdgeSmoothing: {x: 30.947428, y: 18.058006, z: 49.122536, w: 0}
+  InvLocalEdgeSmoothing: {x: 19.342142, y: 11.978732, z: 30.701584, w: 0}
   InvWorldMatrix:
     e00: 0.12925145
     e01: 0
     e02: 0
     e03: 0.17922045
     e10: 0
-    e11: 0.2215084
+    e11: 0.20870322
     e12: 0
-    e13: -0.6107541
+    e13: -0.5465425
     e20: 0
     e21: 0
     e22: 0.08142902
@@ -3863,8 +3863,8 @@ Transform:
   m_GameObject: {fileID: 458847873}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.386603, y: 2.7572503, z: -1.2658918}
-  m_LocalScale: {x: 7.736857, y: 4.5145016, z: 12.280634}
+  m_LocalPosition: {x: -1.386603, y: 2.6187546, z: -1.2658918}
+  m_LocalScale: {x: 7.736857, y: 4.791493, z: 12.280634}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 834285434}
@@ -6277,8 +6277,8 @@ MonoBehaviour:
   AreaLightBrightnessCutoff: 0.4
   LightVolumeInstances:
   - {fileID: 1548001777}
-  - {fileID: 1137550075}
   - {fileID: 458847875}
+  - {fileID: 1137550075}
   - {fileID: 1400850657}
   PointLightVolumeInstances:
   - {fileID: 355306802}
@@ -6316,8 +6316,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   LightVolumes:
   - {fileID: 1400850656}
-  - {fileID: 458847874}
   - {fileID: 1137550074}
+  - {fileID: 458847874}
   - {fileID: 1548001778}
   LightVolumesWeights:
   - 0
@@ -6361,9 +6361,9 @@ MonoBehaviour:
   - Weight: 0
     LightVolumeInstance: {fileID: 1400850657}
   - Weight: 1
-    LightVolumeInstance: {fileID: 458847875}
-  - Weight: 2
     LightVolumeInstance: {fileID: 1137550075}
+  - Weight: 2
+    LightVolumeInstance: {fileID: 458847875}
   - Weight: 3
     LightVolumeInstance: {fileID: 1548001777}
   LightVolumeManager: {fileID: 834285432}
@@ -8525,7 +8525,7 @@ MonoBehaviour:
   BlurShadows: 1
   AdaptiveResolution: 1
   VoxelsPerUnit: 3
-  Resolution: {x: 60, y: 14, z: 89}
+  Resolution: {x: 60, y: 15, z: 89}
   PreviewVoxels: 0
   BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1137550075}
@@ -8564,16 +8564,16 @@ MonoBehaviour:
   BoundsUvwMax0: {x: 0.953125, y: 0.35714287, z: 0.7458143, w: 0}
   BoundsUvwMax1: {x: 0.953125, y: 0.7380952, z: 0.7458143, w: 0}
   BoundsUvwMax2: {x: 0.953125, y: 0.35714287, z: 0.8843227, w: 0}
-  InvLocalEdgeSmoothing: {x: 80.20979, y: 19.067492, z: 118.409515, w: 0}
+  InvLocalEdgeSmoothing: {x: 80.20979, y: 19.838518, z: 118.409515, w: 0}
   InvWorldMatrix:
     e00: 0.04986922
     e01: 0
     e02: 0
     e03: -0.00038614337
     e10: 0
-    e11: 0.20978114
+    e11: 0.20162797
     e12: 0
-    e13: -0.60489047
+    e13: -0.5619488
     e20: 0
     e21: 0
     e22: 0.03378107
@@ -8621,8 +8621,8 @@ Transform:
   m_GameObject: {fileID: 1137550073}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.00774312, y: 2.883436, z: -10.2291355}
-  m_LocalScale: {x: 20.052448, y: 4.766873, z: 29.602379}
+  m_LocalPosition: {x: 0.00774312, y: 2.7870576, z: -10.2291355}
+  m_LocalScale: {x: 20.052448, y: 4.9596295, z: 29.602379}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 834285434}

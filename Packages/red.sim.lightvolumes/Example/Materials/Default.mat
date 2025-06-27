@@ -12,9 +12,9 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ADDITIVEONLY_ON
   - _LIGHTVOLUMES_ON
   m_InvalidKeywords:
+  - _ADDITIVEONLY_ON
   - _EMISSION
   - _LIGHTVOLUMES1_ON
   m_LightmapFlags: 0
@@ -90,6 +90,7 @@ Material:
     - _Keyword0: 0
     - _LightVolumes: 1
     - _LightVolumes1: 1
+    - _LightVolumesBias: 0.06
     - _Metallic: 0
     - _Metalness: 0
     - _Mode: 0
