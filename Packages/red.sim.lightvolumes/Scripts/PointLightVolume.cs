@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 namespace VRCLightVolumes {
@@ -7,11 +8,15 @@ namespace VRCLightVolumes {
 
         [Tooltip("Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance.")]
         public bool Dynamic = false;
+        [Tooltip("Enables baked shadows for this light. This setting is only available for static lights, which cannot move. You must re-bake your volumes after changing this setting. This incurs some runtime VRAM and performance overhead.")]
+        public bool BakedShadows = false;
+        [Tooltip("Shadow radius for the baked shadows. Higher values will produce softer shadows.")]
+        [Min(0)] public float BakedShadowRadius = 0.1f;
         [Tooltip("Point light is the most performant type. Area light is the heaviest and best suited for dynamic, movable sources. For static lighting, it's recommended to bake regular additive light volumes instead.")]
         public LightType Type = LightType.PointLight;
         [Tooltip("Radius in meters beyond which point and spot lights are culled. Fewer overlapping lights result in better performance.")]
         [Min(0.0001f)] public float Range = 5f;
-        [Tooltip("Multiplies the point light volume’s color by this value.")]
+        [Tooltip("Multiplies the point light volumeâ€™s color by this value.")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Tooltip("Brightness of the point light volume.")]
         public float Intensity = 1f;
@@ -88,6 +93,8 @@ namespace VRCLightVolumes {
                 _typePrev = Type;
                 LightVolumeSetup.GenerateCustomTexturesArray();
             }
+            SyncUdonScript();
+            LightVolumeSetup.RefreshVolumesList();
             LightVolumeSetup.SyncUdonScript();
 #endif
         }
@@ -96,7 +103,8 @@ namespace VRCLightVolumes {
             if (gameObject == null) return;
             SetupDependencies();
             PointLightVolumeInstance.IsDynamic = Dynamic;
-            PointLightVolumeInstance.SetColor(Color, Intensity);
+            PointLightVolumeInstance.Color = Color;
+            PointLightVolumeInstance.Intensity = Intensity;
 
             if(Type == LightType.PointLight) { // Point light
                 PointLightVolumeInstance.SetRange(Range);
@@ -121,9 +129,19 @@ namespace VRCLightVolumes {
             } else if (Type == LightType.AreaLight) { // Area light
                 PointLightVolumeInstance.SetAreaLight();
             }
-
-            LVUtils.MarkDirty(PointLightVolumeInstance);
         }
+
+#if UNITY_EDITOR
+        // A fix of a very weird bug when PointLightVolume don't Sync it's udon script properly. Still have no idea why, but at least this fix works.
+        private void Awake() {
+            if (Application.isPlaying) {
+                enabled = false;
+                EditorApplication.delayCall += () => {
+                    enabled = true;
+                };
+            }
+        }
+#endif
 
         private void Reset() {
             SetupDependencies();
@@ -156,15 +174,6 @@ namespace VRCLightVolumes {
                 LightVolumeSetup.RefreshVolumesList();
                 LightVolumeSetup.SyncUdonScript();
             }
-        }
-
-        private void OnValidate() {
-            SyncUdonScript();
-        }
-
-        // Delete self in play mode
-        private void Start() {
-            if (Application.isPlaying) Destroy(this);
         }
 
         public enum LightShape {

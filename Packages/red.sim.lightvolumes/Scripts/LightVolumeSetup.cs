@@ -66,7 +66,10 @@ namespace VRCLightVolumes {
 
         private TextureArrayResolution _resolutionPrev = TextureArrayResolution._128x128;
         private TextureArrayFormat _formatPrev = TextureArrayFormat.RGBAHalf;
-
+#if UNITY_EDITOR
+        private EditorCoroutine _generateAtlasCoroutine = null;
+        private EditorCoroutine _generateTextureArrayCoroutine = null;
+#endif
         public void RefreshVolumesList() {
             // Searching for all light volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);
@@ -156,17 +159,26 @@ namespace VRCLightVolumes {
                 LightVolumeManager.CubemapsCount = 0;
             }
 
-            EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
+            // Stop old coroutine if one is in process already
+            if (_generateTextureArrayCoroutine != null) {
+                EditorCoroutineUtility.StopCoroutine(_generateTextureArrayCoroutine);
+                _generateTextureArrayCoroutine = null;
+            }
+            _generateTextureArrayCoroutine = EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
 
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
-                        _customTexPointVolumes[i].CustomID = ids[i];
-                        _customTexPointVolumes[i].SyncUdonScript();
+                        if (_customTexPointVolumes[i] != null) {
+                            _customTexPointVolumes[i].CustomID = ids[i];
+                            _customTexPointVolumes[i].SyncUdonScript();
+                        }
                     }
                 }
                 LightVolumeManager.CustomTextures = texArray;
                 LightVolumeManager.CubemapsCount = cubeTextures.Count;
                 if (texArray != null) LVUtils.SaveAsAssetDelayed(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/PointLightVolumeArray.asset");
+
+                _generateTextureArrayCoroutine = null;
 
             }), this);
 
@@ -229,6 +241,9 @@ namespace VRCLightVolumes {
             LightVolume[] volumes = FindObjectsByType<LightVolume>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < volumes.Length; i++) {
                 if (volumes[i].Bake && volumes[i].LightVolumeInstance != null) {
+                    volumes[i].RecalculateProbesPositions();
+                    volumes[i].BakeOcclusionTexture();
+
                     volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
                     if (IsBakeryMode && volumes[i].BakeryVolume != null) {
                         volumes[i].Texture0 = volumes[i].BakeryVolume.bakedTexture0;
@@ -254,6 +269,7 @@ namespace VRCLightVolumes {
                 if (volumes[i].Bake) {
                     Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
                     volumes[i].SetAdditionalProbes(i);
+                    volumes[i].BakeOcclusionTexture();
                 }
             }
         }
@@ -327,6 +343,8 @@ namespace VRCLightVolumes {
 
         }
 
+        
+
         // Generates atlas and setups udon script
         public void GenerateAtlas() {
 
@@ -334,42 +352,54 @@ namespace VRCLightVolumes {
 
             SetupDependencies();
 
-            var atlas = Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray());
-            if (atlas.Texture == null) return; // Return if atlas packing failed
-
-            LightVolumeManager.LightVolumeAtlas = atlas.Texture;
-
-            LightVolumeDataList.Clear();
-
-            for (int i = 0; i < LightVolumes.Count; i++) {
-
-                if (LightVolumes[i] == null) continue;
-                var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
-
-                if (lightVolumeInstance == null) continue;
-
-                Vector3 scale = atlas.BoundsUvwMax[i * 3] - atlas.BoundsUvwMin[i * 3];
-                Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 3];
-                Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 3 + 1];
-                Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 3 + 2];
-
-                lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
-                lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
-                lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
-
-                // Legacy
-                lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 3];
-                lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 3 + 1];
-                lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 3 + 2];
-
-                LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
-
-                LVUtils.MarkDirty(lightVolumeInstance);
+            if(_generateAtlasCoroutine != null) { // Stop old coroutine in case one is in process already
+                EditorCoroutineUtility.StopCoroutine(_generateAtlasCoroutine);
+                _generateAtlasCoroutine = null;
             }
 
-            LVUtils.SaveAsAssetDelayed(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/LightVolumeAtlas.asset");
+            _generateAtlasCoroutine = EditorCoroutineUtility.StartCoroutine(Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray(), (Atlas3D atlas) => {
 
-            SyncUdonScript();
+                if (atlas.Texture == null) return; // Return if atlas packing failed
+
+                LightVolumeManager.LightVolumeAtlas = atlas.Texture;
+
+                LightVolumeDataList.Clear();
+
+                for (int i = 0; i < LightVolumes.Count; i++) {
+
+                    if (LightVolumes[i] == null) continue;
+                    var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
+
+                    if (lightVolumeInstance == null) continue;
+
+                    Vector3 scale = atlas.BoundsUvwMax[i * 4] - atlas.BoundsUvwMin[i * 4];
+                    Vector3 uvwMin0 = atlas.BoundsUvwMin[i * 4];
+                    Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 4 + 1];
+                    Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 4 + 2];
+                    Vector4 uvwMinOcclusion = atlas.BoundsUvwMin[i * 4 + 3];
+
+                    lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
+                    lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
+                    lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+                    lightVolumeInstance.BoundsUvwMinOcclusion = new Vector4(uvwMinOcclusion.x, uvwMinOcclusion.y, uvwMinOcclusion.z, 0);
+
+                    // Legacy
+                    lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 4];
+                    lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 4 + 1];
+                    lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 4 + 2];
+
+                    LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
+
+                    LVUtils.MarkDirty(lightVolumeInstance);
+                }
+
+                LVUtils.SaveAsAssetDelayed(atlas.Texture, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/LightVolumeAtlas.asset");
+
+                SyncUdonScript();
+
+                _generateAtlasCoroutine = null;
+
+            }), this);
 
         }
 
@@ -438,13 +468,6 @@ namespace VRCLightVolumes {
                 list.Add(PointLightVolumes[i].PointLightVolumeInstance);
             }
             return list.ToArray();
-        }
-
-        // Delete self in play mode
-        private void Start() {
-            if (Application.isPlaying) {
-                Destroy(this);
-            }
         }
 
         public enum Baking {

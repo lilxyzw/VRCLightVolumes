@@ -15,11 +15,11 @@ namespace VRCLightVolumes {
     {
 
         [SerializeField]
-        [FormerlySerializedAs("Color")]
-        [FieldChangeCallback(nameof(Color))]
         [Tooltip("Changing the color is useful for animating Additive volumes. You can even control the R, G, B channels separately this way.")]
         [ColorUsage(showAlpha: false, hdr: true)]
-        private Color _color = Color.white;
+        public Color Color = Color.white;
+        [Tooltip("Color multiplies by this value.")]
+        public float Intensity = 1;
         [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance. You can even change it in runtime.")]
         public bool IsDynamic = false;
         [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
@@ -33,6 +33,8 @@ namespace VRCLightVolumes {
         public Vector4 BoundsUvwMin1 = new Vector4();
         [Tooltip("Min bounds of Texture2 in 3D atlas space. W stores Scale Z.")]
         public Vector4 BoundsUvwMin2 = new Vector4();
+        [Tooltip("Min bounds of occlusion texture in 3D atlas space.")]
+        public Vector4 BoundsUvwMinOcclusion = new Vector4();
         [Space]
         [Tooltip("Max bounds of Texture0 in 3D atlas space. (Legacy)")]
         public Vector4 BoundsUvwMax0 = new Vector4();
@@ -53,19 +55,28 @@ namespace VRCLightVolumes {
         public Vector3 RelativeRotationRow1 = Vector3.zero;
         [Tooltip("True if there is any relative rotation. No relative rotation improves performance. Recalculated via the UpdateRotation() method.")]
         public bool IsRotated = false;
+        [Tooltip("True if the volume has baked occlusion.")]
+        public bool BakeOcclusion = false;
         [Tooltip("Reference to the LightVolumeManager that manages this volume. Used to notify the manager about changes in this volume.")]
         public LightVolumeManager UpdateNotifier;
 
-        public Color Color {
-            get => _color;
-            set {
-                if (_color == value) return; // No change
-                _color = value;
-#if COMPILER_UDONSHARP
-                if (Utilities.IsValid(UpdateNotifier)) UpdateNotifier.RequestUpdateVolumes();
-#endif
-            }
+#if UDONSHARP
+        // Low level Udon hacks:
+        // _old_(Name) variables are the old values of the variables.
+        // _onVarChange_(Name) methods (events) are called when the variable changes.
+
+        private Color _old_Color;
+        public void _onVarChange_Color() {
+            if (_old_Color != Color && Utilities.IsValid(UpdateNotifier))
+                UpdateNotifier.RequestUpdateVolumes();
         }
+
+        private float _old_Intensity;
+        public void _onVarChange_Intensity() {
+            if (_old_Intensity != Intensity && Utilities.IsValid(UpdateNotifier))
+                UpdateNotifier.RequestUpdateVolumes();
+        }
+#endif
 
         private void OnEnable() {
 #if UDONSHARP
