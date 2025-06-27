@@ -16,7 +16,6 @@ namespace VRCLightVolumes {
     public class LightVolumeManager : MonoBehaviour
 #endif
     {
-
         public const float Version = 2; // VRC Light Volumes Current version. This value used in shaders (_UdonLightVolumeEnabled) to determine which features are can be used
         [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
         public Texture3D LightVolumeAtlas;
@@ -80,6 +79,7 @@ namespace VRCLightVolumes {
         private int lightVolumeAdditiveCountID;
         private int lightVolumeAdditiveMaxOverdrawID;
         private int lightVolumeEnabledID;
+        private int lightVolumeVersionID;
         private int lightVolumeProbesBlendID;
         private int lightVolumeSharpBoundsID;
         private int lightVolumeID;
@@ -121,6 +121,7 @@ namespace VRCLightVolumes {
             lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
             lightVolumeAdditiveMaxOverdrawID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw");
             lightVolumeEnabledID = VRCShader.PropertyToID("_UdonLightVolumeEnabled");
+            lightVolumeVersionID = VRCShader.PropertyToID("_UdonLightVolumeVersion");
             lightVolumeProbesBlendID = VRCShader.PropertyToID("_UdonLightVolumeProbesBlend");
             lightVolumeSharpBoundsID = VRCShader.PropertyToID("_UdonLightVolumeSharpBounds");
             lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
@@ -300,6 +301,9 @@ namespace VRCLightVolumes {
 
             bool isAtlas = LightVolumeAtlas != null;
 
+            // Setting light volumes version
+            VRCShader.SetGlobalFloat(lightVolumeVersionID, Version);
+
             // Disabling light volumes system if no atlas or no volumes
             if ((!isAtlas || _enabledCount == 0) && _pointLightCount == 0) {
                 VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
@@ -360,7 +364,7 @@ namespace VRCLightVolumes {
             }
 
             // Defines if Light Volumes enabled in scene. 0 if disabled. And a version number if enabled
-            VRCShader.SetGlobalFloat(lightVolumeEnabledID, Version);
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 1);
 
         }
     }

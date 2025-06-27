@@ -6,8 +6,11 @@
 cbuffer LightVolumeUniforms {
 #endif
 
-// Are Light Volumes enabled on scene? Returns 0 if not, returns 1, 2 or other number if there are light volumes. Number represents the light volumes system internal version number.
+// Are Light Volumes enabled on scene? can be 0 or 1
 uniform float _UdonLightVolumeEnabled;
+    
+// Rreturns 1, 2 or other number if there are light volumes on the scene. Number represents the light volumes system internal version number.
+uniform float _UdonLightVolumeVersion;
 
 // All volumes count in scene
 uniform float _UdonLightVolumeCount;
@@ -593,7 +596,7 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
     // Clamping gloabal iteration counts
     uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
     
-    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || volumesCount == 0 ) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
+    //if (_UdonLightVolumeVersion < VRCLV_VERSION || volumesCount == 0 ) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
     if (_UdonLightVolumeEnabled == 0 || volumesCount == 0) { // Legacy! Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support. Legacy!
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
         return;
@@ -716,7 +719,7 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
     uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
     uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
     
-    //if (_UdonLightVolumeEnabled < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
+    //if (_UdonLightVolumeVersion < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
     if (_UdonLightVolumeEnabled == 0 || additiveCount == 0 && pointCount == 0)
         return; // Legacy!
 
