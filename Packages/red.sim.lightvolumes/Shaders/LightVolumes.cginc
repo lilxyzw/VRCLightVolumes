@@ -522,8 +522,8 @@ void LV_SampleVolume(uint id, float3 localUVW, inout float3 L0, inout float3 L1r
         //L1b = LV_MultiplyVectorByQuaternion(L1b, r);
         
         // Legacy to support older light volumes worlds! Commented code above will be used in future releases! Legacy!
-        float3 r0 = _UdonLightVolumeRotation[id * 2];
-        float3 r1 = _UdonLightVolumeRotation[id * 2 + 1];
+        float3 r0 = _UdonLightVolumeRotation[id * 2].xyz;
+        float3 r1 = _UdonLightVolumeRotation[id * 2 + 1].xyz;
         L1r += LV_MultiplyVectorByMatrix2x3(l1r, r0, r1);
         L1g += LV_MultiplyVectorByMatrix2x3(l1g, r0, r1);
         L1b += LV_MultiplyVectorByMatrix2x3(l1b, r0, r1);
