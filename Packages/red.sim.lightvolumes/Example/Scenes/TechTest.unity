@@ -775,7 +775,7 @@ GameObject:
   m_IsActive: 1
 --- !u!114 &67059433
 MonoBehaviour:
-  m_ObjectHideFlags: 2
+  m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -11014,7 +11014,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1038735941}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: 
+        m_MethodName: SetActive
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

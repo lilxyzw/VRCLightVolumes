@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 namespace VRCLightVolumes {
@@ -92,6 +93,8 @@ namespace VRCLightVolumes {
                 _typePrev = Type;
                 LightVolumeSetup.GenerateCustomTexturesArray();
             }
+            SyncUdonScript();
+            LightVolumeSetup.RefreshVolumesList();
             LightVolumeSetup.SyncUdonScript();
 #endif
         }
@@ -128,6 +131,18 @@ namespace VRCLightVolumes {
             }
         }
 
+#if UNITY_EDITOR
+        // A fix of a very weird bug when PointLightVolume don't Sync it's udon script properly. Still have no idea why, but at least this fix works.
+        private void Awake() {
+            if (Application.isPlaying) {
+                enabled = false;
+                EditorApplication.delayCall += () => {
+                    enabled = true;
+                };
+            }
+        }
+#endif
+
         private void Reset() {
             SetupDependencies();
             SyncUdonScript();
@@ -159,10 +174,6 @@ namespace VRCLightVolumes {
                 LightVolumeSetup.RefreshVolumesList();
                 LightVolumeSetup.SyncUdonScript();
             }
-        }
-
-        private void OnValidate() {
-            SyncUdonScript();
         }
 
         public enum LightShape {

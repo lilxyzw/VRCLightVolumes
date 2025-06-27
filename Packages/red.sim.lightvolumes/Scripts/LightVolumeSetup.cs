@@ -492,34 +492,5 @@ namespace VRCLightVolumes {
             _2048x2048 = 2048
         }
 
-        // All Non-udon mono behaviours should be destroyed in playmode
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void CommitSudoku() {
-            if (Application.isPlaying) {
-
-                // Killing Light Volumes
-                var lvs = FindObjectsByType<LightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = 0; i < lvs.Length; i++) {
-#if BAKERY_INCLUDED
-                    if (lvs[i].BakeryVolume != null) Destroy(lvs[i].BakeryVolume.gameObject);
-#endif
-                    Destroy(lvs[i]);
-                }
-
-                // Killing Point Light Volumes
-                var plvs = FindObjectsByType<PointLightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = 0; i < plvs.Length; i++) {
-                    Destroy(plvs[i]);
-                }
-
-                // Sudoku
-                var s = FindObjectsByType<LightVolumeSetup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = 0; i < s.Length; i++) {
-                    Destroy(s[i]);
-                }
-
-            }
-        }
-
     }
 }
