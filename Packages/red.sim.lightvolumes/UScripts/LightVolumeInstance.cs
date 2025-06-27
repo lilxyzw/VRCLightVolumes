@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Serialization;
 using VRC.SDKBase;
 #if UDONSHARP
 using UdonSharp;

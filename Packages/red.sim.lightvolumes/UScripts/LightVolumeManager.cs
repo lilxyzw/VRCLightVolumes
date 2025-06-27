@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-using UnityEngine.Serialization;
 
 #if UDONSHARP
 using VRC.SDKBase;
@@ -25,10 +24,8 @@ namespace VRCLightVolumes {
         public bool LightProbesBlending = true;
         [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
         public bool SharpBounds = true;
-        [FormerlySerializedAs("AutoUpdateVolumes")]
-        [FieldChangeCallback(nameof(AutoUpdateVolumes))]
         [Tooltip("Automatically updates any volumes data in runtime: Enabling/Disabling, Color, Edge Smoothing, all the global settings and more. Position, Rotation and Scale gets updated only for volumes that are marked dynamic.")]
-        public bool _autoUpdateVolumes = false;
+        public bool AutoUpdateVolumes = false;
         [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         public int AdditiveMaxOverdraw = 4;
         [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but may cause artifacts. Setting this to 0 disables distance-based culling for area lights.")]
@@ -110,15 +107,16 @@ namespace VRCLightVolumes {
         private int lightVolumeRotationID;
         private int lightVolumeUvwID;
 
-        public bool AutoUpdateVolumes {
-            get => _autoUpdateVolumes;
-            set {
-                _autoUpdateVolumes = value;
-#if COMPILER_UDONSHARP
-                if (_autoUpdateVolumes) RequestUpdateVolumes();
-#endif
-            }
+#if UDONSHARP
+        // Low level Udon hacks:
+        // _old_(Name) variables are the old values of the variables.
+        // _onVarChange_(Name) methods (events) are called when the variable changes.
+
+        private bool _old_AutoUpdateVolumes;
+        public void _onVarChange_AutoUpdateVolumes() {
+            if (!_old_AutoUpdateVolumes && AutoUpdateVolumes) RequestUpdateVolumes();
         }
+#endif
 
         private void OnDisable() {
 #if !UDONSHARP
