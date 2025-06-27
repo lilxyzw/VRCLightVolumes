@@ -40,7 +40,7 @@ namespace VRCLightVolumes {
                     textures[i * 4 + 3] = volumes[i].ShadowsTexture;
                 }
 
-                // Color coccecting and Linearizing SH
+                // Color coccecting and Deringing SH
                 texs = new Texture3D[textures.Length];
                 for (int i = 0; i < textures.Length / 4; ++i) {
                     Texture3D[] bundle = { textures[i * 4], textures[i * 4 + 1], textures[i * 4 + 2] };
@@ -327,9 +327,9 @@ namespace VRCLightVolumes {
                         Vector3 L1g = new Vector3(tex1.g, tex2.g, tex1.a);
                         Vector3 L1b = new Vector3(tex1.b, tex2.b, tex2.a);
 
-                        L1r = LVUtils.LinearizeSingleSH(L0.x, L1r);
-                        L1g = LVUtils.LinearizeSingleSH(L0.y, L1g);
-                        L1b = LVUtils.LinearizeSingleSH(L0.z, L1b);
+                        L1r = LVUtils.DeringSingleSH(L0.x, L1r);
+                        L1g = LVUtils.DeringSingleSH(L0.y, L1g);
+                        L1b = LVUtils.DeringSingleSH(L0.z, L1b);
 
                         L1r = CorrectVector(L1r, dark, bright, expo);
                         L1g = CorrectVector(L1g, dark, bright, expo);

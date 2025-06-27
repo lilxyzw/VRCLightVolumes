@@ -421,7 +421,7 @@ namespace VRCLightVolumes {
 
             var shs = probes.bakedProbes;
             for (int i = 0; i < shs.Length; ++i) {
-                shs[i] = LVUtils.LinearizeSH(shs[i]);
+                shs[i] = LVUtils.DeringSH(shs[i]);
             }
 
             probes.bakedProbes = shs;
