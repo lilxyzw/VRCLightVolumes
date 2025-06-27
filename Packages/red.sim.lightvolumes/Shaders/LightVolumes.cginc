@@ -109,11 +109,6 @@ uniform Texture2DArray _UdonPointLightVolumeTexture;
 #define LV_PI 3.141592653589793f
 #define LV_PI2 6.283185307179586f
 
-// Checks if Light Volumes are used in this scene. Returns 0 if not, returns 1, 2 or other number if there are light volumes. Number represents the light volumes system internal version number.
-float LightVolumesEnabled() {
-    return _UdonLightVolumeEnabled;
-}
-
 // Smoothstep to 0, 1 but cheaper
 float LV_Smoothstep01(float x) {
     return x * x * (3 - 2 * x);
@@ -877,6 +872,16 @@ float3 LightVolumeAdditiveSH_L0(float3 worldPos, float3 worldPosOffset = 0) {
     LV_LightVolumeAdditiveSH(worldPos + worldPosOffset, L0, unused_L1, unused_L1, unused_L1, occlusion);
     LV_PointLightVolumeSH(worldPos, occlusion, L0, unused_L1, unused_L1, unused_L1);
     return L0;
+}
+
+// Checks if Light Volumes are used in this scene. Returns 0 if not, returns 1 if enabled
+float LightVolumesEnabled() {
+    return _UdonLightVolumeEnabled;
+}
+
+// Returns the light volumes version
+float LightVolumesVersion() {
+    return _UdonLightVolumeVersion;
 }
 
 #endif
