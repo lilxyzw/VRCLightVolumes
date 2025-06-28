@@ -13,7 +13,6 @@ namespace VRCLightVolumes {
 #endif
     {
 
-        [SerializeField]
         [Tooltip("Changing the color is useful for animating Additive volumes. You can even control the R, G, B channels separately this way.")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Tooltip("Color multiplies by this value.")]
