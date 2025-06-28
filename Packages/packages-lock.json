@@ -273,7 +273,9 @@
       "version": "file:red.sim.lightvolumes",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
+      "dependencies": {
+        "com.unity.editorcoroutines": "1.0.0"
+      }
     },
     "sh.orels.shaders": {
       "version": "file:sh.orels.shaders",
