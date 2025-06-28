@@ -62,6 +62,6 @@ If you see unwanted **sharp color transitions** in your additive volume, try adj
 
 `Anti Flickering` - Enables smoothing algorithm that tries to smooth out flickering that is usually a problem. Recommended to always be turned on.
 
-`Target Light Volumes` - List of the **Light Volumes** that should be affected by the Light Volume TVGI script
+`Target Light Volumes` - List of the **Light Volumes** that should be affected by the Light Volume TVGI script.
 
 `Target Point Light Volumes` - List of the **Point Light Volumes** that should be affected by the Light Volume TVGI script. Usually you don't need it at all.

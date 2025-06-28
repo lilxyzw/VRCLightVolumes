@@ -56,7 +56,7 @@ This package includes a [AudioLink](https://github.com/llealloo/audiolink/) inte
 
 `Smoothing` - Value from 0 to 1 that defines how much smoothing should be applied. **Zero** usually applies just a little bit of smoothing. **One** smoothes out almost all the fast blinks and makes intensity changing very slow.
 
-`Override Color` - Overrides color to a one that is specified, instead of the color chosen by AudioLink. 
+`ColorMode` - Auto uses Theme Colors 0, 1, 2, 3 for Bass, LowMid, HighMid, Treble. Override Color allows you to set the static color value. 
 
 `Color` - Color that will be used when **Override Color** is enabled.
 

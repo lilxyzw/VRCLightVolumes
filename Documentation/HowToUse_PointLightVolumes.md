@@ -21,6 +21,8 @@
 
 **Point Light Volumes** is a fast and optimized custom lighting system that has it's own parametric Point Light, Spot Lights and Area Lights. Point Light Volumes are not voxel based, they forms the light parametrically, or based on special LUT textures (similar to IES). They can project light cookies or cubemaps. It can be up to 128 point lights visible in one scene at the same time. However, this system does not support real-time shadows.
 
+> ⚠️Note: Compared to Point Lights, Area Lights emit less light per unit of intensity. This is to match up with Unity's lightmapper, where emissive lights are Pi times too dark. If you want your area lights to match up with point light intensity, or to match emissive objects, multiply the intensity by Pi (3.14).
+
 ## Point Light Volumes Placement
 
 **Point Light Volumes** are mostly useful in cases when you need independent dynamic lights, that can be individually toggled, moved or changed color in runtime.

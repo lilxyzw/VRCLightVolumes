@@ -11,6 +11,7 @@
 > - [Movable Volumes As Light Sources](Movable-Volumes-As-Light-Sources)
 > - [Bakery Volume Rotation](#Bakery-Volume-Rotation)
 > - [Fixing Bakery Light Probes](#Fixing-Bakery-Light-Probes)
+> - [Area Light Volumes Intensity](Area-Light-Volumes-Intensity)
 
 ## Regular Light Volumes Use Cases
 
@@ -59,8 +60,12 @@ For dynamic lighting, set the volume to **Additive** so it layers on top of othe
 
 ## Bakery Volume Rotation
 
-&#x20;Bakery lightmapper offers high quality with Light Volumes but may not support rotation during baking in some versions. Upgrade to the latest Bakery (via **Bakery → Utilities → Check for Patches**) to bake with Y‑axis rotation. Runtime rotation is still always supported.
+Bakery lightmapper offers high quality with Light Volumes but may not support rotation during baking in some versions. Upgrade to the latest Bakery (via **Bakery → Utilities → Check for Patches**) to bake with Y‑axis rotation. Runtime rotation is still always supported.
 
 ## Fixing Bakery Light Probes
 
 Bakery bakes L1 probes to work with "Geometrics SH Evaluation", which can cause overexposure and underexposure issues. Enable **Fix Light Probes L1** in Light Volume Setup to correct the probes after each bake. This may reduce overall contrast slightly but prevents over or underexposure.
+
+## Area Light Volumes Intensity
+
+Note that compared to Point Lights, Area Lights emit less light per unit of intensity. This is to match up with Unity's lightmapper, where emissive lights are Pi times too dark. If you want your area lights to match up with point light intensity, or to match emissive objects, multiply the intensity by Pi (3.14).
