@@ -681,6 +681,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: Shadows
+      value: -0.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: Additive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: Intensity
       value: 1
       objectReference: {fileID: 0}
@@ -717,6 +725,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: SmoothBlending
+      value: 0.272
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: _prevHighlights
       value: 0
       objectReference: {fileID: 0}
@@ -726,11 +738,11 @@ PrefabInstance:
       objectReference: {fileID: 446951793}
     - target: {fileID: 7656743471049202641, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: Color.b
-      value: 0.0409152
+      value: 0.22352941
       objectReference: {fileID: 0}
     - target: {fileID: 7656743471049202641, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: Color.g
-      value: 0.2767131
+      value: 0.56078434
       objectReference: {fileID: 0}
     - target: {fileID: 7656743471049202641, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: BoundsUvwMax0.z
@@ -1406,6 +1418,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawns:
   - {fileID: 1285058859}
+  spawnRadius: 0
   spawnOrder: 2
   spawnOrientation: 0
   ReferenceCamera: {fileID: 751639248}

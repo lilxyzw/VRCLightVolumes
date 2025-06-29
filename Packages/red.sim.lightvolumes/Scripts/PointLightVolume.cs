@@ -192,6 +192,9 @@ namespace VRCLightVolumes {
 
             } else {
 #endif
+                PointLightVolumeInstance.IsInitialized = true; // Always override to true in editor with no play mode!
+                PointLightVolumeInstance.LightVolumeManager = LightVolumeSetup.LightVolumeManager;
+
                 PointLightVolumeInstance.IsDynamic = Dynamic;
                 PointLightVolumeInstance.Color = Color;
                 PointLightVolumeInstance.Intensity = Intensity;

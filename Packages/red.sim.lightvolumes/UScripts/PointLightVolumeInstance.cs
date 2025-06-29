@@ -33,6 +33,13 @@ namespace VRCLightVolumes {
         public float AngleData;
         [Tooltip("Index of the shadowmask channel used by this light. -1 means no shadowmask.")]
         public sbyte ShadowmaskIndex = -1;
+        [Tooltip("True if this Point Light Volume added to the Point Light Volumes array in LightVolumeManager. Should be always true for the Point Light Volumes placed in editor. Helps to initialize Point Light Volumes spawned in runtime.")]
+        public bool IsInitialized = false;
+        [Tooltip("Reference to the Light Volume Manager. Needed for runtime initialization.")]
+        public LightVolumeManager LightVolumeManager;
+
+        [HideInInspector] // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
+        public bool IsIterartedThrough = false;
 
         // Checks if it's a spotlight
         public bool IsSpotLight() {
@@ -141,6 +148,12 @@ namespace VRCLightVolumes {
                 DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
             }
 
+        }
+
+        private void Start() {
+            if (!IsInitialized && LightVolumeManager != null) {
+                LightVolumeManager.InitializePointLightVolume(this);
+            }
         }
 
     }
