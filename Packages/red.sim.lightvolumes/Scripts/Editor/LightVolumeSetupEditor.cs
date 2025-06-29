@@ -89,8 +89,6 @@ namespace VRCLightVolumes {
                     }
                 }
 
-                _lightVolumeSetup.SyncUdonScript();
-
             };
 
             // Drawing each element
