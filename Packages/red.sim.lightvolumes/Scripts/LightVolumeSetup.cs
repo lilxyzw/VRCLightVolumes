@@ -502,7 +502,9 @@ namespace VRCLightVolumes {
 
         // Syncs udon LightVolumeManager script with this script
         public void SyncUdonScript() {
+#if UNITY_EDITOR
             SetupDependencies();
+#endif
             if (LightVolumeManager == null) return;
 #if UDONSHARP
             if (Application.isPlaying) {
