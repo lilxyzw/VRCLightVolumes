@@ -262,6 +262,10 @@ namespace VRCLightVolumes {
             SyncUdonScript();
         }
 
+        private void OnValidate() {
+            SyncUdonScript();
+        }
+
 #if BAKERY_INCLUDED
 
         // On Bakery Started baking

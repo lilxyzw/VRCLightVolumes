@@ -215,6 +215,7 @@ namespace VRCLightVolumes {
 
         public void UpdateVolumes() {
 
+
             TryInitialize();
 
             if (!enabled || !gameObject.activeInHierarchy) {
@@ -370,12 +371,15 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
             VRCShader.SetGlobalFloat(lightVolumeOcclusionCountID, _occlusionCount);
+            
+            // Defines if Light Probes Blending enabled in scene
+            VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
+            VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
+
+            // Max Overdraw
+            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
+
             if (_enabledCount != 0) {
-
-                // Defines if Light Probes Blending enabled in scene
-                VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
-                VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
-
                 // All light volumes inv Edge smooth
                 VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
 
@@ -385,9 +389,6 @@ namespace VRCLightVolumes {
 
                 // Volume Transform Matrix
                 VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix);
-
-                // Max Overdraw
-                VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
 
                 // Volume's relative rotation
                 VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
