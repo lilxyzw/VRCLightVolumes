@@ -251,7 +251,9 @@ namespace VRCLightVolumes {
 
         // Recalculates resolution based on Adaptive Resolution
         public void RecalculateAdaptiveResolution() {
-            Vector3 count = Vector3.Scale(Vector3.one, GetScale()) * VoxelsPerUnit;
+            Vector3 scl = GetScale();
+            scl = new Vector3(Mathf.Abs(scl.x), Mathf.Abs(scl.y), Mathf.Abs(scl.z));
+            Vector3 count = scl * VoxelsPerUnit;
             int x = Mathf.Max((int)Mathf.Round(count.x), 1);
             int y = Mathf.Max((int)Mathf.Round(count.y), 1);
             int z = Mathf.Max((int)Mathf.Round(count.z), 1);
