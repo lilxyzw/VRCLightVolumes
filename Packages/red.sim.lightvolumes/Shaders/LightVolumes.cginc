@@ -904,7 +904,7 @@ float LightVolumesEnabled() {
 
 // Returns the light volumes version
 float LightVolumesVersion() {
-    return _UdonLightVolumeVersion;
+    return _UdonLightVolumeVersion == 0 ? _UdonLightVolumeEnabled : _UdonLightVolumeVersion;
 }
 
 #endif

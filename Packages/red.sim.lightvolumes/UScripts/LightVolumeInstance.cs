@@ -54,8 +54,15 @@ namespace VRCLightVolumes {
         public bool IsRotated = false;
         [Tooltip("True if the volume has baked occlusion.")]
         public bool BakeOcclusion = false;
+        [Tooltip("True if this Light Volume added to the Light Volumes array in LightVolumeManager. Should be always true for the Light Volumes placed in editor. Helps to initialize Light Volumes spawned in runtime.")]
+        public bool IsInitialized = false;
+        [Tooltip("Reference to the Light Volume Manager. Needed for runtime initialization.")]
+        public LightVolumeManager LightVolumeManager;
         [Tooltip("Reference to the LightVolumeManager that manages this volume. Used to notify the manager about changes in this volume.")]
         public LightVolumeManager UpdateNotifier;
+
+        [HideInInspector] // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
+        public bool IsIterartedThrough = false;
 
 #if UDONSHARP
         // Low level Udon hacks:
@@ -120,6 +127,12 @@ namespace VRCLightVolumes {
             RelativeRotationRow1 = row1;
 
             RelativeRotation = new Vector4(rot.x, rot.y, rot.z, rot.w);
+        }
+
+        private void Update() {
+            if (!IsInitialized && LightVolumeManager != null) {
+                LightVolumeManager.InitializeLightVolume(this);
+            }
         }
 
     }

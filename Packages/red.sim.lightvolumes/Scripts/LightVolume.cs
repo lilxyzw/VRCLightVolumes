@@ -3,6 +3,11 @@ using UnityEngine;
 using Unity.Collections;
 using UnityEngine.Rendering;
 using UnityEditor;
+
+#if UDONSHARP
+using VRC.Udon;
+#endif
+
 #if UNITY_EDITOR
 using System.IO;
 using UnityEngine.SceneManagement;
@@ -64,7 +69,10 @@ namespace VRCLightVolumes {
 
         public LightVolumeInstance LightVolumeInstance;
         public LightVolumeSetup LightVolumeSetup;
-
+#if UDONSHARP
+        // UdonBehaviour is a real udon VM script. We need it to change public variables in play mode
+        private UdonBehaviour _lightVolumeBehaviour = null;
+#endif
         // Light probes world positions
         private Vector3[] _probesPositions = new Vector3[0];
 
@@ -139,6 +147,11 @@ namespace VRCLightVolumes {
             if (LightVolumeInstance == null && !TryGetComponent(out LightVolumeInstance)) {
                 LightVolumeInstance = gameObject.AddComponent<LightVolumeInstance>();
             }
+#if UDONSHARP
+            if (_lightVolumeBehaviour == null) {
+                TryGetComponent(out _lightVolumeBehaviour);
+            }
+#endif
             if (LightVolumeSetup == null) {
                 LightVolumeSetup = FindObjectOfType<LightVolumeSetup>();
                 if (LightVolumeSetup == null) {
@@ -238,7 +251,9 @@ namespace VRCLightVolumes {
 
         // Recalculates resolution based on Adaptive Resolution
         public void RecalculateAdaptiveResolution() {
-            Vector3 count = Vector3.Scale(Vector3.one, GetScale()) * VoxelsPerUnit;
+            Vector3 scl = GetScale();
+            scl = new Vector3(Mathf.Abs(scl.x), Mathf.Abs(scl.y), Mathf.Abs(scl.z));
+            Vector3 count = scl * VoxelsPerUnit;
             int x = Mathf.Max((int)Mathf.Round(count.x), 1);
             int y = Mathf.Max((int)Mathf.Round(count.y), 1);
             int z = Mathf.Max((int)Mathf.Round(count.z), 1);
@@ -469,8 +484,6 @@ namespace VRCLightVolumes {
                 LVUtils.MarkDirty(BakeryVolume);
             }
 
-            SyncUdonScript();
-
 #endif
 
         }
@@ -478,11 +491,30 @@ namespace VRCLightVolumes {
         // Syncs udon LightVolumeInstance script with this script
         private void SyncUdonScript() {
             SetupDependencies();
-            LightVolumeInstance.IsDynamic = Dynamic;
-            LightVolumeInstance.IsAdditive = Additive;
-            LightVolumeInstance.Color = Color;
-            LightVolumeInstance.Intensity = Intensity;
-            LightVolumeInstance.SetSmoothBlending(SmoothBlending);
+#if UDONSHARP
+            if (Application.isPlaying) {
+                // To sync variables in play-mode, we need to do it directly to the UdonBehaviour
+                _lightVolumeBehaviour.SetProgramVariable("IsDynamic", Dynamic);
+                _lightVolumeBehaviour.SetProgramVariable("IsAdditive", Additive);
+                _lightVolumeBehaviour.SetProgramVariable("Color", Color);
+                _lightVolumeBehaviour.SetProgramVariable("Intensity", Intensity);
+                // Udon does not support methods with parameters, so under the hood, it's just some global variables.
+                // We can first set these parameters and then exetute a parameterless method.
+                _lightVolumeBehaviour.SetProgramVariable("__0_radius__param", SmoothBlending);
+                _lightVolumeBehaviour.SendCustomEvent("__0_SetSmoothBlending");
+            } else {
+#endif
+                LightVolumeInstance.IsInitialized = true; // Always override to true in editor with no play mode!
+                LightVolumeInstance.LightVolumeManager = LightVolumeSetup.LightVolumeManager;
+
+                LightVolumeInstance.IsDynamic = Dynamic;
+                LightVolumeInstance.IsAdditive = Additive;
+                LightVolumeInstance.Color = Color;
+                LightVolumeInstance.Intensity = Intensity;
+                LightVolumeInstance.SetSmoothBlending(SmoothBlending);
+#if UDONSHARP
+            }
+#endif
         }
 
 #if UNITY_EDITOR
@@ -501,19 +533,24 @@ namespace VRCLightVolumes {
 #endif
 
             // Update udon Behaviour if Volume changed transform
-            if (_prevPos != transform.position || _prevRot != transform.rotation || _prevScl != transform.localScale || _isValidated) {
+            if (_prevPos != transform.position || _prevRot != transform.rotation || _prevScl != transform.localScale) {
                 SetupBakeryDependencies();
                 Recalculate();
                 if (PreviewVoxels) ReleasePreviewBuffers();
                 _prevPos = transform.position;
                 _prevRot = transform.rotation;
                 _prevScl = transform.localScale;
+                LightVolumeSetup.SyncUdonScript();
+            }
+
+            if (_isValidated) {
                 _isValidated = false;
+                SyncUdonScript();
+                LightVolumeSetup.SyncUdonScript();
             }
 
             // Regenerating atlas if color correction values were changed and 0.5 seconds delay passed
             if (_prevExposure != Exposure || _prevHighlights != Highlights || _prevShadows != Shadows) {
-                
                 _prevExposure = Exposure;
                 _prevHighlights = Highlights;
                 _prevShadows = Shadows;
@@ -523,9 +560,6 @@ namespace VRCLightVolumes {
                 _lastTimeColorCorrection = 0;
                 LightVolumeSetup.GenerateAtlas();
             }
-
-            SyncUdonScript();
-            LightVolumeSetup.SyncUdonScript();
 
             // If voxels preview disabled
             if (!PreviewVoxels || _probesPositions.Length == 0 || Selection.activeGameObject != gameObject) return;

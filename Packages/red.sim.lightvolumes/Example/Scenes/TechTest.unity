@@ -577,6 +577,9 @@ MonoBehaviour:
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &33498727
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -858,6 +861,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawns:
   - {fileID: 67059437}
+  spawnRadius: 0
   spawnOrder: 2
   spawnOrientation: 0
   ReferenceCamera: {fileID: 1104544459}
@@ -867,7 +871,7 @@ MonoBehaviour:
   interactThruLayers: 0
   autoSpatializeAudioSources: 0
   gravity: {x: 0, y: -9.81, z: 0}
-  layerCollisionArr: 01010101010001010101010100010001010101000101010101010101010101010101010101000101010101010001000101010100010101010101010101010101010101010100010101010101000100010101010001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101000101010101010001000101010100010101010101010101010101000000010000010100000000000000000000000000000101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100010101010101000100010101010001010101010101010101010101010101010001010100000100000000000001000101010101010101010101010101010101000101010000010000000000000100010101010101010101010101010101010100010101010101000100010101010001010101010101010101010100000001000001010000000000000000000000000000010101010101010101010101010101000101010000010001010101010000000001010101010101010101000000010000010100000000000100000000000000000101010101010101010101010101010001010100000100010001010101000101010101010101010101010101010101000101010000010001000101010100010101010101010101010101010101010100010101000001000100010101010001010101010101010101010101010101010001010101010100000001010101000101010101010101010101010000000100000101000000000000000000000000000001010101010101010101010101010100010101010101000000010101010001010101010101010101010101010101010001010101010100000001010101000101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
+  layerCollisionArr: 01010100010001010101010100010001010101000101010101010101010101010101010001000101010101010001000101010100010101010101010101010101010101000100010101010101000100010101010001010101010101010101010100000001000000000000000000000000000000000000010101010101010101010101010001000101010101010001000101010100010101010101010101010101000000000000010100000000000000000000000000000101010101010101010101010100010101010101010101010101010101010101010101010101010101010101010001010101010101010101010101010101010101010101010101010101010101000100010101010101000100010101010001010101010101010101010101010100010001010100000100000000000001000101010101010101010101010101010001000101010000010000000000000100010101010101010101010101010101000100010101010101000100010101010001010101010101010101010100000000000001010000000000000000000000000000010101010101010101010101010001000101010000010001010101010000000001010101010101010101000000000000010100000000000100000000000000000101010101010101010101010100010001010100000100010001010101000101010101010101010101010101010001000101010000010001000101010100010101010101010101010101010101000100010101000001000100010101010001010101010101010101010101010100010001010101010100000001010101000101010101010101010101010000000000000101000000000000000000000000000001010101010101010101010101000100010101010101000000010101010001010101010101010101010101010100010001010101010100000001010101000101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
   capacity: 0
   contentSex: 0
   contentViolence: 0
@@ -884,17 +888,18 @@ MonoBehaviour:
   useAssignedLayers: 0
   DynamicPrefabs: []
   DynamicMaterials:
-  - {fileID: 2100000, guid: d102c05e48d614a489538849889bb3bd, type: 2}
-  - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
   - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
-  - {fileID: 2100000, guid: 3285df4c4c04df644ad487357baa6686, type: 2}
   - {fileID: 2100000, guid: 39587cf21953c2a459a9f90d27b451ea, type: 2}
+  - {fileID: 2100000, guid: 3285df4c4c04df644ad487357baa6686, type: 2}
   - {fileID: 2100000, guid: 0d13e8f9a4bd5f64f9b469e3d7c9e087, type: 2}
   - {fileID: 2100000, guid: baede57ab42d19d4899dcbc2e280bd1c, type: 2}
   - {fileID: 2100000, guid: 269af33bf0eb06c49ae1e2bafde895bd, type: 2}
   - {fileID: 2100000, guid: 9ec09f8f5a313cc4c91bd7feaf546635, type: 2}
   - {fileID: 2100000, guid: 12a5139a31f84464381c92aad42d14a9, type: 2}
   - {fileID: 2100000, guid: 7cd8219b2223a14459b4fcc39e1e0edb, type: 2}
+  - {fileID: 2100000, guid: d102c05e48d614a489538849889bb3bd, type: 2}
+  - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
+  - {fileID: 2100000, guid: 1c987494452b85f4ab4cac3322415907, type: 2}
   - {fileID: 2100000, guid: 3e18d5d47ac91fd40bad6504f8058659, type: 2}
   LightMapsNear: []
   LightMapsFar: []
@@ -1154,6 +1159,14 @@ MonoBehaviour:
     ID: 71
     SerializedTypeNames:
     - VRC.Udon.UdonBehaviour
+  - gameObject: {fileID: 0}
+    ID: 73
+    SerializedTypeNames:
+    - VRC.SDK3.Components.VRCPlayerObject
+  - gameObject: {fileID: 0}
+    ID: 72
+    SerializedTypeNames:
+    - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   PlayerPersistence: []
@@ -1372,6 +1385,71 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1078163337}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &84942971
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 84942973}
+  - component: {fileID: 84942972}
+  m_Layer: 0
+  m_Name: Reflection Probe
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!215 &84942972
+ReflectionProbe:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84942971}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Type: 0
+  m_Mode: 0
+  m_RefreshMode: 0
+  m_TimeSlicingMode: 0
+  m_Resolution: 128
+  m_UpdateFrequency: 0
+  m_BoxSize: {x: 20, y: 16.837421, z: 50.20101}
+  m_BoxOffset: {x: 0, y: 6.758498, z: 1.6899834}
+  m_NearClip: 0.3
+  m_FarClip: 1000
+  m_ShadowDistance: 100
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IntensityMultiplier: 1
+  m_BlendDistance: 1
+  m_HDR: 1
+  m_BoxProjection: 0
+  m_RenderDynamicObjects: 0
+  m_UseOcclusionCulling: 1
+  m_Importance: 1
+  m_CustomBakedTexture: {fileID: 0}
+--- !u!4 &84942973
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84942971}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.14, z: -1.72}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &111667817
 GameObject:
   m_ObjectHideFlags: 0
@@ -1584,6 +1662,9 @@ MonoBehaviour:
   Angle: 0.7853982
   AngleData: 0.70710677
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &154949970
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -2740,7 +2821,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 35630e38b4e5ffb40b44ec5348b4333f, type: 2}
   m_Color: {r: 0.83396226, g: 0.83396226, b: 0.83396226, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -3108,6 +3189,9 @@ MonoBehaviour:
   Angle: 0.36651915
   AngleData: 0.38386405
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &309589256
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -3466,6 +3550,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 0
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &355306803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3585,6 +3672,9 @@ MonoBehaviour:
   Angle: 2.6529005
   AngleData: -0.88294756
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &377300963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3829,6 +3919,9 @@ MonoBehaviour:
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
   BakeOcclusion: 1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &458847876
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -4502,6 +4595,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 4
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &569909709
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -5054,6 +5150,9 @@ MonoBehaviour:
   Angle: 0.7853982
   AngleData: 0.70710677
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &657256791
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -6134,6 +6233,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &832882188
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -6357,6 +6459,7 @@ MonoBehaviour:
   SharpBounds: 1
   AutoUpdateVolumes: 1
   AdditiveMaxOverdraw: 8
+  DestroyInPlayMode: 1
   LightVolumeDataList:
   - Weight: 0
     LightVolumeInstance: {fileID: 1400850657}
@@ -6742,6 +6845,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 0
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &938222482
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -6997,6 +7103,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &969307523
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7452,6 +7561,9 @@ MonoBehaviour:
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &996561023
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7781,6 +7893,9 @@ MonoBehaviour:
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1036732746
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7940,6 +8055,9 @@ MonoBehaviour:
   Angle: 0.72431165
   AngleData: 0.7489557
   ShadowmaskIndex: 0
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1038735945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8587,6 +8705,9 @@ MonoBehaviour:
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
   BakeOcclusion: 1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1137550076
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -10803,6 +10924,9 @@ MonoBehaviour:
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
   BakeOcclusion: 1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1400850658
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -12125,7 +12249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 35630e38b4e5ffb40b44ec5348b4333f, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -12306,6 +12430,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1541482805
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -12583,6 +12710,9 @@ MonoBehaviour:
   RelativeRotationRow1: {x: 0, y: 1, z: 0}
   IsRotated: 0
   BakeOcclusion: 0
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1548001778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13260,6 +13390,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1644032074
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -19795,7 +19928,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 35630e38b4e5ffb40b44ec5348b4333f, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -20451,6 +20584,9 @@ MonoBehaviour:
   Angle: 0.36651915
   AngleData: 0.38386405
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1748442015
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -20820,6 +20956,9 @@ MonoBehaviour:
   Angle: 0
   AngleData: 4
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &1773416816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23703,6 +23842,9 @@ MonoBehaviour:
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &2070359845
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -23961,6 +24103,9 @@ MonoBehaviour:
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
+  IsInitialized: 1
+  LightVolumeManager: {fileID: 834285432}
+  IsIterartedThrough: 0
 --- !u!114 &2088816032
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -24331,6 +24476,7 @@ SceneRoots:
   - {fileID: 111667818}
   - {fileID: 1078163337}
   - {fileID: 2080876798}
+  - {fileID: 84942973}
   - {fileID: 961149351}
   - {fileID: 834285434}
   - {fileID: 1393322073}

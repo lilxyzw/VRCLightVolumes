@@ -129,6 +129,42 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
         }
 
+        // Initrializes Light Volume by adding it to the light volumes array. Automalycally calls in runtime on object spawn
+        public void InitializeLightVolume(LightVolumeInstance lightVolume) {
+            int count = LightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (LightVolumeInstances[i] == null) {
+                    LightVolumeInstances[i] = lightVolume;
+                    lightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            LightVolumeInstance[] targetArray = new LightVolumeInstance[count + 1];
+            Array.Copy(LightVolumeInstances, targetArray, count);
+            targetArray[count] = lightVolume;
+            lightVolume.IsInitialized = true;
+            LightVolumeInstances = targetArray;
+        }
+        public void InitializePointLightVolume(PointLightVolumeInstance pointLightVolume) {
+            int count = PointLightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (PointLightVolumeInstances[i] == null) {
+                    PointLightVolumeInstances[i] = pointLightVolume;
+                    pointLightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            PointLightVolumeInstance[] targetArray = new PointLightVolumeInstance[count + 1];
+            Array.Copy(PointLightVolumeInstances, targetArray, count);
+            targetArray[count] = pointLightVolume;
+            pointLightVolume.IsInitialized = true;
+            PointLightVolumeInstances = targetArray;
+        }
+
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
 
@@ -232,6 +268,7 @@ namespace VRCLightVolumes {
 
         public void UpdateVolumes() {
 
+
             TryInitialize();
 
             if (!enabled || !gameObject.activeInHierarchy) {
@@ -247,7 +284,7 @@ namespace VRCLightVolumes {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance == null) continue;
                 instance.UpdateNotifier = this; // Setting update notifier for the instance
-                if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black) {
+                if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
@@ -257,6 +294,9 @@ namespace VRCLightVolumes {
                     else if (instance.BakeOcclusion) _occlusionCount++;
                     _enabledIDs[_enabledCount] = i;
                     _enabledCount++;
+                    instance.IsIterartedThrough = true;
+                } else {
+                    instance.IsIterartedThrough = false;
                 }
             }
 
@@ -284,6 +324,9 @@ namespace VRCLightVolumes {
                 int i6 = i * 6;
 
                 LightVolumeInstance instance = LightVolumeInstances[enabledId];
+
+                // Reset iterated flag
+                instance.IsIterartedThrough = false;
 
                 // Setting volume transform
                 _invWorldMatrix[i] = instance.InvWorldMatrix;
@@ -322,7 +365,7 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[i];
                 if (instance == null) continue;
                 instance.UpdateNotifier = this; // Setting update notifier for the instance
-                if (instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black) {
+                if (instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
@@ -330,6 +373,9 @@ namespace VRCLightVolumes {
 #endif
                     _enabledPointIDs[_pointLightCount] = i;
                     _pointLightCount++;
+                    instance.IsIterartedThrough = true;
+                } else {
+                    instance.IsIterartedThrough = false;
                 }
             }
 
@@ -345,6 +391,10 @@ namespace VRCLightVolumes {
             // Filling arrays with enabled point light volumes
             for (int i = 0; i < _pointLightCount; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[_enabledPointIDs[i]];
+
+                // Reset iterated flag
+                instance.IsIterartedThrough = false;
+
                 _pointLightPosition[i] = instance.PositionData;
 
                 Vector4 c = instance.Color.linear * instance.Intensity;
@@ -376,12 +426,15 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
             VRCShader.SetGlobalFloat(lightVolumeOcclusionCountID, _occlusionCount);
+            
+            // Defines if Light Probes Blending enabled in scene
+            VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
+            VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
+
+            // Max Overdraw
+            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
+
             if (_enabledCount != 0) {
-
-                // Defines if Light Probes Blending enabled in scene
-                VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
-                VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
-
                 // All light volumes inv Edge smooth
                 VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
 
@@ -391,9 +444,6 @@ namespace VRCLightVolumes {
 
                 // Volume Transform Matrix
                 VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix);
-
-                // Max Overdraw
-                VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
 
                 // Volume's relative rotation
                 VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
