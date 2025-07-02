@@ -97,6 +97,11 @@ namespace VRCLightVolumes {
         // Was it changed on Validate?
         private bool _isValidated = false;
 
+        // Needs to be resetted after unselecting the object to prevent unity stall
+        public void ResetProbesPositions() {
+            _probesPositions = new Vector3[0];
+        }
+
         // Auto-initialize with a reflection probe bounds
         public void Reset() {
             if (transform.parent != null && transform.parent.gameObject.TryGetComponent(out ReflectionProbe probe)) {
@@ -206,7 +211,12 @@ namespace VRCLightVolumes {
                 instance.ShadowmaskIndex = shadowmaskIndices[lightIdx];
                 LVUtils.MarkDirty(instance);
             }
-                
+
+            // Recalculate probes positions if not initialized
+            if (_probesPositions.Length == 0) {
+                RecalculateProbesPositions();
+            }
+
             // Bake occlusion
             Texture3D occ = LightVolumeOcclusionBaker.ComputeOcclusionTexture(
                 Resolution,
