@@ -551,13 +551,13 @@ MonoBehaviour:
       Data: 30|UnityEngine.TooltipAttribute, UnityEngine.CoreModule
     - Name: tooltip
       Entry: 1
-      Data: 'For point light: Cos of angle (for LUT).
+      Data: 'For point light: unused.
 
-        For spot light: Cos
-        of outer angle if no custom texture, tan of outer angle otherwise.
+        For spot light: Cos of outer angle
+        if no custom texture, tan of outer angle otherwise.
 
-        For
-        area light: 2 + Height.'
+        For area light:
+        2 + Height.'
     - Name: 
       Entry: 8
       Data: 

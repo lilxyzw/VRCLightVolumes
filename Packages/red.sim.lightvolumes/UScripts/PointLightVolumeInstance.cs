@@ -29,7 +29,7 @@ namespace VRCLightVolumes {
         public float CustomID;
         [Tooltip("Half-angle of the spotlight cone, in radians.")]
         public float Angle;
-        [Tooltip("For point light: Cos of angle (for LUT).\nFor spot light: Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: 2 + Height.")]
+        [Tooltip("For point light: unused.\nFor spot light: Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: 2 + Height.")]
         public float AngleData;
         [Tooltip("Index of the shadowmask channel used by this light. -1 means no shadowmask.")]
         public sbyte ShadowmaskIndex = -1;
