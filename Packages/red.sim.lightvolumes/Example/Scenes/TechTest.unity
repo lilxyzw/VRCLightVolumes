@@ -636,6 +636,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.15
   Range: 0.15
   Color: {r: 0.4615385, g: 1, b: 0.2999999, a: 1}
   Intensity: 100
@@ -1712,6 +1713,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.25
   Range: 10
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
   Intensity: 1
@@ -3172,7 +3174,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 309589256}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 100
+  Intensity: 50
   IsDynamic: 1
   PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -44.444443}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
@@ -3239,9 +3241,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.15
   Range: 0.15
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 100
+  Intensity: 50
   Shape: 2
   Angle: 42
   Falloff: 1
@@ -3535,7 +3538,7 @@ MonoBehaviour:
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 100
   IsDynamic: 1
-  PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 4}
+  PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 16}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
   CustomID: -1
   Angle: 0
@@ -3560,6 +3563,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
+  LightSourceSize: 0.25
   Range: 0.5
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 100
@@ -3657,7 +3661,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.8126781, b: 0.39811313, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -100}
+  PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -123.45678}
   DirectionData: {x: 0.9659258, y: 0.00000040007035, z: 0.25881994, w: 3.0931816}
   CustomID: 0
   Angle: 2.6529005
@@ -3682,6 +3686,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.09
   Range: 0.1
   Color: {r: 1, g: 0.8126781, b: 0.39811313, a: 1}
   Intensity: 50
@@ -4645,6 +4650,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 2
+  LightSourceSize: 0.25
   Range: 5
   Color: {r: 1, g: 0.5405387, b: 0.18823528, a: 1}
   Intensity: 5
@@ -5200,6 +5206,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.25
   Range: 8
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
   Intensity: 20
@@ -6283,6 +6290,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
+  LightSourceSize: 0.05
   Range: 0.05
   Color: {r: 1, g: 0.925283, b: 0.40566033, a: 1}
   Intensity: 50
@@ -6367,7 +6375,7 @@ MonoBehaviour:
   SharpBounds: 1
   AutoUpdateVolumes: 1
   AdditiveMaxOverdraw: 8
-  LightsBrightnessCutoff: 0.191
+  LightsBrightnessCutoff: 0.35
   LightVolumeInstances:
   - {fileID: 1548001777}
   - {fileID: 458847875}
@@ -6439,7 +6447,7 @@ MonoBehaviour:
   - {fileID: 1038735945}
   Resolution: 256
   Format: 17
-  LightsBrightnessCutoff: 0.191
+  LightsBrightnessCutoff: 0.35
   BakingMode: 0
   Denoise: 1
   DilateInvalidProbes: 1
@@ -6895,6 +6903,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
+  LightSourceSize: 0.5
   Range: 0.5
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 10
@@ -7153,6 +7162,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
+  LightSourceSize: 0.05
   Range: 0.05
   Color: {r: 0.3679244, g: 0.7187681, b: 1, a: 1}
   Intensity: 50
@@ -7611,6 +7621,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.15
   Range: 0.15
   Color: {r: 1, g: 0.3051524, b: 0.27735847, a: 1}
   Intensity: 100
@@ -7943,6 +7954,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.15
   Range: 0.15
   Color: {r: 0.19433957, g: 0.42157716, b: 1, a: 1}
   Intensity: 100
@@ -8065,6 +8077,7 @@ MonoBehaviour:
   BakedShadows: 1
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.3
   Range: 0.3
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
   Intensity: 200
@@ -12480,6 +12493,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
+  LightSourceSize: 0.05
   Range: 0.05
   Color: {r: 0.49795517, g: 1, b: 0.390566, a: 1}
   Intensity: 50
@@ -13440,6 +13454,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
+  LightSourceSize: 0.05
   Range: 0.05
   Color: {r: 1, g: 0.435849, b: 0.435849, a: 1}
   Intensity: 50
@@ -20567,7 +20582,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1748442015}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 100
+  Intensity: 50
   IsDynamic: 1
   PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -44.444443}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
@@ -20634,9 +20649,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.15
   Range: 0.15
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 100
+  Intensity: 50
   Shape: 2
   Angle: 42
   Falloff: 1
@@ -20966,6 +20982,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 2
+  LightSourceSize: 0.25
   Range: 5
   Color: {r: 0.18823528, g: 0.48519114, b: 1, a: 1}
   Intensity: 5
@@ -23825,9 +23842,9 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2070359845}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: -10
+  Intensity: -50
   IsDynamic: 1
-  PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -1}
+  PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -44.444443}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
@@ -23892,9 +23909,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 1
+  LightSourceSize: 0.15
+  Range: 0.15
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: -10
+  Intensity: -50
   Shape: 0
   Angle: 60
   Falloff: 1
@@ -24153,6 +24171,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.15
   Range: 0.15
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
   Intensity: 100

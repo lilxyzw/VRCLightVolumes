@@ -41,15 +41,18 @@ namespace VRCLightVolumes {
                 hiddenFields.Add("FalloffLUT");
                 hiddenFields.Add("Cubemap");
                 hiddenFields.Add("Cookie");
+                hiddenFields.Add("LightSourceSize");
             }
 
             if (PointLightVolume.Shape == PointLightVolume.LightShape.Parametric) {
                 hiddenFields.Add("FalloffLUT");
                 hiddenFields.Add("Cubemap");
                 hiddenFields.Add("Cookie");
+                hiddenFields.Add("Range");
             } else if (PointLightVolume.Shape == PointLightVolume.LightShape.Custom) {
                 hiddenFields.Add("Falloff");
-                if(PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
+                hiddenFields.Add("Range");
+                if (PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
                     hiddenFields.Add("FalloffLUT");
                     hiddenFields.Add("Cookie");
                 } else if (PointLightVolume.Type == PointLightVolume.LightType.SpotLight) {
@@ -60,6 +63,7 @@ namespace VRCLightVolumes {
                 hiddenFields.Add("Falloff");
                 hiddenFields.Add("Cubemap");
                 hiddenFields.Add("Cookie");
+                hiddenFields.Add("LightSourceSize");
             }
 
             DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());
@@ -72,7 +76,7 @@ namespace VRCLightVolumes {
 
             Transform t = pointLightVolume.transform;
             Vector3 origin = t.position;
-            float range = pointLightVolume.Range;
+            float range = pointLightVolume.Type != PointLightVolume.LightType.AreaLight && (pointLightVolume.Shape != PointLightVolume.LightShape.LUT || pointLightVolume.FalloffLUT == null) ? pointLightVolume.LightSourceSize : pointLightVolume.Range;
 
             if (pointLightVolume.Type == PointLightVolume.LightType.PointLight) { // Point Light Visualization
 
@@ -83,7 +87,7 @@ namespace VRCLightVolumes {
                 bool isDebug = pointLightVolume.DebugRange && (pointLightVolume.Shape != PointLightVolume.LightShape.LUT || pointLightVolume.FalloffLUT == null);
 
                 if (isDebug) {
-                    bounds = Mathf.Sqrt(ComputePointLightSquaredBoundingSphere(pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.Range, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff));
+                    bounds = Mathf.Sqrt(ComputePointLightSquaredBoundingSphere(pointLightVolume.Color, pointLightVolume.Intensity, range, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff));
                 }
 
                 // Drawing
@@ -113,15 +117,13 @@ namespace VRCLightVolumes {
                 float spotAngle = Mathf.Clamp(pointLightVolume.Angle, 0f, 360f);
                 float halfAngleRad = spotAngle * 0.5f * Mathf.Deg2Rad;
                 
-                
-                
                 Vector3[] dirs = new Vector3[] { right, -right, up, -up };
                 float bounds = 0;
 
                 bool isDebug = pointLightVolume.DebugRange && (pointLightVolume.Shape != PointLightVolume.LightShape.LUT || pointLightVolume.FalloffLUT == null);
 
                 if (isDebug) {
-                    bounds = Mathf.Sqrt(ComputePointLightSquaredBoundingSphere(pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.Range, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff));
+                    bounds = Mathf.Sqrt(ComputePointLightSquaredBoundingSphere(pointLightVolume.Color, pointLightVolume.Intensity, range, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff));
                 }
 
                 // Drawing
@@ -250,7 +252,7 @@ namespace VRCLightVolumes {
 
         float ComputePointLightSquaredBoundingSphere(Color color, float intenisty, float size, float cutoff) {
             float L = Mathf.Max(color.r, Mathf.Max(color.g, color.b));
-            return Mathf.Max(Mathf.PI * 2 * L * intenisty / (cutoff * cutoff) - 1, 0) * size * size;
+            return Mathf.Max(Mathf.PI * 2 * L * Mathf.Abs(intenisty) / (cutoff * cutoff) - 1, 0) * size * size;
         }
 
     }
