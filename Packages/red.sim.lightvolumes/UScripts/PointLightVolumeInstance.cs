@@ -29,7 +29,7 @@ namespace VRCLightVolumes {
         public float CustomID;
         [Tooltip("Half-angle of the spotlight cone, in radians.")]
         public float Angle;
-        [Tooltip("For point light: Cos of angle (for LUT).\nFor spot light: Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: 2 + Height.")]
+        [Tooltip("For point light: unused.\nFor spot light: Cos of outer angle if no custom texture, tan of outer angle otherwise.\nFor area light: 2 + Height.")]
         public float AngleData;
         [Tooltip("Index of the shadowmask channel used by this light. -1 means no shadowmask.")]
         public sbyte ShadowmaskIndex = -1;
@@ -71,9 +71,13 @@ namespace VRCLightVolumes {
             return CustomID == 0;
         }
 
-        // Sets range data which is actually an inverted squared range
-        public void SetRange(float range) {
-            PositionData.w = Mathf.Sign(PositionData.w) / (range * range); // Saving the sign that was here before
+        // Sets Light source size, or a range data for LUT mode
+        public void SetLightSourceSize(float size) {
+            if (IsLut()) {
+                PositionData.w = Mathf.Sign(PositionData.w) / (size * size); // Saving the sign that was here before. Inversed squared range
+            } else {
+                PositionData.w = Mathf.Sign(PositionData.w) * size * size; // Saving the sign that was here before. Squared light size
+            }
         }
 
         // Sets LUT ID

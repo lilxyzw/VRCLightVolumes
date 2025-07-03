@@ -26,8 +26,8 @@ namespace VRCLightVolumes {
         [Header("Point Light Volumes")]
         public TextureArrayResolution Resolution = TextureArrayResolution._128x128;
         public TextureArrayFormat Format = TextureArrayFormat.RGBAHalf;
-        [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but light the cutoff edge will be visually noticable.")]
-        [Range(0.0f, 1f)] public float AreaLightBrightnessCutoff = 0.35f;
+        [Tooltip("The minimum brightness at a point due to lighting from a Point Light Volume, before the light is culled. Larger values will result in better performance, but light attenuation will be less physically correct.")]
+        [Range(0.05f, 1f)] public float LightsBrightnessCutoff = 0.35f;
 
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
@@ -518,7 +518,7 @@ namespace VRCLightVolumes {
                 _lightVolumeManagerBehaviour.SetProgramVariable("LightProbesBlending", LightProbesBlending);
                 _lightVolumeManagerBehaviour.SetProgramVariable("SharpBounds", SharpBounds);
                 _lightVolumeManagerBehaviour.SetProgramVariable("AdditiveMaxOverdraw", AdditiveMaxOverdraw);
-                _lightVolumeManagerBehaviour.SetProgramVariable("AreaLightBrightnessCutoff", AreaLightBrightnessCutoff + 0.05f);
+                _lightVolumeManagerBehaviour.SetProgramVariable("AreaLightBrightnessCutoff", LightsBrightnessCutoff);
 
                 if (LightVolumes.Count != 0) {
                     var instances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
@@ -546,7 +546,7 @@ namespace VRCLightVolumes {
                 LightVolumeManager.LightProbesBlending = LightProbesBlending;
                 LightVolumeManager.SharpBounds = SharpBounds;
                 LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
-                LightVolumeManager.AreaLightBrightnessCutoff = AreaLightBrightnessCutoff + 0.05f;
+                LightVolumeManager.LightsBrightnessCutoff = LightsBrightnessCutoff;
 
                 if (LightVolumes.Count != 0) {
                     LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));

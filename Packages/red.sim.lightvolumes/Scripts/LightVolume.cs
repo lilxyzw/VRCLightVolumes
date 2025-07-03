@@ -197,7 +197,7 @@ namespace VRCLightVolumes {
                 LightVolumeSetup.PointLightVolumes,
                 Resolution,
                 transform.lossyScale, 
-                LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f,
+                LightVolumeSetup.LightsBrightnessCutoff,
                 out float[] shadowLightInfluenceRadii,
                 out float[] shadowLightRadii,
                 out Vector2[] shadowLightArea);

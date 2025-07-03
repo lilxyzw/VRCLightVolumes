@@ -18,8 +18,10 @@ namespace VRCLightVolumes {
         [Min(0)] public float BakedShadowRadius = 0.1f;
         [Tooltip("Point light is the most performant type. Area light is the heaviest and best suited for dynamic, movable sources. For static lighting, it's recommended to bake regular additive light volumes instead.")]
         public LightType Type = LightType.PointLight;
-        [Tooltip("Radius in meters beyond which point and spot lights are culled. Fewer overlapping lights result in better performance.")]
-        [Min(0.0001f)] public float Range = 5f;
+        [Tooltip("Physical radius of a light source if it was a matte glowing sphere for a point light, or a flashlight reflector for a spot light. Larger size emmits more light without increasing overall intensity.")]
+        [Min(0.0001f)] public float LightSourceSize = 0.25f;
+        [Tooltip("Radius in meters beyond which light is culled. Fewer overlapping lights result in better performance.")]
+        [Min(0.0001f)] public float Range = 10f;
         [Tooltip("Multiplies the point light volume’s color by this value.")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Tooltip("Brightness of the point light volume.")]
@@ -145,18 +147,24 @@ namespace VRCLightVolumes {
                 // Udon does not support methods with parameters, so under the hood, it's just some global variables.
                 // We can first set these parameters and then exetute a parameterless method.
                 if (Type == LightType.PointLight) { // Point light
-                    // SetRange(Range)
-                    _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", Range);
-                    _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                     if (Shape == LightShape.Custom && Cubemap != null) { // Use Custom Cubemap Texture
+                        // SetRange(LightSourceSize)
+                        _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", LightSourceSize);
+                        _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                         // SetCustomTexture(CustomID)
                         _pointLightVolumeBehaviour.SetProgramVariable("__1_id__param", CustomID);
                         _pointLightVolumeBehaviour.SendCustomEvent("__0_SetCustomTexture");
                     } else if (Shape == LightShape.LUT && FalloffLUT != null) { // Use LUT
+                        // SetRange(Range)
+                        _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", Range);
+                        _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                         // SetLut(CustomID)
                         _pointLightVolumeBehaviour.SetProgramVariable("__0_id__param", CustomID);
                         _pointLightVolumeBehaviour.SendCustomEvent("__0_SetLut");
                     } else { // Use this light in parametric mode
+                        // SetRange(LightSourceSize)
+                        _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", LightSourceSize);
+                        _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                         // SetParametric()
                         _pointLightVolumeBehaviour.SendCustomEvent("SetParametric");
                     }
@@ -168,14 +176,23 @@ namespace VRCLightVolumes {
                     _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", Range);
                     _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                     if (Shape == LightShape.Custom && Cookie != null) { // Use Cookie Texture
+                        // SetRange(LightSourceSize)
+                        _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", LightSourceSize);
+                        _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                         // SetCustomTexture(CustomID)
                         _pointLightVolumeBehaviour.SetProgramVariable("__1_id__param", CustomID);
                         _pointLightVolumeBehaviour.SendCustomEvent("__0_SetCustomTexture");
                     } else if (Shape == LightShape.LUT && FalloffLUT != null) { // Use LUT
+                        // SetRange(Range)
+                        _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", Range);
+                        _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                         // SetLut(CustomID)
                         _pointLightVolumeBehaviour.SetProgramVariable("__0_id__param", CustomID);
                         _pointLightVolumeBehaviour.SendCustomEvent("__0_SetLut");
                     } else { // Use this light in parametric mode
+                        // SetRange(LightSourceSize)
+                        _pointLightVolumeBehaviour.SetProgramVariable("__0_range__param", LightSourceSize);
+                        _pointLightVolumeBehaviour.SendCustomEvent("__0_SetRange");
                         // SetParametric()
                         _pointLightVolumeBehaviour.SendCustomEvent("SetParametric");
                     }
@@ -199,22 +216,27 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance.Color = Color;
                 PointLightVolumeInstance.Intensity = Intensity;
                 if (Type == LightType.PointLight) { // Point light
-                    PointLightVolumeInstance.SetRange(Range);
                     if (Shape == LightShape.Custom && Cubemap != null) {
+                        PointLightVolumeInstance.SetLightSourceSize(LightSourceSize);
                         PointLightVolumeInstance.SetCustomTexture(CustomID); // Use Custom Cubemap Texture
                     } else if (Shape == LightShape.LUT && FalloffLUT != null) {
+                        PointLightVolumeInstance.SetLightSourceSize(Range);
                         PointLightVolumeInstance.SetLut(CustomID); // Use LUT
                     } else {
+                        PointLightVolumeInstance.SetLightSourceSize(LightSourceSize);
                         PointLightVolumeInstance.SetParametric(); // Use this light in parametric mode
                     }
                     PointLightVolumeInstance.SetPointLight(); // Use it as Point Light
                 } else if (Type == LightType.SpotLight) { // Spot Light
-                    PointLightVolumeInstance.SetRange(Range);
+                    PointLightVolumeInstance.SetLightSourceSize(Range);
                     if (Shape == LightShape.Custom && Cookie != null) {
+                        PointLightVolumeInstance.SetLightSourceSize(LightSourceSize);
                         PointLightVolumeInstance.SetCustomTexture(CustomID); // Use Cookie Texture
                     } else if (Shape == LightShape.LUT && FalloffLUT != null) {
+                        PointLightVolumeInstance.SetLightSourceSize(Range);
                         PointLightVolumeInstance.SetLut(CustomID); // Use LUT
                     } else {
+                        PointLightVolumeInstance.SetLightSourceSize(LightSourceSize);
                         PointLightVolumeInstance.SetParametric(); // Use this light in parametric mode
                     }
                     PointLightVolumeInstance.SetSpotLight(Angle, Falloff); // Don't use custom tex
