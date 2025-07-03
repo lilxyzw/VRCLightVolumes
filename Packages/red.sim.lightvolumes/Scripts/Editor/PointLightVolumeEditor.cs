@@ -24,7 +24,7 @@ namespace VRCLightVolumes {
             List<string> hiddenFields = new List<string> { "m_Script", "CustomID", "PointLightVolumeInstance", "LightVolumeSetup" };
 
             // Only show shadow radius if user requested baked shadows. Also area lights don't have shadow radius - it's implicit. 
-            if (!PointLightVolume.BakedShadows || PointLightVolume.Type == PointLightVolume.LightType.AreaLight) {
+            if (!PointLightVolume.BakedShadows || PointLightVolume.Type == PointLightVolume.LightType.AreaLight || PointLightVolume.Shape != PointLightVolume.LightShape.LUT) {
                 hiddenFields.Add("BakedShadowRadius");
             }
             

@@ -571,7 +571,7 @@ MonoBehaviour:
   Color: {r: 0.4615385, g: 1, b: 0.2999999, a: 1}
   Intensity: 100
   IsDynamic: 1
-  PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -44.444443}
+  PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
@@ -3176,7 +3176,7 @@ MonoBehaviour:
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -44.444443}
+  PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -0.0225}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
   CustomID: -4
   Angle: 0.36651915
@@ -3538,7 +3538,7 @@ MonoBehaviour:
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 100
   IsDynamic: 1
-  PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 16}
+  PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 0.0625}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
   CustomID: -1
   Angle: 0
@@ -3661,7 +3661,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.8126781, b: 0.39811313, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -123.45678}
+  PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -0.0081}
   DirectionData: {x: 0.9659258, y: 0.00000040007035, z: 0.25881994, w: 3.0931816}
   CustomID: 0
   Angle: 2.6529005
@@ -6225,7 +6225,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.925283, b: 0.40566033, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: 4, y: 1.561, z: -22, w: 400}
+  PositionData: {x: 4, y: 1.561, z: -22, w: 0.0025000002}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   Angle: 0
@@ -6838,7 +6838,7 @@ MonoBehaviour:
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 10
   IsDynamic: 1
-  PositionData: {x: -4.154, y: 1.787, z: 14.23, w: 4}
+  PositionData: {x: -4.154, y: 1.787, z: 14.23, w: 0.25}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
   CustomID: -2
   Angle: 0
@@ -7097,7 +7097,7 @@ MonoBehaviour:
   Color: {r: 0.3679244, g: 0.7187681, b: 1, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -4, y: 1.561, z: -22, w: 400}
+  PositionData: {x: -4, y: 1.561, z: -22, w: 0.0025000002}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   Angle: 0
@@ -7556,7 +7556,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.3051524, b: 0.27735847, a: 1}
   Intensity: 100
   IsDynamic: 1
-  PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -44.444443}
+  PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
@@ -7889,7 +7889,7 @@ MonoBehaviour:
   Color: {r: 0.19433957, g: 0.42157716, b: 1, a: 1}
   Intensity: 100
   IsDynamic: 1
-  PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -44.444443}
+  PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
@@ -8052,7 +8052,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
   Intensity: 200
   IsDynamic: 1
-  PositionData: {x: -8.090002, y: 1.5800012, z: 0.71112424, w: -11.111111}
+  PositionData: {x: -8.090002, y: 1.5800012, z: 0.71112424, w: -0.09}
   DirectionData: {x: 0.8660247, y: 0.000004213666, z: -0.50000226, w: 3.9833612}
   CustomID: 0
   Angle: 0.72431165
@@ -12428,7 +12428,7 @@ MonoBehaviour:
   Color: {r: 0.49795517, g: 1, b: 0.390566, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -4, y: 1.561, z: -16, w: 400}
+  PositionData: {x: -4, y: 1.561, z: -16, w: 0.0025000002}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   Angle: 0
@@ -13389,7 +13389,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.435849, b: 0.435849, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: 4, y: 1.561, z: -16, w: 400}
+  PositionData: {x: 4, y: 1.561, z: -16, w: 0.0025000002}
   DirectionData: {x: -0, y: -0, z: -0, w: 1}
   CustomID: 0
   Angle: 0
@@ -20584,7 +20584,7 @@ MonoBehaviour:
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: 50
   IsDynamic: 1
-  PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -44.444443}
+  PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -0.0225}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
   CustomID: -5
   Angle: 0.36651915
@@ -23844,7 +23844,7 @@ MonoBehaviour:
   Color: {r: 1, g: 1, b: 1, a: 1}
   Intensity: -50
   IsDynamic: 1
-  PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -44.444443}
+  PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
@@ -24106,7 +24106,7 @@ MonoBehaviour:
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
   Intensity: 100
   IsDynamic: 1
-  PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -44.444443}
+  PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988

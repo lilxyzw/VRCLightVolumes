@@ -250,13 +250,18 @@ namespace VRCLightVolumes
             
         }
 
+        private static float ComputePointLightSquaredBoundingSphere(Color color, float intenisty, float size, float cutoff) {
+            float L = Mathf.Max(color.r, Mathf.Max(color.g, color.b));
+            return Mathf.Max(Mathf.PI * 2 * L * Mathf.Abs(intenisty) / (cutoff * cutoff) - 1, 0) * size * size;
+        }
+
         // For each shadow casting light, precompute a few properties to avoid doing it repeatedly during the bake.
         // These are: The range of influence of the light, the (shadow) radius of the light, and the area of the light if it is an area light.
         public static void ComputeLightProperties(
             IList<PointLightVolume> shadowLights,
             Vector3Int volumeResolution,
             Vector3 volumeSize,
-            float areaLightBrightnessCutoff,
+            float lightBrightnessCutoff,
             out float[] shadowLightInfluenceRadii,
             out float[] shadowLightRadii,
             out Vector2[] shadowLightArea) {
@@ -279,9 +284,16 @@ namespace VRCLightVolumes
                 if (light.Type == PointLightVolume.LightType.AreaLight) {
                     float width = Mathf.Max(Mathf.Abs(light.transform.lossyScale.x), 0.001f);
                     float height = Mathf.Max(Mathf.Abs(light.transform.lossyScale.y), 0.001f);
-                    lightInfluenceRadius = ComputeAreaLightBoundingRadius(width, height, light.Color * light.Intensity, areaLightBrightnessCutoff);
+                    lightInfluenceRadius = ComputeAreaLightBoundingRadius(width, height, light.Color * light.Intensity, lightBrightnessCutoff);
                     lightRadius = Mathf.Sqrt(width * width + height * height) / 2.0f;
                     shadowLightArea[lightIdx] = new Vector2(width, height);
+                } else if (light.Shape != PointLightVolume.LightShape.LUT || light.FalloffLUT == null) {
+                    lightInfluenceRadius = ComputePointLightSquaredBoundingSphere(light.Color, light.Intensity, light.LightSourceSize, lightBrightnessCutoff);
+                    if (light.Type == PointLightVolume.LightType.SpotLight) {
+                        lightRadius = light.LightSourceSize * Mathf.Clamp01(1 - Mathf.Cos(light.Angle * Mathf.Deg2Rad * 0.5f));
+                    } else {
+                        lightRadius = light.LightSourceSize;
+                    }
                 }
                 shadowLightInfluenceRadii[lightIdx] = lightInfluenceRadius;
                 shadowLightRadii[lightIdx] = Mathf.Max(voxelRadius, lightRadius);
