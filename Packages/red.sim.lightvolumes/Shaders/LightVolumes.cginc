@@ -415,16 +415,15 @@ void LV_SphereSpotLightCookie(float3 worldPos, float3 centerPos, float sqlightSi
     float2 uv = localDir.xy * rcp(localDir.z * tanAngle);
     if (abs(uv.x) > 1.0 || abs(uv.y) > 1.0) return; // Culling by UV
     
-    uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId - 1;
-    float3 uvid = float3(uv * 0.5 + 0.5, id);
-    float3 cookie = LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
-
     bool isNotCulled = LV_PointLightAttenuation(sqdist, sqlightSize, color, _UdonLightBrightnessCutoff, att, mask);
     if (isNotCulled) { // Culling by radius
         
+        uint id = (uint) _UdonPointLightVolumeCubeCount * 5 - customId - 1;
+        float3 uvid = float3(uv * 0.5 + 0.5, id);        
         float angleSize = saturate(rsqrt(1 + tanAngle * tanAngle));
+        float4 cookie = LV_SAMPLE(_UdonPointLightVolumeTexture, uvid);
         
-        float3 l0 = att * occlusion * mask * cookie;
+        float3 l0 = att * occlusion * mask * cookie.rgb * cookie.a;
         float3 l1 = dirN * LV_PointLightSolidAngle(sqdist, sqlightSize * (1 - angleSize));
     
         L0 += l0;
