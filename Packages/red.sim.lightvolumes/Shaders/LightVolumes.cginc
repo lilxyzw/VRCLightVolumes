@@ -76,10 +76,10 @@ uniform float4 _UdonPointLightVolumeDirection[128];
 // Y = Shadowmask index. If light doesn't use shadowmask, the index will be negative.
 uniform float2 _UdonPointLightVolumeCustomID[128];
 
-// If we are far enough from an area light that the irradiance
+// If we are far enough from a light that the irradiance
 // is guaranteed lower than the threshold defined by this value,
 // we cull the light.
-uniform float _UdonAreaLightBrightnessCutoff;
+uniform float _UdonLightBrightnessCutoff;
 
 // The number of volumes that provide occlusion data.
 // We use this to take faster paths when no occlusion is needed.
@@ -291,7 +291,7 @@ void LV_QuadLight(float3 worldPos, float3 centroidPos, float4 rotationQuat, floa
     
     // Calculate the bounding sphere of the area light given the cutoff irradiance
     // The irradiance of an emitter at a point is assuming normal incidence is irradiance over radiance.
-    float minSolidAngle = min(abs(_UdonAreaLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)))), LV_PI2);
+    float minSolidAngle = min(abs(_UdonLightBrightnessCutoff * rcp(max(color.r, max(color.g, color.b)))), LV_PI2);
     
     float sqMaxDist = LV_ComputeAreaLightSquaredBoundingSphere(size.x, size.y, minSolidAngle);
     float sqCutoffDist = sqMaxDist - dot(lightToWorldPos, lightToWorldPos);
@@ -329,7 +329,7 @@ void LV_QuadLight(float3 worldPos, float3 centroidPos, float4 rotationQuat, floa
 // Calculates squared range of a point light
 float LV_SqrPointLightRange(float3 color, float sqSize, float brightnessCutoff) {
     float L = max(color.r, max(color.g, color.b));
-    return max(LV_PI2 * L / (brightnessCutoff * brightnessCutoff) - sqSize, 0);
+    return max(LV_PI2 * L / (brightnessCutoff * brightnessCutoff) - 1, 0) * sqSize;
 }
 
 // Calculates point light attenuation. Returns false if it's culled
@@ -341,7 +341,7 @@ bool LV_PointLightAttenuation(float sqdist, float sqlightSize, float3 color, flo
     } else {
         mask = saturate(1 - sqdist / maxSqrDst);
         mask *= mask;
-        att = color / (sqdist + sqlightSize);
+        att = color * sqlightSize / (sqdist + sqlightSize);
         return true;
     }
 }
@@ -358,7 +358,7 @@ void LV_SphereLight(float3 worldPos, float3 centerPos, float sqlightSize, float3
     float3 dir = centerPos - worldPos;
     float sqdist = max(dot(dir, dir), 1e-6);
     
-    bool isNotCulled = LV_PointLightAttenuation(sqdist, sqlightSize, color * sqlightSize, _UdonAreaLightBrightnessCutoff, att, mask);
+    bool isNotCulled = LV_PointLightAttenuation(sqdist, sqlightSize, color, _UdonLightBrightnessCutoff, att, mask);
     if (isNotCulled) {
         float3 l0 = att * occlusion * mask;
         float3 l1 = normalize(dir) * LV_PointLightSolidAngle(sqdist, sqlightSize);
@@ -383,7 +383,7 @@ void LV_SphereSpotLight(float3 worldPos, float3 centerPos, float sqlightSize, fl
     float spotMask = dot(lightDir, -dirN) - cosAngle;
     if (spotMask < 0) return; // Culling by spot angle
 
-    bool isNotCulled = LV_PointLightAttenuation(sqdist, sqlightSize, color * sqlightSize, _UdonAreaLightBrightnessCutoff, att, mask);
+    bool isNotCulled = LV_PointLightAttenuation(sqdist, sqlightSize, color, _UdonLightBrightnessCutoff, att, mask);
     if (isNotCulled) { // Culling by radius
         
         float smoothedCone = LV_Smoothstep01(saturate(spotMask * coneFalloff));
@@ -419,7 +419,7 @@ void LV_SphereSpotLightCookie(float3 worldPos, float3 centerPos, float sqlightSi
     float3 uvid = float3(uv * 0.5 + 0.5, id);
     float3 cookie = LV_SAMPLE(_UdonPointLightVolumeTexture, uvid).xyz;
 
-    bool isNotCulled = LV_PointLightAttenuation(sqdist, sqlightSize, color * sqlightSize, _UdonAreaLightBrightnessCutoff, att, mask);
+    bool isNotCulled = LV_PointLightAttenuation(sqdist, sqlightSize, color, _UdonLightBrightnessCutoff, att, mask);
     if (isNotCulled) { // Culling by radius
         
         float angleSize = saturate(rsqrt(1 + tanAngle * tanAngle));
@@ -497,7 +497,12 @@ void LV_PointLight(uint id, float3 worldPos, float occlusion, inout float3 L0, i
             
             uint id = -customId - 1; // Cubemap ID starts from zero and should not take in count texture array slices count.
             float3 cubeColor = LV_SampleCubemapArray(id, LV_MultiplyVectorByQuaternion(dirN, ldir)).xyz;
-            LV_SphereLight(worldPos, pos.xyz, 1 / pos.w, color.rgb * cubeColor, occlusion, L0, L1r, L1g, L1b, count);
+            float3 l0 = 0, l1r = 0, l1g = 0, l1b = 0;
+            LV_SphereLight(worldPos, pos.xyz, 1 / pos.w, color.rgb, occlusion, l0, l1r, l1g, l1b, count);
+            L0 += l0 * cubeColor;
+            L1r += l1r * cubeColor.r;
+            L1g += l1g * cubeColor.g;
+            L1b += l1b * cubeColor.b;
 
         } else if (customId > 0) { // Using LUT
             
