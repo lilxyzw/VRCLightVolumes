@@ -66,6 +66,13 @@ namespace VRCLightVolumes {
         public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
         public LightVolumeManager LightVolumeManager;
 
+        // Disables syncing with udon script to make it possible to destroy the manager and the other volumes and don't break the udon script
+        private bool _dontSync = true;
+        public bool DontSync {
+            get { return Application.isPlaying ? _dontSync : false; }
+            set { _dontSync = value; }
+        }
+
 #if UDONSHARP
         // UdonBehaviour is a real udon VM script. We need it to change public variables in play mode
         private UdonBehaviour _lightVolumeManagerBehaviour = null;
@@ -82,6 +89,9 @@ namespace VRCLightVolumes {
         private EditorCoroutine _generateTextureArrayCoroutine = null;
 #endif
         public void RefreshVolumesList() {
+
+            if(DontSync) return;
+
             // Searching for all light volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);
             for (int i = 0; i < volumes.Length; i++) {
@@ -137,7 +147,7 @@ namespace VRCLightVolumes {
 
             SetupDependencies();
 
-            if (LightVolumeManager == null) return;
+            if (LightVolumeManager == null || DontSync) return;
 
             // Cubemap Textures - store first
             List<Texture> cubeTextures = new List<Texture>(); 
@@ -188,6 +198,8 @@ namespace VRCLightVolumes {
                 _generateTextureArrayCoroutine = null;
             }
             _generateTextureArrayCoroutine = EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
+
+                if(DontSync) return;
 
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
@@ -336,6 +348,7 @@ namespace VRCLightVolumes {
         }
 
         private void Update() {
+            if (DontSync) return;
             SetupDependencies();
             ConvertLegacyUVW();
             // Resetup required game objects and components for light volumes in new baking mode
@@ -392,7 +405,7 @@ namespace VRCLightVolumes {
         // Generates atlas and setups udon script
         public void GenerateAtlas() {
 
-            if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
+            if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0 || DontSync) return;
 
             SetupDependencies();
 
@@ -403,7 +416,7 @@ namespace VRCLightVolumes {
 
             _generateAtlasCoroutine = EditorCoroutineUtility.StartCoroutine(Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray(), (Atlas3D atlas) => {
 
-                if (atlas.Texture == null) return; // Return if atlas packing failed
+                if (atlas.Texture == null || DontSync) return; // Return if atlas packing failed
 
                 LightVolumeManager.LightVolumeAtlas = atlas.Texture;
 
@@ -466,7 +479,7 @@ namespace VRCLightVolumes {
 
         // Looks for LightVolumeManager udon script and setups it if needed
         public void SetupDependencies() {
-            if (this == null || gameObject == null) return;
+            if (this == null || gameObject == null || DontSync) return;
             if (LightVolumeManager == null && !TryGetComponent(out LightVolumeManager)) {
                 LightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
             }
@@ -509,7 +522,7 @@ namespace VRCLightVolumes {
 #if UNITY_EDITOR
             SetupDependencies();
 #endif
-            if (LightVolumeManager == null) return;
+            if (LightVolumeManager == null || DontSync) return;
 #if UDONSHARP
             if (Application.isPlaying) {
 
@@ -567,12 +580,16 @@ namespace VRCLightVolumes {
         private static void CommitSudoku() {
             if (Application.isPlaying) {
 
+                bool isDestroy = false;
                 var s = FindObjectsByType<LightVolumeSetup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 for (int i = 0; i < s.Length; i++) {
                     if (!s[i].DestroyInPlayMode) {
-                        return;
+                        s[i].DontSync = false;
+                    } else {
+                        isDestroy = true;
                     }
                 }
+                if(!isDestroy) return;
 
                 // Killing Light Volumes
                 var lvs = FindObjectsByType<LightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
