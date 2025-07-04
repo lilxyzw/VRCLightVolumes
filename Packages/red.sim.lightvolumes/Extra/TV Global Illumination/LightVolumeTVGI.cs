@@ -94,6 +94,7 @@ namespace VRCLightVolumes {
 
             for (int i = 0; i < TargetPointLightVolumes.Length; i++) {
                 TargetPointLightVolumes[i].Color = _prevColor;
+                TargetPointLightVolumes[i].IsRangeDirty = true;
             }
 
         }

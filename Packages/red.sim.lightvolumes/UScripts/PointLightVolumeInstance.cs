@@ -35,11 +35,16 @@ namespace VRCLightVolumes {
         public sbyte ShadowmaskIndex = -1;
         [Tooltip("True if this Point Light Volume added to the Point Light Volumes array in LightVolumeManager. Should be always true for the Point Light Volumes placed in editor. Helps to initialize Point Light Volumes spawned in runtime.")]
         public bool IsInitialized = false;
+        [Tooltip("Squared range after which light will be culled. Should be recalculated by executing UpdateRange() method.")]
+        public float SquaredRange = 1;
         [Tooltip("Reference to the Light Volume Manager. Needed for runtime initialization.")]
         public LightVolumeManager LightVolumeManager;
 
         [HideInInspector] // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
         public bool IsIterartedThrough = false;
+
+        [HideInInspector] // Sets to true to recalculate the range automatically by the manager
+        public bool IsRangeDirty = false;
 
         // Checks if it's a spotlight
         public bool IsSpotLight() {
@@ -78,12 +83,14 @@ namespace VRCLightVolumes {
             } else {
                 PositionData.w = Mathf.Sign(PositionData.w) * size * size; // Saving the sign that was here before. Squared light size
             }
+            IsRangeDirty = true;
         }
 
         // Sets LUT ID
         public void SetLut(int id) {
             CustomID = id + 1;
             AngleData = Mathf.Cos(Angle);
+            IsRangeDirty = true;
         }
 
         // Sets Cubemap or a Cookie ID
@@ -92,17 +99,20 @@ namespace VRCLightVolumes {
             if(IsSpotLight()) { // If it's spotlight
                 AngleData = Mathf.Tan(Angle);
             }
+            IsRangeDirty = true;
         }
 
         // Sets light into parametric mode
         public void SetParametric() {
             CustomID = 0;
             AngleData = Mathf.Cos(Angle);
+            IsRangeDirty = true;
         }
 
         // Sets light into the point light type
         public void SetPointLight() {
             PositionData.w = Mathf.Abs(PositionData.w);
+            IsRangeDirty = true;
         }
 
         // Sets light into the spot light type with both angle and falloff because angle required to determine falloff anyway
@@ -115,6 +125,7 @@ namespace VRCLightVolumes {
                 DirectionData.w = 1 / (Mathf.Cos(Angle * (1.0f - Mathf.Clamp01(falloff))) - AngleData);
             }
             PositionData.w = - Mathf.Abs(PositionData.w);
+            IsRangeDirty = true;
         }
 
         // Sets light into the spot light type with angle specified
@@ -126,12 +137,26 @@ namespace VRCLightVolumes {
                 AngleData = Mathf.Cos(Angle);
             }
             PositionData.w = - Mathf.Abs(PositionData.w);
+            IsRangeDirty = true;
         }
         
         // Sets light into the area light type
         public void SetAreaLight() {
             PositionData.w = Mathf.Max(Mathf.Abs(transform.lossyScale.x), 0.001f);
             AngleData = 2 + Mathf.Max(Mathf.Abs(transform.lossyScale.y), 0.001f); // Add 2 to get out of [-1; 1] codomain of cosine
+            IsRangeDirty = true;
+        }
+
+        // Sets light source color
+        public void SetColor(Color color) {
+            Color = color;
+            IsRangeDirty = true;
+        }
+
+        // Sets light source intensity
+        public void SetIntensity(float intensity) {
+            Intensity = intensity;
+            IsRangeDirty = true;
         }
 
         // Updates data required for shader
@@ -152,6 +177,39 @@ namespace VRCLightVolumes {
                 DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
             }
 
+        }
+
+        // Recalculates squared culling range for the light
+        public void UpdateRange() {
+            
+            float cutoff = LightVolumeManager != null ? LightVolumeManager.LightsBrightnessCutoff : 0.35f;
+            if (IsAreaLight()) { // Area light squared distance math
+                SquaredRange = ComputeAreaLightSquaredBoundingSphere(Mathf.Abs(1 / PositionData.w), AngleData - 2, Color, Intensity * Mathf.PI, cutoff);
+            } else if(IsLut()) { // LUT - regualar squared range
+                SquaredRange = Mathf.Abs(1 / PositionData.w);
+            } else { // Spot and Point light squared distance math
+                SquaredRange = ComputePointLightSquaredBoundingSphere(Color, Intensity, Mathf.Abs(PositionData.w), cutoff);
+            }
+            IsRangeDirty = false;
+        }
+
+        private float ComputeAreaLightSquaredBoundingSphere(float width, float height, Color color, float intensity, float cutoff) {
+            float minSolidAngle = Mathf.Clamp(cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity), -Mathf.PI * 2f, Mathf.PI * 2);
+            float A = width * height;
+            float w2 = width * width;
+            float h2 = height * height;
+            float B = 0.25f * (w2 + h2);
+            float t = Mathf.Tan(0.25f * minSolidAngle);
+            float T = t * t;
+            float TB = T * B;
+            float discriminant = Mathf.Sqrt(TB * TB + 4.0f * T * A * A);
+            float d2 = (discriminant - TB) * 0.125f / T;
+            return d2;
+        }
+
+        private float ComputePointLightSquaredBoundingSphere(Color color, float intensity, float sqSize, float cutoff) {
+            float L = Mathf.Max(color.r, Mathf.Max(color.g, color.b));
+            return Mathf.Max(Mathf.PI * 2 * L * Mathf.Abs(intensity) / (cutoff * cutoff) - 1, 0) * sqSize;
         }
 
         private void Start() {

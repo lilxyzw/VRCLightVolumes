@@ -265,7 +265,7 @@ namespace VRCLightVolumes {
             } else {
                 hiddenFields.Add("Resolution");
                 hiddenFields.Add("Format");
-                hiddenFields.Add("AreaLightBrightnessCutoff");
+                hiddenFields.Add("LightsBrightnessCutoff");
             }
 
             GUILayout.Space(-15);

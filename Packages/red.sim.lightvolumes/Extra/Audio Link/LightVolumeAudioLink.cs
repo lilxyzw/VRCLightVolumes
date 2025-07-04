@@ -86,6 +86,7 @@ namespace VRCLightVolumes {
             }
             for (int i = 0; i < TargetPointLightVolumes.Length; i++) {
                 TargetPointLightVolumes[i].Color = _prevColor;
+                TargetPointLightVolumes[i].IsRangeDirty = true;
             }
             _block.SetColor(_emissionColorID, _prevColor * MaterialsIntensity);
             for (int i = 0; i < TargetMeshRenderers.Length; i++) {

@@ -10,9 +10,6 @@ namespace VRCLightVolumes {
 
         PointLightVolume PointLightVolume;
 
-        const int TEX_SIZE = 128;
-        Texture2D lutTexture;
-
         private void OnEnable() {
             PointLightVolume = (PointLightVolume)target;
         }
@@ -227,7 +224,7 @@ namespace VRCLightVolumes {
             Vector3 forward = rotation * Vector3.forward;
 
             // Calculate the bounding sphere of the area light given the cutoff irradiance
-            float minSolidAngle = Mathf.Clamp(cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity), -Mathf.PI * 2f, Mathf.PI * 2);
+            float minSolidAngle = Mathf.Clamp(cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity * Mathf.PI), -Mathf.PI * 2f, Mathf.PI * 2);
             float sqMaxDist = ComputeAreaLightSquaredBoundingSphere(width, height, minSolidAngle);
             float radius = Mathf.Sqrt(sqMaxDist);
 
@@ -250,9 +247,9 @@ namespace VRCLightVolumes {
             return d2;
         }
 
-        float ComputePointLightSquaredBoundingSphere(Color color, float intenisty, float size, float cutoff) {
+        float ComputePointLightSquaredBoundingSphere(Color color, float intensity, float size, float cutoff) {
             float L = Mathf.Max(color.r, Mathf.Max(color.g, color.b));
-            return Mathf.Max(Mathf.PI * 2 * L * Mathf.Abs(intenisty) / (cutoff * cutoff) - 1, 0) * size * size;
+            return Mathf.Max(Mathf.PI * 2 * L * Mathf.Abs(intensity) / (cutoff * cutoff) - 1, 0) * size * size;
         }
 
     }

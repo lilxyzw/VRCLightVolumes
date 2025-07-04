@@ -28,7 +28,7 @@ namespace VRCLightVolumes {
         [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         public int AdditiveMaxOverdraw = 4;
         [Tooltip("The minimum brightness at a point due to lighting from a Point Light Volume, before the light is culled. Larger values will result in better performance, but light attenuation will be less physically correct.")]
-        public float LightsBrightnessCutoff = 0.01f;
+        public float LightsBrightnessCutoff = 0.35f;
         [Tooltip("All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance.")]
         public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
         [Tooltip("All Point Light Volume instances. You can enable or disable point light volumes game objects at runtime. Manually disabling unnecessary point light volumes improves performance.")]
@@ -37,8 +37,10 @@ namespace VRCLightVolumes {
         public Texture2DArray CustomTextures;
         [Tooltip("Cubemaps count that stored in CustomTextures. Cubemap array elements starts from the beginning, 6 elements each.")]
         public int CubemapsCount = 0;
+        [HideInInspector] public bool IsRangeDirty = false;
 
         private bool _isInitialized = false;
+        private float _prevLightsBrightnessCutoff = 0.35f;
 
         // Light Volumes Data
         private int _enabledCount = 0;
@@ -225,6 +227,12 @@ namespace VRCLightVolumes {
                 return;
             }
 
+            // Recalculate all lights ranges if LightsBrightnessCutoff changed
+            if (_prevLightsBrightnessCutoff != LightsBrightnessCutoff) {
+                _prevLightsBrightnessCutoff = LightsBrightnessCutoff;
+                IsRangeDirty = true;
+            }
+
             // Searching for enabled volumes. Counting Additive volumes.
             _enabledCount = 0;
             _additiveCount = 0;
@@ -312,6 +320,9 @@ namespace VRCLightVolumes {
             for (int i = 0; i < PointLightVolumeInstances.Length && _pointLightCount < 128; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[i];
                 if (instance == null) continue;
+                if (IsRangeDirty) { // If Brightness cutoff changed, force recalculate every light's range
+                    instance.UpdateRange();
+                }
                 if (instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
@@ -326,6 +337,8 @@ namespace VRCLightVolumes {
                 }
             }
 
+            IsRangeDirty = false; // reset range dirtyness
+
             // Initializing required arrays
             if (_pointLightCount != _lastPointLightCount) {
                 _pointLightPosition = new Vector4[_pointLightCount];
@@ -339,6 +352,11 @@ namespace VRCLightVolumes {
             for (int i = 0; i < _pointLightCount; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[_enabledPointIDs[i]];
 
+                // Recalculate squared range of the light light if dirty
+                if (IsRangeDirty || instance.IsRangeDirty) {
+                    instance.UpdateRange();
+                }
+
                 // Reset iterated flag
                 instance.IsIterartedThrough = false;
 
@@ -351,6 +369,7 @@ namespace VRCLightVolumes {
                 _pointLightDirection[i] = instance.DirectionData;
                 _pointLightCustomId[i].x = instance.CustomID;
                 _pointLightCustomId[i].y = instance.ShadowmaskIndex;
+                _pointLightCustomId[i].z = instance.SquaredRange;
             }
 
             bool isAtlas = LightVolumeAtlas != null;

@@ -556,7 +556,7 @@ MonoBehaviour:
   SharpBounds: 1
   AutoUpdateVolumes: 1
   AdditiveMaxOverdraw: 4
-  DestroyInPlayMode: 0
+  DestroyInPlayMode: 1
   LightVolumeDataList:
   - Weight: 0
     LightVolumeInstance: {fileID: 42751781}
@@ -615,6 +615,7 @@ MonoBehaviour:
   - {fileID: 0}
   CustomTextures: {fileID: 0}
   CubemapsCount: 0
+  IsRangeDirty: 0
 --- !u!4 &446951796
 Transform:
   m_ObjectHideFlags: 0

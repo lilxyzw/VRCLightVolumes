@@ -144,6 +144,7 @@ namespace VRCLightVolumes {
                 _pointLightVolumeBehaviour.SetProgramVariable("IsDynamic", Dynamic);
                 _pointLightVolumeBehaviour.SetProgramVariable("Color", Color);
                 _pointLightVolumeBehaviour.SetProgramVariable("Intensity", Intensity);
+                _pointLightVolumeBehaviour.SetProgramVariable("IsRangeDirty", true);
                 // Udon does not support methods with parameters, so under the hood, it's just some global variables.
                 // We can first set these parameters and then exetute a parameterless method.
                 if (Type == LightType.PointLight) { // Point light
@@ -215,6 +216,7 @@ namespace VRCLightVolumes {
                 PointLightVolumeInstance.IsDynamic = Dynamic;
                 PointLightVolumeInstance.Color = Color;
                 PointLightVolumeInstance.Intensity = Intensity;
+                PointLightVolumeInstance.IsRangeDirty = true;
                 if (Type == LightType.PointLight) { // Point light
                     if (Shape == LightShape.Custom && Cubemap != null) {
                         PointLightVolumeInstance.SetLightSourceSize(LightSourceSize);
