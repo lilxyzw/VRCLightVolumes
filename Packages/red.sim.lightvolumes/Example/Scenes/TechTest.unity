@@ -3865,7 +3865,6 @@ MonoBehaviour:
   VoxelsPerUnit: 8
   Resolution: {x: 62, y: 38, z: 98}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 458847875}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!114 &458847875
@@ -6475,7 +6474,7 @@ MonoBehaviour:
   SharpBounds: 1
   AutoUpdateVolumes: 1
   AdditiveMaxOverdraw: 8
-  DestroyInPlayMode: 1
+  DestroyInPlayMode: 0
   LightVolumeDataList:
   - Weight: 0
     LightVolumeInstance: {fileID: 1400850657}
@@ -8676,7 +8675,6 @@ MonoBehaviour:
   VoxelsPerUnit: 3
   Resolution: {x: 60, y: 15, z: 89}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1137550075}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!114 &1137550075
@@ -10895,7 +10893,6 @@ MonoBehaviour:
   VoxelsPerUnit: 0.75
   Resolution: {x: 15, y: 11, z: 38}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1400850657}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!114 &1400850657
@@ -12778,7 +12775,6 @@ MonoBehaviour:
   VoxelsPerUnit: 3
   Resolution: {x: 44, y: 10, z: 33}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1548001777}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!4 &1548001779
