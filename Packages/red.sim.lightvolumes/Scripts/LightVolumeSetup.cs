@@ -601,7 +601,7 @@ namespace VRCLightVolumes {
             List<PointLightVolumeInstance> list = new List<PointLightVolumeInstance>();
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
-                if(PointLightVolumes[i].PointLightVolumeInstance == null) continue;
+                if(PointLightVolumes[i] == null || PointLightVolumes[i].PointLightVolumeInstance == null) continue;
                 list.Add(PointLightVolumes[i].PointLightVolumeInstance);
             }
             return list.ToArray();
