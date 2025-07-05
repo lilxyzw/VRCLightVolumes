@@ -91,6 +91,7 @@ Material:
     - _Keyword0: 0
     - _LightVolumes: 1
     - _LightVolumes1: 1
+    - _LightVolumesBias: 0
     - _Metallic: 0.904
     - _Metalness: 0
     - _Mode: 0

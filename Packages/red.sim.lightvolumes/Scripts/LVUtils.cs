@@ -244,7 +244,7 @@ namespace VRCLightVolumes {
         }
 
         // Fixes bakery L1 probe channel
-        public static Vector3 LinearizeSingleSH(float L0, Vector3 L1) {
+        public static Vector3 DeringSingleSH(float L0, Vector3 L1) {
             L1 = L1 * 0.5f;
             float L1length = L1.magnitude;
             if (L1length > 0.0 && L0 > 0.0) {
@@ -254,7 +254,7 @@ namespace VRCLightVolumes {
         }
 
         // Fizes bakery L1 probe
-        public static SphericalHarmonicsL2 LinearizeSH(SphericalHarmonicsL2 sh) {
+        public static SphericalHarmonicsL2 DeringSH(SphericalHarmonicsL2 sh) {
 
             const int r = 0;
             const int g = 1;
@@ -269,9 +269,9 @@ namespace VRCLightVolumes {
             Vector3 L1g = new Vector3(sh[g, x], sh[g, y], sh[g, z]);
             Vector3 L1b = new Vector3(sh[b, x], sh[b, y], sh[b, z]);
 
-            L1r = LinearizeSingleSH(L0.x, L1r);
-            L1g = LinearizeSingleSH(L0.y, L1g);
-            L1b = LinearizeSingleSH(L0.z, L1b);
+            L1r = DeringSingleSH(L0.x, L1r);
+            L1g = DeringSingleSH(L0.y, L1g);
+            L1b = DeringSingleSH(L0.z, L1b);
 
             sh[r, x] = L1r.x;
             sh[r, y] = L1r.y;

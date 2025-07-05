@@ -10,9 +10,6 @@ namespace VRCLightVolumes {
 
         PointLightVolume PointLightVolume;
 
-        const int TEX_SIZE = 128;
-        Texture2D lutTexture;
-
         private void OnEnable() {
             PointLightVolume = (PointLightVolume)target;
         }
@@ -24,7 +21,7 @@ namespace VRCLightVolumes {
             List<string> hiddenFields = new List<string> { "m_Script", "CustomID", "PointLightVolumeInstance", "LightVolumeSetup" };
 
             // Only show shadow radius if user requested baked shadows. Also area lights don't have shadow radius - it's implicit. 
-            if (!PointLightVolume.BakedShadows || PointLightVolume.Type == PointLightVolume.LightType.AreaLight) {
+            if (!PointLightVolume.BakedShadows || PointLightVolume.Type == PointLightVolume.LightType.AreaLight || PointLightVolume.Shape != PointLightVolume.LightShape.LUT) {
                 hiddenFields.Add("BakedShadowRadius");
             }
             
@@ -41,15 +38,18 @@ namespace VRCLightVolumes {
                 hiddenFields.Add("FalloffLUT");
                 hiddenFields.Add("Cubemap");
                 hiddenFields.Add("Cookie");
+                hiddenFields.Add("LightSourceSize");
             }
 
             if (PointLightVolume.Shape == PointLightVolume.LightShape.Parametric) {
                 hiddenFields.Add("FalloffLUT");
                 hiddenFields.Add("Cubemap");
                 hiddenFields.Add("Cookie");
+                hiddenFields.Add("Range");
             } else if (PointLightVolume.Shape == PointLightVolume.LightShape.Custom) {
                 hiddenFields.Add("Falloff");
-                if(PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
+                hiddenFields.Add("Range");
+                if (PointLightVolume.Type == PointLightVolume.LightType.PointLight) {
                     hiddenFields.Add("FalloffLUT");
                     hiddenFields.Add("Cookie");
                 } else if (PointLightVolume.Type == PointLightVolume.LightType.SpotLight) {
@@ -60,6 +60,7 @@ namespace VRCLightVolumes {
                 hiddenFields.Add("Falloff");
                 hiddenFields.Add("Cubemap");
                 hiddenFields.Add("Cookie");
+                hiddenFields.Add("LightSourceSize");
             }
 
             DrawPropertiesExcluding(serializedObject, hiddenFields.ToArray());
@@ -72,21 +73,38 @@ namespace VRCLightVolumes {
 
             Transform t = pointLightVolume.transform;
             Vector3 origin = t.position;
-            float range = pointLightVolume.Range;
+            Vector3 lscale = pointLightVolume.transform.lossyScale;
+            float scale = (lscale.x + lscale.y + lscale.z) / 3;
+            float range = pointLightVolume.Type != PointLightVolume.LightType.AreaLight && (pointLightVolume.Shape != PointLightVolume.LightShape.LUT || pointLightVolume.FalloffLUT == null) ? pointLightVolume.LightSourceSize : pointLightVolume.Range;
+            range *= scale;
 
             if (pointLightVolume.Type == PointLightVolume.LightType.PointLight) { // Point Light Visualization
 
-                if(!pointLightVolume.DebugRange) return;
+                // Calculating
+
+                float bounds = 0;
+
+                bool isDebug = pointLightVolume.DebugRange && (pointLightVolume.Shape != PointLightVolume.LightShape.LUT || pointLightVolume.FalloffLUT == null);
+
+                if (isDebug) {
+                    bounds = Mathf.Sqrt(ComputePointLightSquaredBoundingSphere(pointLightVolume.Color, pointLightVolume.Intensity, range, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff));
+                }
 
                 // Drawing
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
                 Handles.color = new Color(1f, 1f, 0f, 0.6f);
                 DrawPointLight(origin, range);
+                if (isDebug) {
+                    DrawPointLight(origin, bounds);
+                }
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
                 DrawPointLight(origin, range);
+                if (isDebug) {
+                    DrawPointLight(origin, bounds);
+                }
 
             } else if (pointLightVolume.Type == PointLightVolume.LightType.SpotLight) { // Spot Light Visualization
 
@@ -98,26 +116,32 @@ namespace VRCLightVolumes {
 
                 float spotAngle = Mathf.Clamp(pointLightVolume.Angle, 0f, 360f);
                 float halfAngleRad = spotAngle * 0.5f * Mathf.Deg2Rad;
-                float radius = Mathf.Abs(range) * Mathf.Sin(halfAngleRad);
-                float centerOffset = range * Mathf.Cos(halfAngleRad);
-                Vector3 diskCenter = origin + forward * centerOffset;
+                
                 Vector3[] dirs = new Vector3[] { right, -right, up, -up };
+                float bounds = 0;
+
+                bool isDebug = pointLightVolume.DebugRange && (pointLightVolume.Shape != PointLightVolume.LightShape.LUT || pointLightVolume.FalloffLUT == null);
+
+                if (isDebug) {
+                    bounds = Mathf.Sqrt(ComputePointLightSquaredBoundingSphere(pointLightVolume.Color, pointLightVolume.Intensity, range, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff));
+                }
 
                 // Drawing
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
                 Handles.color = new Color(1f, 1f, 0f, 0.6f);
-                DrawSpotLight(origin, diskCenter, forward, radius, dirs);
+                DrawSpotLight(origin, forward, halfAngleRad, range, dirs);
 
-                if(pointLightVolume.DebugRange)
-                    DrawPointLight(origin, range);
+                if (isDebug)
+                    DrawSpotLight(origin, forward, halfAngleRad, bounds, dirs);
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
-                DrawSpotLight(origin, diskCenter, forward, radius, dirs);
+                DrawSpotLight(origin, forward, halfAngleRad, range, dirs);
 
-                if (pointLightVolume.DebugRange)
-                    DrawPointLight(origin, range);
+                if (isDebug) {
+                    DrawSpotLight(origin, forward, halfAngleRad, bounds, dirs);
+                }
 
             } else { // Area light
 
@@ -129,14 +153,14 @@ namespace VRCLightVolumes {
                 DrawAreaLight(origin, t.rotation, x, y);
 
                 if(pointLightVolume.DebugRange)
-                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
+                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff);
 
                 Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
                 Handles.color = new Color(1f, 1f, 0f, 0.15f);
                 DrawAreaLight(origin, t.rotation, x, y);
 
                 if (pointLightVolume.DebugRange)
-                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.AreaLightBrightnessCutoff + 0.05f);
+                    DrawAreaLightDebug(origin, t.rotation, x, y, pointLightVolume.Color, pointLightVolume.Intensity, pointLightVolume.LightVolumeSetup.LightsBrightnessCutoff);
 
             }
 
@@ -152,11 +176,19 @@ namespace VRCLightVolumes {
         }
 
         // Draws a spotlight visualization using precalculated values
-        private void DrawSpotLight(Vector3 origin, Vector3 diskCenter, Vector3 forward, float radius, Vector3[] dirs) {
+        private void DrawSpotLight(Vector3 origin, Vector3 forward, float halfAngleRad, float range, Vector3[] dirs) {
+
+            float centerOffset = range * Mathf.Cos(halfAngleRad);
+            Vector3 diskCenter = origin + forward * centerOffset;
+            float radius = Mathf.Abs(range) * Mathf.Sin(halfAngleRad);
+            float angleDeg = Mathf.Rad2Deg * halfAngleRad;
+
             Handles.DrawWireDisc(diskCenter, forward, radius);
+
             foreach (var dir in dirs) {
                 Vector3 edge = diskCenter + dir * radius;
                 Handles.DrawLine(origin, edge);
+                Handles.DrawWireArc(origin, dir, forward, angleDeg, range);
             }
         }
 
@@ -195,7 +227,7 @@ namespace VRCLightVolumes {
             Vector3 forward = rotation * Vector3.forward;
 
             // Calculate the bounding sphere of the area light given the cutoff irradiance
-            float minSolidAngle = Mathf.Clamp(cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity), -Mathf.PI * 2f, Mathf.PI * 2);
+            float minSolidAngle = Mathf.Clamp(cutoff / (Mathf.Max(color.r, Mathf.Max(color.g, color.b)) * intensity * Mathf.PI), -Mathf.PI * 2f, Mathf.PI * 2);
             float sqMaxDist = ComputeAreaLightSquaredBoundingSphere(width, height, minSolidAngle);
             float radius = Mathf.Sqrt(sqMaxDist);
 
@@ -216,6 +248,11 @@ namespace VRCLightVolumes {
             float discriminant = Mathf.Sqrt(TB * TB + 4.0f * T * A * A);
             float d2 = (discriminant - TB) * 0.125f / T;
             return d2;
+        }
+
+        float ComputePointLightSquaredBoundingSphere(Color color, float intensity, float size, float cutoff) {
+            float L = Mathf.Max(color.r, Mathf.Max(color.g, color.b));
+            return Mathf.Max(Mathf.PI * 2 * L * Mathf.Abs(intensity) / (cutoff * cutoff) - 1, 0) * size * size;
         }
 
     }

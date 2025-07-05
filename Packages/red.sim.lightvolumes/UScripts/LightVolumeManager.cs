@@ -16,7 +16,6 @@ namespace VRCLightVolumes {
     public class LightVolumeManager : MonoBehaviour
 #endif
     {
-
         public const float Version = 2; // VRC Light Volumes Current version. This value used in shaders (_UdonLightVolumeEnabled) to determine which features are can be used
         [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
         public Texture3D LightVolumeAtlas;
@@ -28,8 +27,8 @@ namespace VRCLightVolumes {
         public bool AutoUpdateVolumes = false;
         [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         public int AdditiveMaxOverdraw = 4;
-        [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but may cause artifacts. Setting this to 0 disables distance-based culling for area lights.")]
-        public float AreaLightBrightnessCutoff = 0.01f;
+        [Tooltip("The minimum brightness at a point due to lighting from a Point Light Volume, before the light is culled. Larger values will result in better performance, but light attenuation will be less physically correct.")]
+        public float LightsBrightnessCutoff = 0.35f;
         [Tooltip("All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance.")]
         public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
         [Tooltip("All Point Light Volume instances. You can enable or disable point light volumes game objects at runtime. Manually disabling unnecessary point light volumes improves performance.")]
@@ -38,8 +37,10 @@ namespace VRCLightVolumes {
         public Texture2DArray CustomTextures;
         [Tooltip("Cubemaps count that stored in CustomTextures. Cubemap array elements starts from the beginning, 6 elements each.")]
         public int CubemapsCount = 0;
+        [HideInInspector] public bool IsRangeDirty = false;
 
         private bool _isInitialized = false;
+        private float _prevLightsBrightnessCutoff = 0.35f;
 
         // Light Volumes Data
         private int _enabledCount = 0;
@@ -80,6 +81,7 @@ namespace VRCLightVolumes {
         private int lightVolumeAdditiveCountID;
         private int lightVolumeAdditiveMaxOverdrawID;
         private int lightVolumeEnabledID;
+        private int lightVolumeVersionID;
         private int lightVolumeProbesBlendID;
         private int lightVolumeSharpBoundsID;
         private int lightVolumeID;
@@ -96,14 +98,51 @@ namespace VRCLightVolumes {
         private int _pointLightCountID;
         private int _pointLightCubeCountID;
         private int _pointLightTextureID;
-        private int _areaLightBrightnessCutoffID;
+        private int _lightBrightnessCutoffID;
         // Legacy support
+        private int _areaLightBrightnessCutoffID;
         private int lightVolumeRotationID;
         private int lightVolumeUvwID;
 
         private void OnDisable() {
             TryInitialize();
             VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
+        }
+
+        // Initrializes Light Volume by adding it to the light volumes array. Automalycally calls in runtime on object spawn
+        public void InitializeLightVolume(LightVolumeInstance lightVolume) {
+            int count = LightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (LightVolumeInstances[i] == null) {
+                    LightVolumeInstances[i] = lightVolume;
+                    lightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            LightVolumeInstance[] targetArray = new LightVolumeInstance[count + 1];
+            Array.Copy(LightVolumeInstances, targetArray, count);
+            targetArray[count] = lightVolume;
+            lightVolume.IsInitialized = true;
+            LightVolumeInstances = targetArray;
+        }
+        public void InitializePointLightVolume(PointLightVolumeInstance pointLightVolume) {
+            int count = PointLightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (PointLightVolumeInstances[i] == null) {
+                    PointLightVolumeInstances[i] = pointLightVolume;
+                    pointLightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            PointLightVolumeInstance[] targetArray = new PointLightVolumeInstance[count + 1];
+            Array.Copy(PointLightVolumeInstances, targetArray, count);
+            targetArray[count] = pointLightVolume;
+            pointLightVolume.IsInitialized = true;
+            PointLightVolumeInstances = targetArray;
         }
 
         // Initializing gloabal shader arrays if needed 
@@ -121,6 +160,7 @@ namespace VRCLightVolumes {
             lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
             lightVolumeAdditiveMaxOverdrawID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveMaxOverdraw");
             lightVolumeEnabledID = VRCShader.PropertyToID("_UdonLightVolumeEnabled");
+            lightVolumeVersionID = VRCShader.PropertyToID("_UdonLightVolumeVersion");
             lightVolumeProbesBlendID = VRCShader.PropertyToID("_UdonLightVolumeProbesBlend");
             lightVolumeSharpBoundsID = VRCShader.PropertyToID("_UdonLightVolumeSharpBounds");
             lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
@@ -137,8 +177,9 @@ namespace VRCLightVolumes {
             _pointLightCustomIdID = VRCShader.PropertyToID("_UdonPointLightVolumeCustomID");
             _pointLightCubeCountID = VRCShader.PropertyToID("_UdonPointLightVolumeCubeCount");
             _pointLightTextureID = VRCShader.PropertyToID("_UdonPointLightVolumeTexture");
-            _areaLightBrightnessCutoffID = VRCShader.PropertyToID("_UdonAreaLightBrightnessCutoff");
+            _lightBrightnessCutoffID = VRCShader.PropertyToID("_UdonLightBrightnessCutoff");
             // Legacy support
+            _areaLightBrightnessCutoffID = VRCShader.PropertyToID("_UdonAreaLightBrightnessCutoff");
             lightVolumeRotationID = VRCShader.PropertyToID("_UdonLightVolumeRotation");
             lightVolumeUvwID = VRCShader.PropertyToID("_UdonLightVolumeUvw");
 
@@ -178,11 +219,18 @@ namespace VRCLightVolumes {
 
         public void UpdateVolumes() {
 
+
             TryInitialize();
 
             if (!enabled || !gameObject.activeInHierarchy) {
                 VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
                 return;
+            }
+
+            // Recalculate all lights ranges if LightsBrightnessCutoff changed
+            if (_prevLightsBrightnessCutoff != LightsBrightnessCutoff) {
+                _prevLightsBrightnessCutoff = LightsBrightnessCutoff;
+                IsRangeDirty = true;
             }
 
             // Searching for enabled volumes. Counting Additive volumes.
@@ -191,7 +239,8 @@ namespace VRCLightVolumes {
             _occlusionCount = 0;
             for (int i = 0; i < LightVolumeInstances.Length && _enabledCount < 32; i++) {
                 LightVolumeInstance instance = LightVolumeInstances[i];
-                if (instance != null && instance.gameObject.activeInHierarchy) {
+                if (instance == null) continue;
+                if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
@@ -201,6 +250,9 @@ namespace VRCLightVolumes {
                     else if (instance.BakeOcclusion) _occlusionCount++;
                     _enabledIDs[_enabledCount] = i;
                     _enabledCount++;
+                    instance.IsIterartedThrough = true;
+                } else {
+                    instance.IsIterartedThrough = false;
                 }
             }
 
@@ -229,11 +281,14 @@ namespace VRCLightVolumes {
 
                 LightVolumeInstance instance = LightVolumeInstances[enabledId];
 
+                // Reset iterated flag
+                instance.IsIterartedThrough = false;
+
                 // Setting volume transform
                 _invWorldMatrix[i] = instance.InvWorldMatrix;
                 _invLocalEdgeSmooth[i] = instance.InvLocalEdgeSmoothing; // Setting volume edge smoothing
 
-                Vector4 c = instance.Color.linear * instance.ColorIntensity; // Changing volume color
+                Vector4 c = instance.Color.linear * instance.Intensity; // Changing volume color
                 c.w = instance.IsRotated ? 1 : 0; // Color alpha stores if volume rotated or not
                 _colors[i] = c;
 
@@ -264,7 +319,11 @@ namespace VRCLightVolumes {
             _pointLightCount = 0;
             for (int i = 0; i < PointLightVolumeInstances.Length && _pointLightCount < 128; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[i];
-                if (instance != null && instance.gameObject.activeInHierarchy) {
+                if (instance == null) continue;
+                if (IsRangeDirty) { // If Brightness cutoff changed, force recalculate every light's range
+                    instance.UpdateRange();
+                }
+                if (instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else
@@ -272,8 +331,13 @@ namespace VRCLightVolumes {
 #endif
                     _enabledPointIDs[_pointLightCount] = i;
                     _pointLightCount++;
+                    instance.IsIterartedThrough = true;
+                } else {
+                    instance.IsIterartedThrough = false;
                 }
             }
+
+            IsRangeDirty = false; // reset range dirtyness
 
             // Initializing required arrays
             if (_pointLightCount != _lastPointLightCount) {
@@ -287,7 +351,21 @@ namespace VRCLightVolumes {
             // Filling arrays with enabled point light volumes
             for (int i = 0; i < _pointLightCount; i++) {
                 PointLightVolumeInstance instance = PointLightVolumeInstances[_enabledPointIDs[i]];
-                _pointLightPosition[i] = instance.PositionData;
+
+                // Recalculate squared range of the light light if dirty
+                if (IsRangeDirty || instance.IsRangeDirty) {
+                    instance.UpdateRange();
+                }
+
+                // Reset iterated flag
+                instance.IsIterartedThrough = false;
+
+                Vector4 pos = instance.PositionData;
+                if (!instance.IsAreaLight()) {
+                    if (instance.IsLut()) pos.w /= instance.SquaredScale;
+                    else pos.w *= instance.SquaredScale;
+                }
+                _pointLightPosition[i] = pos;
 
                 Vector4 c = instance.Color.linear * instance.Intensity;
                 c.w = instance.AngleData;
@@ -296,9 +374,13 @@ namespace VRCLightVolumes {
                 _pointLightDirection[i] = instance.DirectionData;
                 _pointLightCustomId[i].x = instance.CustomID;
                 _pointLightCustomId[i].y = instance.ShadowmaskIndex;
+                _pointLightCustomId[i].z = instance.SquaredRange;
             }
 
             bool isAtlas = LightVolumeAtlas != null;
+
+            // Setting light volumes version
+            VRCShader.SetGlobalFloat(lightVolumeVersionID, Version);
 
             // Disabling light volumes system if no atlas or no volumes
             if ((!isAtlas || _enabledCount == 0) && _pointLightCount == 0) {
@@ -315,12 +397,15 @@ namespace VRCLightVolumes {
             VRCShader.SetGlobalFloat(lightVolumeCountID, _enabledCount);
             VRCShader.SetGlobalFloat(lightVolumeAdditiveCountID, _additiveCount);
             VRCShader.SetGlobalFloat(lightVolumeOcclusionCountID, _occlusionCount);
+            
+            // Defines if Light Probes Blending enabled in scene
+            VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
+            VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
+
+            // Max Overdraw
+            VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
+
             if (_enabledCount != 0) {
-
-                // Defines if Light Probes Blending enabled in scene
-                VRCShader.SetGlobalFloat(lightVolumeProbesBlendID, LightProbesBlending ? 1 : 0);
-                VRCShader.SetGlobalFloat(lightVolumeSharpBoundsID, SharpBounds ? 1 : 0);
-
                 // All light volumes inv Edge smooth
                 VRCShader.SetGlobalVectorArray(lightVolumeInvLocalEdgeSmoothID, _invLocalEdgeSmooth);
 
@@ -330,9 +415,6 @@ namespace VRCLightVolumes {
 
                 // Volume Transform Matrix
                 VRCShader.SetGlobalMatrixArray(lightVolumeInvWorldMatrixID, _invWorldMatrix);
-
-                // Max Overdraw
-                VRCShader.SetGlobalFloat(lightVolumeAdditiveMaxOverdrawID, AdditiveMaxOverdraw);
 
                 // Volume's relative rotation
                 VRCShader.SetGlobalVectorArray(lightVolumeRotationQuaternionID, _relativeRotationQuaternion);
@@ -353,14 +435,15 @@ namespace VRCLightVolumes {
                 VRCShader.SetGlobalVectorArray(_pointLightPositionID, _pointLightPosition);
                 VRCShader.SetGlobalVectorArray(_pointLightDirectionID, _pointLightDirection);
                 VRCShader.SetGlobalVectorArray(_pointLightCustomIdID, _pointLightCustomId);
-                VRCShader.SetGlobalFloat(_areaLightBrightnessCutoffID, AreaLightBrightnessCutoff);
+                VRCShader.SetGlobalFloat(_lightBrightnessCutoffID, LightsBrightnessCutoff);
+                VRCShader.SetGlobalFloat(_areaLightBrightnessCutoffID, LightsBrightnessCutoff); // Legacy
             }
             if(CustomTextures != null) {
                 VRCShader.SetGlobalTexture(_pointLightTextureID, CustomTextures);
             }
 
             // Defines if Light Volumes enabled in scene. 0 if disabled. And a version number if enabled
-            VRCShader.SetGlobalFloat(lightVolumeEnabledID, Version);
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 1);
 
         }
     }

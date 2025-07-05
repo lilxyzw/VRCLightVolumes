@@ -15,7 +15,7 @@ namespace VRCLightVolumes {
         [Tooltip("Changing the color is useful for animating Additive volumes. You can even control the R, G, B channels separately this way.")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Tooltip("Color multiplies by this value.")]
-        public float ColorIntensity = 1;
+        public float Intensity = 1;
         [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance. You can even change it in runtime.")]
         public bool IsDynamic = false;
         [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
@@ -53,6 +53,13 @@ namespace VRCLightVolumes {
         public bool IsRotated = false;
         [Tooltip("True if the volume has baked occlusion.")]
         public bool BakeOcclusion = false;
+        [Tooltip("True if this Light Volume added to the Light Volumes array in LightVolumeManager. Should be always true for the Light Volumes placed in editor. Helps to initialize Light Volumes spawned in runtime.")]
+        public bool IsInitialized = false;
+        [Tooltip("Reference to the Light Volume Manager. Needed for runtime initialization.")]
+        public LightVolumeManager LightVolumeManager;
+
+        [HideInInspector] // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
+        public bool IsIterartedThrough = false;
 
         // Calculates and sets invLocalEdgeBlending
         public void SetSmoothBlending(float radius) {
@@ -77,6 +84,12 @@ namespace VRCLightVolumes {
             RelativeRotationRow1 = row1;
 
             RelativeRotation = new Vector4(rot.x, rot.y, rot.z, rot.w);
+        }
+
+        private void Update() {
+            if (!IsInitialized && LightVolumeManager != null) {
+                LightVolumeManager.InitializeLightVolume(this);
+            }
         }
 
     }

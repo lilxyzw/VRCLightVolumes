@@ -3,6 +3,10 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 
+#if UDONSHARP
+using VRC.Udon;
+#endif
+
 #if UNITY_EDITOR
 using Unity.EditorCoroutines.Editor;
 using System.IO;
@@ -22,8 +26,8 @@ namespace VRCLightVolumes {
         [Header("Point Light Volumes")]
         public TextureArrayResolution Resolution = TextureArrayResolution._128x128;
         public TextureArrayFormat Format = TextureArrayFormat.RGBAHalf;
-        [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but light the cutoff edge will be visually noticable.")]
-        [Range(0.0f, 1f)] public float AreaLightBrightnessCutoff = 0.35f;
+        [Tooltip("The minimum brightness at a point due to lighting from a Point Light Volume, before the light is culled. Larger values will result in better performance, but light attenuation will be less physically correct.")]
+        [Range(0.05f, 1f)] public float LightsBrightnessCutoff = 0.35f;
 
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
@@ -53,12 +57,26 @@ namespace VRCLightVolumes {
         public bool AutoUpdateVolumes = false;
         [Tooltip("Limits the maximum number of additive volumes and point light volumes that can affect a single pixel. If you have many dynamic additive or point light volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         [Min(1)]public int AdditiveMaxOverdraw = 4;
-        
-        
+        [Header("Debug")]
+        [Tooltip("Removes all Light Volume scripts in play mode, except Udon components. Useful for testing in a clean setup, just like in VRChat. For example, Auto Update Volumes and Dynamic Light Volumes will work just like in VRChat.")]
+        public bool DestroyInPlayMode = false;
+
         [SerializeField] public List<LightVolumeData> LightVolumeDataList = new List<LightVolumeData>();
 
         public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
         public LightVolumeManager LightVolumeManager;
+
+        // Disables syncing with udon script to make it possible to destroy the manager and the other volumes and don't break the udon script
+        private bool _dontSync = true;
+        public bool DontSync {
+            get { return Application.isPlaying ? _dontSync : false; }
+            set { _dontSync = value; }
+        }
+
+#if UDONSHARP
+        // UdonBehaviour is a real udon VM script. We need it to change public variables in play mode
+        private UdonBehaviour _lightVolumeManagerBehaviour = null;
+#endif
 
         public Baking _bakingModePrev;
 
@@ -71,6 +89,9 @@ namespace VRCLightVolumes {
         private EditorCoroutine _generateTextureArrayCoroutine = null;
 #endif
         public void RefreshVolumesList() {
+
+            if(DontSync) return;
+
             // Searching for all light volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);
             for (int i = 0; i < volumes.Length; i++) {
@@ -104,6 +125,7 @@ namespace VRCLightVolumes {
                     i--;
                 }
             }
+            SyncUdonScript();
         }
 
 #if UNITY_EDITOR
@@ -123,7 +145,9 @@ namespace VRCLightVolumes {
         List<PointLightVolume> _customTexPointVolumes = new List<PointLightVolume>();
         public void GenerateCustomTexturesArray() {
 
-            if (LightVolumeManager == null) return;
+            SetupDependencies();
+
+            if (LightVolumeManager == null || DontSync) return;
 
             // Cubemap Textures - store first
             List<Texture> cubeTextures = new List<Texture>(); 
@@ -155,8 +179,17 @@ namespace VRCLightVolumes {
             _customTexPointVolumes.AddRange(singlePLVs);
 
             if(_customTexPointVolumes.Count == 0) {
-                LightVolumeManager.CustomTextures = null;
-                LightVolumeManager.CubemapsCount = 0;
+#if UDONSHARP
+                if (Application.isPlaying) {
+                    _lightVolumeManagerBehaviour.SetProgramVariable("CustomTextures", null);
+                    _lightVolumeManagerBehaviour.SetProgramVariable("CubemapsCount", 0);
+                } else {
+#endif
+                    LightVolumeManager.CustomTextures = null;
+                    LightVolumeManager.CubemapsCount = 0;
+#if UDONSHARP
+                }
+#endif
             }
 
             // Stop old coroutine if one is in process already
@@ -166,6 +199,8 @@ namespace VRCLightVolumes {
             }
             _generateTextureArrayCoroutine = EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
 
+                if(DontSync) return;
+
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
                         if (_customTexPointVolumes[i] != null) {
@@ -174,11 +209,22 @@ namespace VRCLightVolumes {
                         }
                     }
                 }
-                LightVolumeManager.CustomTextures = texArray;
-                LightVolumeManager.CubemapsCount = cubeTextures.Count;
+#if UDONSHARP
+                if (Application.isPlaying) {
+                    _lightVolumeManagerBehaviour.SetProgramVariable("CustomTextures", texArray);
+                    _lightVolumeManagerBehaviour.SetProgramVariable("CubemapsCount", cubeTextures.Count);
+                } else {
+#endif
+                    LightVolumeManager.CustomTextures = texArray;
+                    LightVolumeManager.CubemapsCount = cubeTextures.Count;
+#if UDONSHARP
+                }
+#endif
                 if (texArray != null) LVUtils.SaveAsAssetDelayed(texArray, $"{Path.GetDirectoryName(SceneManager.GetActiveScene().path)}/{SceneManager.GetActiveScene().name}/VRCLightVolumes/PointLightVolumeArray.asset");
 
                 _generateTextureArrayCoroutine = null;
+
+                SyncUdonScript();
 
             }), this);
 
@@ -201,7 +247,7 @@ namespace VRCLightVolumes {
             }
 
             Selection.selectionChanged += OnSelectionChanged;
-
+            SyncUdonScript();
         }
 
         // Unsubscribing from OnBaked events
@@ -221,9 +267,16 @@ namespace VRCLightVolumes {
             }
 
             Selection.selectionChanged -= OnSelectionChanged;
-
+            SyncUdonScript();
         }
 
+        private void Awake() {
+            SyncUdonScript();
+        }
+
+        private void OnValidate() {
+            SyncUdonScript();
+        }
 
 #if BAKERY_INCLUDED
 
@@ -295,6 +348,7 @@ namespace VRCLightVolumes {
         }
 
         private void Update() {
+            if (DontSync) return;
             SetupDependencies();
             ConvertLegacyUVW();
             // Resetup required game objects and components for light volumes in new baking mode
@@ -310,6 +364,9 @@ namespace VRCLightVolumes {
                 _resolutionPrev = Resolution;
                 _formatPrev = Format;
                 GenerateCustomTexturesArray();
+            }
+            if (!Application.isPlaying) {
+                LightVolumeManager.UpdateVolumes();
             }
         }
 
@@ -348,7 +405,7 @@ namespace VRCLightVolumes {
         // Generates atlas and setups udon script
         public void GenerateAtlas() {
 
-            if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
+            if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0 || DontSync) return;
 
             SetupDependencies();
 
@@ -359,7 +416,7 @@ namespace VRCLightVolumes {
 
             _generateAtlasCoroutine = EditorCoroutineUtility.StartCoroutine(Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray(), (Atlas3D atlas) => {
 
-                if (atlas.Texture == null) return; // Return if atlas packing failed
+                if (atlas.Texture == null || DontSync) return; // Return if atlas packing failed
 
                 LightVolumeManager.LightVolumeAtlas = atlas.Texture;
 
@@ -377,17 +434,34 @@ namespace VRCLightVolumes {
                     Vector3 uvwMin1 = atlas.BoundsUvwMin[i * 4 + 1];
                     Vector3 uvwMin2 = atlas.BoundsUvwMin[i * 4 + 2];
                     Vector4 uvwMinOcclusion = atlas.BoundsUvwMin[i * 4 + 3];
+#if UDONSHARP
+                    if (Application.isPlaying) {
 
-                    lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
-                    lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
-                    lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
-                    lightVolumeInstance.BoundsUvwMinOcclusion = new Vector4(uvwMinOcclusion.x, uvwMinOcclusion.y, uvwMinOcclusion.z, 0);
+                        UdonBehaviour lightVolumeBehaviour = lightVolumeInstance.GetComponent<UdonBehaviour>();
 
-                    // Legacy
-                    lightVolumeInstance.BoundsUvwMax0 = atlas.BoundsUvwMax[i * 4];
-                    lightVolumeInstance.BoundsUvwMax1 = atlas.BoundsUvwMax[i * 4 + 1];
-                    lightVolumeInstance.BoundsUvwMax2 = atlas.BoundsUvwMax[i * 4 + 2];
+                        lightVolumeBehaviour.SetProgramVariable("BoundsUvwMin0", new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x));
+                        lightVolumeBehaviour.SetProgramVariable("BoundsUvwMin1", new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y));
+                        lightVolumeBehaviour.SetProgramVariable("BoundsUvwMin2", new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z));
+                        lightVolumeBehaviour.SetProgramVariable("BoundsUvwMinOcclusion", new Vector4(uvwMinOcclusion.x, uvwMinOcclusion.y, uvwMinOcclusion.z, 0));
 
+                        lightVolumeBehaviour.SetProgramVariable("BoundsUvwMax0", (Vector4) atlas.BoundsUvwMax[i * 4]);
+                        lightVolumeBehaviour.SetProgramVariable("BoundsUvwMax1", (Vector4) atlas.BoundsUvwMax[i * 4 + 1]);
+                        lightVolumeBehaviour.SetProgramVariable("BoundsUvwMax2", (Vector4) atlas.BoundsUvwMax[i * 4 + 2]);
+
+                    } else {
+#endif
+                        lightVolumeInstance.BoundsUvwMin0 = new Vector4(uvwMin0.x, uvwMin0.y, uvwMin0.z, scale.x);
+                        lightVolumeInstance.BoundsUvwMin1 = new Vector4(uvwMin1.x, uvwMin1.y, uvwMin1.z, scale.y);
+                        lightVolumeInstance.BoundsUvwMin2 = new Vector4(uvwMin2.x, uvwMin2.y, uvwMin2.z, scale.z);
+                        lightVolumeInstance.BoundsUvwMinOcclusion = new Vector4(uvwMinOcclusion.x, uvwMinOcclusion.y, uvwMinOcclusion.z, 0);
+
+                        // Legacy
+                        lightVolumeInstance.BoundsUvwMax0 = (Vector4) atlas.BoundsUvwMax[i * 4];
+                        lightVolumeInstance.BoundsUvwMax1 = (Vector4) atlas.BoundsUvwMax[i * 4 + 1];
+                        lightVolumeInstance.BoundsUvwMax2 = (Vector4) atlas.BoundsUvwMax[i * 4 + 2];
+#if UDONSHARP
+                    }
+#endif
                     LightVolumeDataList.Add(new LightVolumeData(i < LightVolumesWeights.Count ? LightVolumesWeights[i] : 0, lightVolumeInstance));
 
                     LVUtils.MarkDirty(lightVolumeInstance);
@@ -405,9 +479,15 @@ namespace VRCLightVolumes {
 
         // Looks for LightVolumeManager udon script and setups it if needed
         public void SetupDependencies() {
+            if (this == null || gameObject == null || DontSync) return;
             if (LightVolumeManager == null && !TryGetComponent(out LightVolumeManager)) {
                 LightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
             }
+#if UDONSHARP
+            if (_lightVolumeManagerBehaviour == null) {
+                TryGetComponent(out _lightVolumeManagerBehaviour);
+            }
+#endif
         }
 
         // Fixes light probes baked with Bakery L1
@@ -421,7 +501,7 @@ namespace VRCLightVolumes {
 
             var shs = probes.bakedProbes;
             for (int i = 0; i < shs.Length; ++i) {
-                shs[i] = LVUtils.LinearizeSH(shs[i]);
+                shs[i] = LVUtils.DeringSH(shs[i]);
             }
 
             probes.bakedProbes = shs;
@@ -439,36 +519,112 @@ namespace VRCLightVolumes {
 
         // Syncs udon LightVolumeManager script with this script
         public void SyncUdonScript() {
+#if UNITY_EDITOR
+            SetupDependencies();
+#endif
+            if (LightVolumeManager == null || DontSync) return;
+#if UDONSHARP
+            if (Application.isPlaying) {
 
-            if (LightVolumeManager == null) return;
+                // To sync variables in play-mode, we need to do it directly to the UdonBehaviour
+                _lightVolumeManagerBehaviour.SetProgramVariable("AutoUpdateVolumes", AutoUpdateVolumes);
+                _lightVolumeManagerBehaviour.SetProgramVariable("LightProbesBlending", LightProbesBlending);
+                _lightVolumeManagerBehaviour.SetProgramVariable("SharpBounds", SharpBounds);
+                _lightVolumeManagerBehaviour.SetProgramVariable("AdditiveMaxOverdraw", AdditiveMaxOverdraw);
+                _lightVolumeManagerBehaviour.SetProgramVariable("AreaLightBrightnessCutoff", LightsBrightnessCutoff);
 
-            LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
-            LightVolumeManager.LightProbesBlending = LightProbesBlending;
-            LightVolumeManager.SharpBounds = SharpBounds;
-            LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
-            LightVolumeManager.AreaLightBrightnessCutoff = AreaLightBrightnessCutoff + 0.05f;
+                if (LightVolumes.Count != 0) {
+                    var instances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+                    UdonBehaviour[] lightVolumeInstances = new UdonBehaviour[instances.Length];
+                    for (int i = 0; i < instances.Length; i++) {
+                        lightVolumeInstances[i] = instances[i].GetComponent<UdonBehaviour>();
+                    }
+                    _lightVolumeManagerBehaviour.SetProgramVariable("LightVolumeInstances", lightVolumeInstances);
+                }
 
-            if (LightVolumes.Count != 0) {
-                LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+                if (PointLightVolumes.Count != 0) {
+                    var instances = GetPointLightVolumeInstances();
+                    UdonBehaviour[] pointLightVolumeInstances = new UdonBehaviour[instances.Length];
+                    for (int i = 0; i < instances.Length; i++) {
+                        pointLightVolumeInstances[i] = instances[i].GetComponent<UdonBehaviour>();
+                    }
+                    _lightVolumeManagerBehaviour.SetProgramVariable("PointLightVolumeInstances", pointLightVolumeInstances);
+                }
+
+                _lightVolumeManagerBehaviour.SendCustomEvent("UpdateVolumes");
+
+            } else {
+#endif
+                LightVolumeManager.AutoUpdateVolumes = AutoUpdateVolumes;
+                LightVolumeManager.LightProbesBlending = LightProbesBlending;
+                LightVolumeManager.SharpBounds = SharpBounds;
+                LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
+                LightVolumeManager.LightsBrightnessCutoff = LightsBrightnessCutoff;
+
+                if (LightVolumes.Count != 0) {
+                    LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
+                }
+
+                if (PointLightVolumes.Count != 0) {
+                    LightVolumeManager.PointLightVolumeInstances = GetPointLightVolumeInstances();
+                }
+
+                LightVolumeManager.UpdateVolumes();
+#if UDONSHARP
             }
+#endif
+        }
 
-            if (PointLightVolumes.Count != 0) {
-                LightVolumeManager.PointLightVolumeInstances = GetPointLightVolumeInstances();
+        // All Non-udon mono behaviours should be destroyed in playmode
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void CommitSudoku() {
+            if (Application.isPlaying) {
+
+                bool isDestroy = false;
+                var s = FindObjectsByType<LightVolumeSetup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                for (int i = 0; i < s.Length; i++) {
+                    if (!s[i].DestroyInPlayMode) {
+                        s[i].DontSync = false;
+                    } else {
+                        isDestroy = true;
+                    }
+                }
+                if(!isDestroy) return;
+
+                // Killing Light Volumes
+                var lvs = FindObjectsByType<LightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                for (int i = 0; i < lvs.Length; i++) {
+#if BAKERY_INCLUDED
+                    if (lvs[i].BakeryVolume != null) Destroy(lvs[i].BakeryVolume.gameObject);
+#endif
+                    Destroy(lvs[i]);
+                }
+
+                // Killing Point Light Volumes
+                var plvs = FindObjectsByType<PointLightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                for (int i = 0; i < plvs.Length; i++) {
+                    Destroy(plvs[i]);
+                }
+
+                // Sudoku
+                for (int i = 0; i < s.Length; i++) {
+                    Destroy(s[i]);
+                }
+
             }
-
-            LightVolumeManager.UpdateVolumes();
-
         }
 
         private PointLightVolumeInstance[] GetPointLightVolumeInstances() {
             List<PointLightVolumeInstance> list = new List<PointLightVolumeInstance>();
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
-                if(PointLightVolumes[i].PointLightVolumeInstance == null) continue;
+                if(PointLightVolumes[i] == null || PointLightVolumes[i].PointLightVolumeInstance == null) continue;
                 list.Add(PointLightVolumes[i].PointLightVolumeInstance);
             }
             return list.ToArray();
         }
+
+        
 
         public enum Baking {
             Progressive,
@@ -490,35 +646,6 @@ namespace VRCLightVolumes {
             _512x512 = 512,
             _1024x1024 = 1024,
             _2048x2048 = 2048
-        }
-
-        // All Non-udon mono behaviours should be destroyed in playmode
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void CommitSudoku() {
-            if (Application.isPlaying) {
-
-                // Killing Light Volumes
-                var lvs = FindObjectsByType<LightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = 0; i < lvs.Length; i++) {
-#if BAKERY_INCLUDED
-                    if (lvs[i].BakeryVolume != null) Destroy(lvs[i].BakeryVolume.gameObject);
-#endif
-                    Destroy(lvs[i]);
-                }
-
-                // Killing Point Light Volumes
-                var plvs = FindObjectsByType<PointLightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = 0; i < plvs.Length; i++) {
-                    Destroy(plvs[i]);
-                }
-
-                // Sudoku
-                var s = FindObjectsByType<LightVolumeSetup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = 0; i < s.Length; i++) {
-                    Destroy(s[i]);
-                }
-
-            }
         }
 
     }

@@ -19,8 +19,7 @@ MonoBehaviour:
     AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;0;-96,0;Inherit;False;True;-1;;0;False;1;0;FLOAT;0;False;1;FLOAT;0\nWireConnection;0;0;2;0\nASEEND*/\n//CHKSM=F16F3708B893FDEE1EDE3D67814122A58238F5D3"
   m_functionName: 
   m_description: Checks if Light Volumes are used in this scene. Returns 0 if not,
-    returns 1, 2 or other number if there are light volumes. Number represents the
-    light volumes system internal version number.
+    returns 1 if enabled
   m_additionalIncludes:
     m_additionalIncludes: []
     m_outsideIncludes: []

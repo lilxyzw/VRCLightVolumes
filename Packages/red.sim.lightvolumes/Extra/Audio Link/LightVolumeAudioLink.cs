@@ -17,19 +17,29 @@ namespace VRCLightVolumes {
 #endif
     {
 #if AUDIOLINK
-
+        [Tooltip("Reference to your Audio Link manager that should control Light Volumes")]
         public AudioLink.AudioLink AudioLink;
+        [Tooltip("Defines which audio band will be used to control Light Volumes. Four bands available: Bass, Low Mid, High Mid, Treble")]
         public AudioLinkBand AudioBand = AudioLinkBand.Bass;
+        [Tooltip("Defines how many samples back in history we're getting data from. Can be a value from 0 to 127. Zero means no delay at all")]
         [Range(0, 127)] public int Delay = 0;
+        [Tooltip("Enables smoothing algorithm that tries to smooth out flickering that can usually be a problem")]
         public bool SmoothingEnabled = true;
+        [Tooltip("Value from 0 to 1 that defines how much smoothing should be applied. Zero usually applies just a little bit of smoothing. One smoothes out almost all the fast blinks and makes intensity changing very slow")]
         [Range(0, 1)] public float Smoothing = 0.25f;
         [Space]
-        public bool OverrideColor = false;
+        [Tooltip("Auto uses Theme Colors 0, 1, 2, 3 for Bass, LowMid, HighMid, Treble. Override Color allows you to set the static color value")]
+        public AudioLinkColor ColorMode = AudioLinkColor.Auto;
+        [Tooltip("Color that will be used when Override Color is enabled")]
         [ColorUsage(showAlpha: false)] public Color Color = Color.white;
         [Space]
+        [Tooltip("List of the Light Volumes that should be affected by AudioLink")]
         public LightVolumeInstance[] TargetLightVolumes;
+        [Tooltip("List of the Point Light Volumes that should be affected by AudioLink")]
         public PointLightVolumeInstance[] TargetPointLightVolumes;
+        [Tooltip("List of the Mesh Renderers that has materials that should change color based on AudioLink")]
         public Renderer[] TargetMeshRenderers;
+        [Tooltip("Brightness multiplier of the materials that should change color based on AudioLink. Intensity for Light Volumes and Point Light Volumes should be setup in their components")]
         public float MaterialsIntensity = 2;
 
         private int _emissionColorID;
@@ -45,16 +55,22 @@ namespace VRCLightVolumes {
             _block = new MaterialPropertyBlock();
             InitIDs();
             _prevColor = Color.black;
+            if (AudioLink != null) {
+                AudioLink.EnableReadback();
+            }
         }
 
         private void Update() {
 
             int band = (int)AudioBand;
             Color color;
-            if (OverrideColor) {
+
+            if (ColorMode == AudioLinkColor.OverrideColor) {
                 color = Vector4.Scale(AudioLink.GetDataAtPixel(Delay, band), Color);
-            } else {
+            } else if(ColorMode == AudioLinkColor.Auto) {
                 color = Vector4.Scale(AudioLink.GetDataAtPixel(Delay, band), AudioLink.GetDataAtPixel(band, 23));
+            } else {
+                color = Vector4.Scale(AudioLink.GetDataAtPixel(Delay, band), AudioLink.GetDataAtPixel((int)ColorMode, 23));
             }
 
             if (SmoothingEnabled) {
@@ -70,6 +86,7 @@ namespace VRCLightVolumes {
             }
             for (int i = 0; i < TargetPointLightVolumes.Length; i++) {
                 TargetPointLightVolumes[i].Color = _prevColor;
+                TargetPointLightVolumes[i].IsRangeDirty = true;
             }
             _block.SetColor(_emissionColorID, _prevColor * MaterialsIntensity);
             for (int i = 0; i < TargetMeshRenderers.Length; i++) {
@@ -86,6 +103,12 @@ namespace VRCLightVolumes {
             return Mathf.Sqrt((2f + rmean) * r * r + 4f * g * g + (3f - rmean) * b * b) / 3;
         }
 
+        private void OnValidate() {
+            if (AudioLink != null) {
+                AudioLink.EnableReadback();
+            }
+        }
+
 #endif
     }
 
@@ -94,6 +117,15 @@ namespace VRCLightVolumes {
         LowMid = 1,
         HighMid = 2,
         Treble = 3
+    }
+
+    public enum AudioLinkColor {
+        Auto = -1,
+        ThemeColor0 = 0,
+        ThemeColor1 = 1,
+        ThemeColor2 = 2,
+        ThemeColor3 = 3,
+        OverrideColor = 4
     }
 
 }

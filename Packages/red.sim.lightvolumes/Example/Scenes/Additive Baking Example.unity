@@ -379,7 +379,8 @@ MonoBehaviour:
   - {fileID: 466200164}
   LightVolumesWeights:
   - 0
-  PointLightVolumes: []
+  PointLightVolumes:
+  - {fileID: 0}
   Resolution: 128
   Format: 17
   AreaLightBrightnessCutoff: 0.35
@@ -727,6 +728,10 @@ PrefabInstance:
     - target: {fileID: 3859439054152126729, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: m_Name
       value: Additive Light Volume
+      objectReference: {fileID: 0}
+    - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
+      propertyPath: Additive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6093600397715888964, guid: 65271766caa0f64439c02e090bf0bf86, type: 3}
       propertyPath: LightVolumeSetup

@@ -16,10 +16,14 @@ namespace VRCLightVolumes {
     public class LightVolumeTVGI : MonoBehaviour
 #endif
     {
+        [Tooltip("Render Texture used by your video player. Can be just a static texture if you want it to be. Make sure that Enable Mip Maps and Auto Generate Mip Maps are Enabled in the texture’s import settings.")]
         public Texture TargetRenderTexture;
+        [Tooltip("Enables smoothing algorithm that tries to smooth out flickering that is usually a problem. Recommended to always be turned on.")]
         public bool AntiFlickering = true;
         [Space]
+        [Tooltip("List of the Light Volumes that should be affected by the Light Volume TVGI script.")]
         public LightVolumeInstance[] TargetLightVolumes;
+        [Tooltip("List of the Point Light Volumes that should be affected by the Light Volume TVGI script. Usually you don't need it at all.")]
         public PointLightVolumeInstance[] TargetPointLightVolumes;
         
 #if UDONSHARP
@@ -90,6 +94,7 @@ namespace VRCLightVolumes {
 
             for (int i = 0; i < TargetPointLightVolumes.Length; i++) {
                 TargetPointLightVolumes[i].Color = _prevColor;
+                TargetPointLightVolumes[i].IsRangeDirty = true;
             }
 
         }

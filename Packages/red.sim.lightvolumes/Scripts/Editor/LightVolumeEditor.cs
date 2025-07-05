@@ -262,6 +262,7 @@ namespace VRCLightVolumes {
         // Bring back tools
         void OnDisable() {
             LightVolume.PreviewVoxels = false;
+            LightVolume.ResetProbesPositions(); // Needs to be resetted to prevent unity stall
             Tools.hidden = false;
             if (_isEditMode) {
                 // Went from edit mode
