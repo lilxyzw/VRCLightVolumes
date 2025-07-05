@@ -360,7 +360,12 @@ namespace VRCLightVolumes {
                 // Reset iterated flag
                 instance.IsIterartedThrough = false;
 
-                _pointLightPosition[i] = instance.PositionData;
+                Vector4 pos = instance.PositionData;
+                if (!instance.IsAreaLight()) {
+                    if (instance.IsLut()) pos.w /= instance.SquaredScale;
+                    else pos.w *= instance.SquaredScale;
+                }
+                _pointLightPosition[i] = pos;
 
                 Vector4 c = instance.Color.linear * instance.Intensity;
                 c.w = instance.AngleData;

@@ -73,7 +73,10 @@ namespace VRCLightVolumes {
 
             Transform t = pointLightVolume.transform;
             Vector3 origin = t.position;
+            Vector3 lscale = pointLightVolume.transform.lossyScale;
+            float scale = (lscale.x + lscale.y + lscale.z) / 3;
             float range = pointLightVolume.Type != PointLightVolume.LightType.AreaLight && (pointLightVolume.Shape != PointLightVolume.LightShape.LUT || pointLightVolume.FalloffLUT == null) ? pointLightVolume.LightSourceSize : pointLightVolume.Range;
+            range *= scale;
 
             if (pointLightVolume.Type == PointLightVolume.LightType.PointLight) { // Point Light Visualization
 

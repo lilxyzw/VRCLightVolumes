@@ -37,6 +37,8 @@ namespace VRCLightVolumes {
         public bool IsInitialized = false;
         [Tooltip("Squared range after which light will be culled. Should be recalculated by executing UpdateRange() method.")]
         public float SquaredRange = 1;
+        [Tooltip("Average squared lossy scale of the light. Light Source Size gets multiplied by it at the end. Updates with UpdateTransform() method.")]
+        public float SquaredScale = 1;
         [Tooltip("Reference to the Light Volume Manager. Needed for runtime initialization.")]
         public LightVolumeManager LightVolumeManager;
 
@@ -45,6 +47,9 @@ namespace VRCLightVolumes {
 
         [HideInInspector] // Sets to true to recalculate the range automatically by the manager
         public bool IsRangeDirty = false;
+
+        // Previous SquaredScale to recalculater range only if there were some scale changes
+        private float _prevSquaredScale = 1;
 
         // Checks if it's a spotlight
         public bool IsSpotLight() {
@@ -165,6 +170,14 @@ namespace VRCLightVolumes {
             Vector3 pos = transform.position;
             PositionData = new Vector4(pos.x, pos.y, pos.z, PositionData.w);
 
+            Vector3 lscale = transform.lossyScale;
+            SquaredScale = (lscale.x + lscale.y + lscale.z) / 3;
+            SquaredScale *= SquaredScale;
+            if (_prevSquaredScale != SquaredScale) {
+                IsRangeDirty = true;
+                _prevSquaredScale = SquaredScale;
+            }
+
             if (IsAreaLight()) {
                 Quaternion rot = transform.rotation;
                 DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
@@ -184,11 +197,11 @@ namespace VRCLightVolumes {
             
             float cutoff = LightVolumeManager != null ? LightVolumeManager.LightsBrightnessCutoff : 0.35f;
             if (IsAreaLight()) { // Area light squared distance math
-                SquaredRange = ComputeAreaLightSquaredBoundingSphere(Mathf.Abs(1 / PositionData.w), AngleData - 2, Color, Intensity * Mathf.PI, cutoff);
+                SquaredRange = ComputeAreaLightSquaredBoundingSphere(Mathf.Abs(SquaredScale / PositionData.w), AngleData - 2, Color, Intensity * Mathf.PI, cutoff);
             } else if(IsLut()) { // LUT - regualar squared range
-                SquaredRange = Mathf.Abs(1 / PositionData.w);
+                SquaredRange = Mathf.Abs(SquaredScale / PositionData.w);
             } else { // Spot and Point light squared distance math
-                SquaredRange = ComputePointLightSquaredBoundingSphere(Color, Intensity, Mathf.Abs(PositionData.w), cutoff);
+                SquaredRange = ComputePointLightSquaredBoundingSphere(Color, Intensity, Mathf.Abs(SquaredScale * PositionData.w), cutoff);
             }
             IsRangeDirty = false;
         }
