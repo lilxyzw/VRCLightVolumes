@@ -73,6 +73,10 @@ namespace VRCLightVolumes {
         private Vector4[] _boundsScale = new Vector4[3];
         private Vector4[] _bounds = new Vector4[6]; // Legacy
 
+        // Public API for other U# scripts
+        public int EnabledCount => _enabledCount;
+        public int[] EnabledIDs => _enabledIDs;
+
         #region Shader Property IDs
         // Light Volumes
         private int lightVolumeInvLocalEdgeSmoothID;
@@ -164,7 +168,6 @@ namespace VRCLightVolumes {
             lightVolumeSharpBoundsID = VRCShader.PropertyToID("_UdonLightVolumeSharpBounds");
             lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
             lightVolumeRotationQuaternionID = VRCShader.PropertyToID("_UdonLightVolumeRotationQuaternion");
-            lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
             lightVolumeUvwScaleID = VRCShader.PropertyToID("_UdonLightVolumeUvwScale");
             lightVolumeOcclusionUvwID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionUvw");
             lightVolumeOcclusionCountID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionCount");
