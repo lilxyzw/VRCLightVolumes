@@ -55,7 +55,9 @@ Returns the light volumes version. `0` means that light volumes are not presente
 First of all, you need to include the "LightVolumes.cginc" file provided with this asset, into your shader:  `#include "LightVolumes.cginc"`. 
 Also be sure that you included the "UnityCG.cginc" file **BEFORE** to support the fallback to unity's light probes:  `#include "UnityCG.cginc"`
 
-All the functions are recommended to use in the fragment shader. All the calculations are cheap enough.
+> [!IMPORTANT]
+> All the functions are recommended to use in the fragment shader. All the calculations are cheap enough, unless your shader is not drawing geometry in many transparent layers.
+> If you're making a shader for transparent particles, or even foliage, you might consider integrating light volumes functions on the vertex shader instead!
 
 ### 1. Basic Light Volumes Integration
 
@@ -65,6 +67,7 @@ Evaluate the returned SH data using `LightVolumeEvaluate()` But you can use your
 
 Typically, the result color should be multiplied by the albedo and added to the final fragment color. You may also apply AO or other adjustments before combining it.
 
+> [!TIP]
 > `LightVolumeSH()` automatically falls back to Unity’s built-in light probes if Light Volumes are not available. No need for a manual check.
 
 ### 2. Additive Light Volumes for Lightmapped Geometry
@@ -75,16 +78,16 @@ Call a `LightVolumeAdditiveSH()` function there to get SH components. This funct
 
 Then evaluate the color with `LightVolumeEvaluate()` and **add** the resulting color to your lightmap output.
 
-> You can also check `_UdonLightVolumeEnabled > 0` to skip evaluation entirely when not LightVolumes are not represented in the scene.
+> [!TIP]
+>  You can also check `_UdonLightVolumeEnabled > 0` to skip evaluation entirely when not LightVolumes are not represented in the scene.
 
 ### 3. Custom SH Evaluation Notes
 
 If you use a custom evaluation method instead of `LightVolumeEvaluate()`, make sure you use L1 components too.
 
-Using L0 only (ambient term) results in unrealistic shading and can make objects look translucent.
-You must consider L1 directions—or at least the dominant direction and its magnitude for proper shading.
-
-> Test your method with strong directional lighting baked into a volume. Incorrect evaluation may cause color artifacts or exposure issues.
+> [!WARNING]
+> Using L0 only (ambient term) results in unrealistic shading and can make objects look translucent.
+> You must consider L1 directions—or at least the dominant direction and its magnitude for proper shading.
 
 ### 4. Specular Lighting (Optional but Recommended)
 
@@ -97,6 +100,7 @@ Add the result straight to your final fragment color.
 
 These functions already apply albedo internally **do not multiply again**. You can still apply your own specular occlusion/masking if needed.
 
+> [!NOTE]
 > For more advanced shading (e.g. anisotropic specular), implement your own model based on SH data.
 
 ## Shader Functions
