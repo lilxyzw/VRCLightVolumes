@@ -109,52 +109,30 @@ Each time you change a value in this section, the **Light Volumes Atlas** will b
 
 ## Light Volume Component Description
 
-`Edit Bounds` button enables a cuboid editing tool to configure the Light Volume bounds. Be sure you have **Gizmos** enabled in your viewport to see the tool handles.
-
-`Preview Voxels` button shows all the voxels to estimate the density of your Light Volume. If you have light volumes baked on your scene, voxels will be shaded in the baked color to preview the baked light.
-
-`Size in VRAM` and `Size in bundle` indicators shows an estimated size of the baked data. Both sizes are estimated, and the final size will be shown in the **Light Volume Setup** component after the data is baked.
-
-#### Volume Setup
-
-`Dynamic` - Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance.
-
-`Additive` - Additive volumes apply their light on top of others as an overlay. Useful for movable and togglable lights. They can also project light onto static lightmapped objects if the surface shader supports it.
-
-`Color` - Multiplies the volume’s color by this value.
-
-`Intensity` - Brightness of the volume.
-
-`Smooth Blending` - Size in meters of this Light Volume's overlapping regions for smooth blending with other volumes.
-
-#### Baked Data
-
-`Texture 0` - Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L0r, L0g, L0b, L1r.z)
-
-`Texture 1` - Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.x, L1g.x, L1b.x, L1g.z)
-
-`Texture 2` - Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)
-
-`Shadows Texture` - Optional Texture3D with baked shadows data for future atlas packing. It won't be uploaded to VRChat. Stores occlusion for up to 4 nearby point light volumes.
-
-#### Color Correction
-
-`Exposure` - Makes volume brighter or darker
-
-`Shadows` - Makes dark volume colors brighter or darker.
-
-`Highlights` - Makes bright volume colors brighter or darker.
-
-#### Baking Setup
-
-`Bake` - Uncheck it if you don't want to rebake this volume's textures.
-
-`Point Light Shadows` - Uncheck it if you don't want to rebake occlusion data required for baked point light volumes shadows.
-
-`Blur Shadows` - Post-processes the baked occlusion texture with a softening blur. This can help mitigate 'blocky' shadows caused by aliasing, but also makes shadows less crispy.
-
-`Adaptive Resolution` - Automatically sets the resolution based on the Voxels Per Unit value.
-
-`Voxels Per Unit` - Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.
-
-`Resolution` - Manual Light Volume resolution in voxel count.
+| Parameter | Description |
+| --- | --- |
+|`Edit Bounds` | button enables a cuboid editing tool to configure the Light Volume bounds. Be sure you have **Gizmos** enabled in your viewport to see the tool handles.|
+|`Preview Voxels` | button shows all the voxels to estimate the density of your Light Volume. If you have light volumes baked on your scene, voxels will be shaded in the baked color to preview the baked light.|
+|`Size in VRAM` and `Size in bundle` | indicators shows an estimated size of the baked data. Both sizes are estimated, and the final size will be shown in the **Light Volume Setup** component after the data is baked.|
+| **Volume Setup** | |
+|`Dynamic` | Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance.|
+|`Additive` | Additive volumes apply their light on top of others as an overlay. Useful for movable and togglable lights. They can also project light onto static lightmapped objects if the surface shader supports it.|
+|`Color` | Multiplies the volume’s color by this value.|
+|`Intensity` | Brightness of the volume.|
+|`Smooth Blending` | Size in meters of this Light Volume's overlapping regions for smooth blending with other volumes.|
+| **Baked Data** | |
+|`Texture 0` | Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L0r, L0g, L0b, L1r.z)|
+|`Texture 1` | Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.x, L1g.x, L1b.x, L1g.z)|
+|`Texture 2` | Texture3D with baked SH data required for future atlas packing. It won't be uploaded to VRChat. (L1r.y, L1g.y, L1b.y, L1b.z)|
+|`Shadows Texture` | Optional Texture3D with baked shadows data for future atlas packing. It won't be uploaded to VRChat. Stores occlusion for up to 4 nearby point light volumes.|
+| **Color Correction** | |
+| `Exposure` | Makes volume brighter or darker.|
+| `Shadows` | Makes dark volume colors brighter or darker.|
+| `Highlights` | Makes bright volume colors brighter or darker.|
+| **Baking Setup** | |
+|`Bake` | Uncheck it if you don't want to rebake this volume's textures.|
+|`Point Light Shadows` | Uncheck it if you don't want to rebake occlusion data required for baked point light volumes shadows.|
+|`Blur Shadows` | Post-processes the baked occlusion texture with a softening blur. This can help mitigate 'blocky' shadows caused by aliasing, but also makes shadows less crispy.|
+|`Adaptive Resolution` | Automatically sets the resolution based on the Voxels Per Unit value.|
+|`Voxels Per Unit` | Number of voxels used per meter, linearly. This value increases the Light Volume file size cubically.|
+|`Resolution` | Manual Light Volume resolution in voxel count.|
