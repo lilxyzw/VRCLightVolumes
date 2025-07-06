@@ -44,24 +44,16 @@ This package includes a [AudioLink](https://github.com/llealloo/audiolink/) inte
 
 ## Light Volume Audio Link Component Description
 
-`Audio Link` - Reference to your Audio Link Manager that should control Light Volumes.
-
-`Audio Band` - Defines which audio band will be used to control Light Volumes. Four bands available: **Bass, Low Mid, High Mid, Treble**.
-
-`Delay` - Defines how many samples back in history we're getting data from. Can be a value from **0** to **127**. Zero means no delay at all.
-
-`Smoothing Enabled` - Enables smoothing algorithm that tries to smooth out flickering that can usually be a problem.
-
-`Smoothing` - Value from 0 to 1 that defines how much smoothing should be applied. **Zero** usually applies just a little bit of smoothing. **One** smoothes out almost all the fast blinks and makes intensity changing very slow.
-
-`ColorMode` - Auto uses Theme Colors 0, 1, 2, 3 for Bass, LowMid, HighMid, Treble. Override Color allows you to set the static color value. 
-
-`Color` - Color that will be used when **Override Color** is enabled.
-
-`Target Light Volumes` - List of the **Light Volumes** that should be affected by AudioLink.
-
-`Target Point Light Volumes` - List of the **Point Light Volumes** that should be affected by AudioLink.
-
-`Target Mesh Renderers` - List of the **Mesh Renderers** that has materials that should change color based on AudioLink.
-
-`Materials Intensity` - Brightness multiplier of the materials that should change color based on AudioLink.
+| Parameter | Description |
+| --- | --- |
+|`Audio Link` | Reference to your Audio Link Manager that should control Light Volumes.|
+|`Audio Band` | Defines which audio band will be used to control Light Volumes. Four bands available: **Bass, Low Mid, High Mid, Treble**.|
+|`Delay` | Defines how many samples back in history we're getting data from. Can be a value from **0** to **127**. Zero means no delay at all.|
+|`Smoothing Enabled` | Enables smoothing algorithm that tries to smooth out flickering that can usually be a problem.|
+|`Smoothing` | Value from 0 to 1 that defines how much smoothing should be applied. **Zero** usually applies just a little bit of smoothing. **One** smoothes out almost all the fast blinks and makes intensity changing very slow.|
+|`ColorMode` | Auto uses Theme Colors 0, 1, 2, 3 for Bass, LowMid, HighMid, Treble. Override Color allows you to set the static color value. |
+|`Color` | Color that will be used when **Override Color** is enabled.|
+|`Target Light Volumes` | List of the **Light Volumes** that should be affected by AudioLink.|
+|`Target Point Light Volumes` | List of the **Point Light Volumes** that should be affected by AudioLink.|
+|`Target Mesh Renderers` | List of the **Mesh Renderers** that has materials that should change color based on AudioLink.|
+|`Materials Intensity` | Brightness multiplier of the materials that should change color based on AudioLink.|
