@@ -154,7 +154,6 @@ namespace VRCLightVolumes {
             // Light Volumes
             lightVolumeInvLocalEdgeSmoothID = VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth");
             lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
-            lightVolumeUvwID = VRCShader.PropertyToID("_UdonLightVolumeUvw");
             lightVolumeColorID = VRCShader.PropertyToID("_UdonLightVolumeColor");
             lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
             lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
