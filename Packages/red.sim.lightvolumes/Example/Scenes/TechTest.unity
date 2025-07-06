@@ -1653,7 +1653,7 @@ MonoBehaviour:
   IsDynamic: 1
   PositionData: {x: -8.787, y: 0.5800005, z: 17.861, w: -0.01}
   DirectionData: {x: -1.0000002, y: 0.0000043832697, z: -0.0000032186556, w: 3.4142134}
-  CustomID: 4
+  CustomID: 5
   Angle: 0.7853982
   AngleData: 0.70710677
   ShadowmaskIndex: -1
@@ -1730,7 +1730,7 @@ MonoBehaviour:
   Cookie: {fileID: 0}
   Cubemap: {fileID: 0}
   DebugRange: 0
-  CustomID: 3
+  CustomID: 4
   PointLightVolumeInstance: {fileID: 154949969}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!1 &157755609
@@ -3184,7 +3184,7 @@ MonoBehaviour:
   IsDynamic: 1
   PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -0.0225}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
-  CustomID: -4
+  CustomID: -5
   Angle: 0.36651915
   AngleData: 0.38386405
   ShadowmaskIndex: -1
@@ -3261,7 +3261,7 @@ MonoBehaviour:
   Cookie: {fileID: 2800000, guid: 27f1c5cfd1135214cad2e74411322a39, type: 3}
   Cubemap: {fileID: 0}
   DebugRange: 0
-  CustomID: 3
+  CustomID: 4
   PointLightVolumeInstance: {fileID: 309589255}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!1 &335930214
@@ -6415,7 +6415,6 @@ MonoBehaviour:
   - {fileID: 377300962}
   - {fileID: 569909708}
   - {fileID: 1773416815}
-  - {fileID: 309589255}
   - {fileID: 1748442014}
   - {fileID: 938222481}
   - {fileID: 996561022}
@@ -6424,6 +6423,7 @@ MonoBehaviour:
   - {fileID: 2070359844}
   - {fileID: 154949969}
   - {fileID: 1038735944}
+  - {fileID: 309589255}
   CustomTextures: {fileID: 18700000, guid: 80f51f693c32ab84283c18d6a248e954, type: 2}
   CubemapsCount: 2
   IsRangeDirty: 0
@@ -6460,7 +6460,6 @@ MonoBehaviour:
   - {fileID: 377300963}
   - {fileID: 569909711}
   - {fileID: 1773416816}
-  - {fileID: 309589258}
   - {fileID: 1748442017}
   - {fileID: 938222484}
   - {fileID: 996561025}
@@ -6469,6 +6468,7 @@ MonoBehaviour:
   - {fileID: 2070359847}
   - {fileID: 154949972}
   - {fileID: 1038735945}
+  - {fileID: 309589258}
   Resolution: 256
   Format: 17
   LightsBrightnessCutoff: 0.35
@@ -20628,7 +20628,7 @@ MonoBehaviour:
   IsDynamic: 1
   PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -0.0225}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
-  CustomID: -5
+  CustomID: -4
   Angle: 0.36651915
   AngleData: 0.38386405
   ShadowmaskIndex: -1
@@ -20705,7 +20705,7 @@ MonoBehaviour:
   Cookie: {fileID: 2800000, guid: bb1f2d82f0d4ed4409124d71498e075a, type: 3}
   Cubemap: {fileID: 0}
   DebugRange: 0
-  CustomID: 4
+  CustomID: 3
   PointLightVolumeInstance: {fileID: 1748442014}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!1 &1750787734
