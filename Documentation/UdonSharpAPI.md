@@ -19,13 +19,21 @@ Stores the light volumes 3D atlas and references to all of the Light Volume Inst
 
 `bool AutoUpdateVolumes` - Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene.
 
-`bool AdditiveMaxOverdraw` - Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.
+`int AdditiveMaxOverdraw` - Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.
+
+`float LightsBrightnessCutoff` - The minimum brightness at a point due to lighting from a Point Light Volume, before the light is culled. Larger values will result in better performance, but light attenuation will be less physically correct. You should never set it to zero or below, otherwise lights will never be culled at all.
 
 `LightVolumeInstance[] LightVolumeInstances` - All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance.
 
+`Texture2DArray CustomTextures` - All textures that can be used for as Cubemaps, LUT or Cookies, stored in a single Texture Array. Faces of the used cubemaps always stores first.
+
+`int CubemapsCount` - Cubemaps count that stored in CustomTextures texture array. Cubemaps faces starts from the beginning, 6 elements per each cubemap.
+
+`bool IsRangeDirty` - Flag that defines if range of all of the point lights should be recalculated in the next frame. Recalculates automatically when **AutoUpdateVolumes** is enabled. Resets to false after being recalculated.
+
 #### Public Methods
 
-`void UpdateVolumes()` - Method that updates all the volumes gloabal shader parameters. Useful if you want manually update volumes instead of having **AutoUpdateVolumes** enabled.
+`void UpdateVolumes()` - Method that updates all the volumes global shader parameters. Useful if you want manually update volumes instead of having **AutoUpdateVolumes** enabled.
 
 
 ## LightVolumeInstance
@@ -34,6 +42,8 @@ Stores all the volume configuration including 3D UVs, world transform, color, et
 #### Public Fields
 
 `Color Color` - Multiplies volumes color by this value. Changing the color is useful for animating Additive volumes. You can even control the R, G, B channels separately this way.
+
+`float Intensity` - Color multiplies by this value. Basically, controls the brightness.
 
 `bool IsDynamic` - Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance. You can even change it in runtime.
 
@@ -63,11 +73,17 @@ Stores all the volume configuration including 3D UVs, world transform, color, et
 
 `bool IsRotated` - True if there is any relative rotation. No relative rotation improves performance. Recalculated via the **UpdateRotation()** method.
 
+`bool BakeOcclusion` - True if the volume has baked shadow mask.
+
+`bool IsInitialized` - True if this Light Volume added to the **Light Volumes** array in **LightVolumeManager**. Should be always true for the Light Volumes placed in editor. Helps to initialize Light Volumes spawned in runtime.
+
+`LightVolumeManager LightVolumeManager` - Reference to the Light Volume Manager. Needed for runtime initialization.
+
 #### Public Methods
 
 `void SetSmoothBlending(float radius)` - Calculates **InvLocalEdgeSmoothing** value. Execute it if you want to control edge smoothing in runtime. You can even control every direction independent if it's needed.
 
-`void UpdateRotation()` - Recalculates **InvWorldMatrix**, **RelativeRotationRow0** and **RelativeRotationRow1**. Executes automatically from **LightVolumeManager.UpdateDynamicVolumes()** or while **LightVolumeManager.AutoUpdateVolumes** enabled. Usually don't need to be executed manually.
+`void UpdateTransform()` - Recalculates **InvWorldMatrix**, **RelativeRotationRow0** and **RelativeRotationRow1**. Executes automatically from **LightVolumeManager.UpdateVolumes()** or while **LightVolumeManager.AutoUpdateVolumes** enabled. Usually don't need to be executed manually.
 
 ## PointLightVolumeInstance
 
@@ -77,11 +93,11 @@ Stores all the point light volume configuration including Color, Position, Direc
 
 `Color Color` - Point light volume color.
 
-`float Intensity` - Color multiplies by this value.
+`float Intensity` - Color multiplies by this value. Basically, controls the brightness.
 
 `bool IsDynamic` - Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance.
 
-`Vector4 PositionData` - **For point light:** XYZ = Position, W = Inverse squared range. **For spot light:** XYZ = Position, W = Inverse squared range, negated. **For area light:** XYZ = Position, W = Width.
+`Vector4 PositionData` - **For point light:** XYZ = Position, W = Squared light source size. **For spot light:** XYZ = Position, W = Squared light source size, or negated inverse squared range when in LUT mode. **For area light:** XYZ = Position, W = Width.
 
 `Vector4 DirectionData` - **For point light:** XYZW = Rotation quaternion. **For spot light:** XYZ = Direction, W = Cone falloff. **For area light:** XYZW = Rotation quaternion.
 
@@ -92,6 +108,16 @@ Stores all the point light volume configuration including Color, Position, Direc
 `float AngleData` - **For point light:** Cos of angle (for LUT). **For spot light:** Cos of outer angle if no custom texture, tan of outer angle otherwise. **For area light:** 2 + Height.
 
 `sbyte ShadowmaskIndex` - Index of the shadowmask channel used by this light. -1 means no shadowmask.
+
+`bool IsInitialized` - True if this Point Light Volume added to the **Point Light Volumes** array in **LightVolumeManager**. Should be always true for the Point Light Volumes placed in editor. Helps to initialize Point Light Volumes spawned in runtime.
+
+`float SquaredRange` - Squared range after which light will be culled. Should be recalculated by executing **UpdateRange()** method.
+
+`float SquaredScale` - Average squared lossy scale of the light. **Light Source Size** gets multiplied by it at the end. Updates with **UpdateTransform()** method.
+
+`LightVolumeManager LightVolumeManager` - Reference to the Light Volume Manager. Needed for runtime initialization.
+
+`bool IsRangeDirty` - Flag that defines if range of this point light should be recalculated in the next frame. Recalculates automatically when **AutoUpdateVolumes** is enabled. Resets to false after being recalculated.
 
 #### Public Methods
 
@@ -107,7 +133,7 @@ Stores all the point light volume configuration including Color, Position, Direc
 
 `bool IsParametric()` - Checks if uses Parametric mode
 
-`void SetRange(float range)` - Sets range data which is actually an inverted squared range
+`void SetLightSourceSize(float size)` - Sets Light source size, or a range data for LUT mode
 
 `void SetLut(int id)` - Sets LUT ID
 
@@ -123,4 +149,10 @@ Stores all the point light volume configuration including Color, Position, Direc
 
 `void SetAreaLight()` - Sets light into the area light type
 
+`void SetColor(Color color)` - Sets light source color and marks **IsRangeDirty** as true to auto recalculate range.
+
+`void SetIntensity(float intensity)` - Sets light source intensity and marks **IsRangeDirty** as true to auto recalculate range.
+
 `void UpdateTransform()` - Manually updates data required for shader
+
+`void UpdateRange()` - Recalculates squared culling range for the light. Usually it's enough to mark this light's **IsRangeDirty** as true instead, and this method will be executed automatically if **AutoUpdateVolumes** is enabled.

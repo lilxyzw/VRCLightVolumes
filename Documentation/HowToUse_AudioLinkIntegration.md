@@ -19,6 +19,8 @@
 
 This package includes a [AudioLink](https://github.com/llealloo/audiolink/) integration Udon script. 
 
+![](../Documentation/Preview_14.gif)
+
 **LightVolumeAudioLink** component can change Light Volumes, Point light Volumes and Mesh Renderers materials colors in runtime based on AudioLink.
 
 ## Audio Link Quick Setup

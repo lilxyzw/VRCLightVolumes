@@ -18,9 +18,7 @@
 
 ## TV Screens Integration
 
-This package includes a simple Udon script for lighting integration from TV screens.
-
-It works visually similar to [LTCGI](https://github.com/PiMaker/ltcgi) in some cases, but it does **not** support real screen reflections. Instead, it works best with **matte** environment materials.
+This package includes a simple Udon script for making realtime global illumination from TV screens.![](../Documentation/Preview_13.png)It works visually similar to [LTCGI](https://github.com/PiMaker/ltcgi) in some cases, but it does **not** support real screen reflections. Instead, it works best with **matte** environment materials.
 
 #### Advantages
 

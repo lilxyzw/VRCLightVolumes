@@ -18,7 +18,7 @@
 
 ## VRC Light Volumes System
 
-VRC Light Volumes is fast and optimized nextgen lighting solution for VRChat. It can also work without VRChat, but was mostly designed to work with VRChat SDK3 and Udon.
+![](../Documentation/Preview_1.png)VRC Light Volumes is fast and optimized nextgen lighting solution for VRChat. It can also work without VRChat, but was mostly designed to work with VRChat SDK3 and Udon.
 
 #### VRC Light Volumes system consists of two main parts:
 
@@ -33,6 +33,8 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 > ⚠️ Note: Unfortunately, there is no way to make avatars cast light volumes light, it can only be integrated into worlds.
 
 ## Light Volumes Quick World Setup
+
+![](../Documentation/Preview_3.png)
 
 1. Right-click in the **Hierarchy** and select `Light Volume`.
    You can also do it clicking on a **Reflection Probe** object, and new **Light Volume** will inherit its bounds.
@@ -56,6 +58,8 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 
 ## Point Light Volumes Quick World Setup
 
+![](../Documentation/Preview_2.png)
+
 1. Right-click in the **Hierarchy** and select `Point Light Volume`.
    It will add a Point Light Volume object on your scene. It's just a simple configurable light source.
 
@@ -63,11 +67,21 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 
    > ⚠️ Note: Point and Spot Lights are the cheapest. Area light can be ~8 times less performant than other light types, so use it only if you need a movable and scalable in runtime soft box, or if you really want to save memory. Otherwise, it's more performant to bake a regular Light Volume in a shape of an area light.
 
-3. `Debug Range` shows the range in which point light volume affects meshes. Try not to overlap a lot of point light volumes. More overlaps means less performance.
-4. In most of the cases you need to leave the `Shape` value as `Parametric` - it's the cheapest and the most useful mode. But if you want to project a light **cookie** (point light volume) or a **cubemap** (spot light volume), select `Custom` shape.
-5. Choose the `Color`, `Intensity`, `Range`, `Angle` and `Falloff` parameters as you wish.
+3. In most of the cases you need to leave the `Shape` value as `Parametric` - it's the cheapest and the most useful mode. But if you want to project a light **cookie** (point light volume) or a **cubemap** (spot light volume), select `Custom` shape.
+
+4. **Point Light Volumes work differently compared to Unity’s built-in lights.** They use light attenuation that more closely resembles how light behaves in the real world.
+
+   First, set the `Light Source Size`. This represents the physical radius of the light-emitting surface, like a light bulb for point lights, or a flashlight reflector for spotlights. Once that’s set, adjust the `Color` and `Intensity`.
+
+   Note that `Intensity` can be very high (in the hundreds or even thousands) for small `Light Source Size` values. This is because intensity here represents the light emitted per unit of surface area. A smaller light source must emit more intense light to achieve a reasonable visible range.
+
+   > ⚠️ Note: Scaling the light game object also scales the light source size!
+
+5. `Debug Range` shows the range in which point light volume affects meshes. Try not to overlap a lot of point light volumes. More overlaps means less performance.
+   You can configure the `Light Brightness Cutoff` value in the **Light Volume Setup** to limit the effective range of the light and improve performance. Higher values reduce the light's visible radius, which generally increases performance, but results in less realistic light attenuation.
+
 6. Enable `Dynamic` if your light can move in runtime. Otherwise it will be static, which is a tiny bit cheaper.
-7. Enabling `Baked Shadows` is useful when you want to bake 3D shadows for your static point light volumes. But it's a little bit more advanced thing, that is useful in some rare cases, so usually just keep it turned off.
+   If you want to make `Dynamic` lights auto-update their positions and other parameters in runtime, enable `Auto Update Volumes` in **Light Volume Setup**. Otherwise, they will stay in one place in game.
 
 > ⚠️ Note: You must use materials with a [shader that has VRC Light Volumes support](/Documentation/CompatibleShaders.md) for your world surfaces and props to see Point Light Volumes! Default Unity's shader will not work!
 

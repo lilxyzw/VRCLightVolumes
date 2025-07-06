@@ -20,13 +20,17 @@
 
 ## Regular Light Volumes
 
-Light Volumes is a fast and optimized solution that replaces Unity's light probes with a better per-pixel voxel based lighting. It's similar to Adaptive Probe Volumes (APV) in Unity 6, but with manual ReflectionProbe-like volumes placement and some other extra features.
+![](../Documentation/Preview_3.png)Light Volumes is a fast and optimized solution that replaces Unity's light probes with a better per-pixel voxel based lighting. It's similar to Adaptive Probe Volumes (APV) in Unity 6, but with manual ReflectionProbe-like volumes placement and some other extra features.
+
+**Light Volumes** consist of two components in the editor: `Light Volume` and `Light Volume Instance`.
+
+The `Light Volume` component is an editor-only script that helps you configure the light volume more easily. It is not included in the VRChat upload. Its purpose is to set up the `Light Volume Instance` Udon script in a user-friendly way. It also stores the required 3D textures, which are used to be packed into the final 3D atlas.
+
+The `Light Volume Instance` component is a VRChat Udon script that stores all the data required by the Light Volumes system to render the volume. You generally shouldn’t modify its values manually in the editor - use the `Light Volume` script instead. However, if you’re writing game logic that changes volume parameters at runtime, you should reference the `Light Volume Instance` component, since it is the one that actually functions as the real volume in-game.
 
 ## Light Volumes Placement
 
-**Light Volumes** should be placed to cover most of the walkable areas in your world. It's perfectly fine to leave some areas uncovered - in those cases, regular Unity Light Probes will be used as a fallback.
-
-If your scene is mostly lit with soft, uniform diffuse lighting, you don’t need to use very high light volumes resolution. In this case `Voxels Per Unit` value can be from `1` to `3` approximately, or even less for big open worlds.
+**Light Volumes** should be placed to cover most of the walkable areas in your world. It's perfectly fine to leave some areas uncovered - in those cases, regular Unity Light Probes will be used as a fallback.![](../Documentation/Preview_10.png)If your scene is mostly lit with soft, uniform diffuse lighting, you don’t need to use very high light volumes resolution. In this case `Voxels Per Unit` value can be from `1` to `3` approximately, or even less for big open worlds.
 
 However, if your scene contains sharp shadows or high-contrast lighting, using higher density is strongly recommended! In this case `Voxels Per Unit` value can be from `3` to `15` approximately, depending on the world size itself.
 
@@ -54,7 +58,7 @@ They use baked lighting data from the volume that contains a mesh and has the **
 
 #### Additive light volumes work differently
 
-They **add their light** on top of the regular volumes. Additive volumes can also affect **lightmapped static geometry**, making them ideal for dynamic lighting like toggleable or interactive lights, etc.
+![](../Documentation/Preview_11.png)They **add their light** on top of the regular volumes. Additive volumes can also affect **lightmapped static geometry**, making them ideal for dynamic lighting like toggleable or interactive lights, etc.
 
 #### How to Bake an Additive Light Volume
 
@@ -66,6 +70,8 @@ Here will be explained how to bake a togglable light zone for your world. It's u
 4. Make sure the volume **fully contains the light's range**.
 5. **Optionally:** For all of the **lightmap static** meshes, choose `Receive Global Illumination: Light Probes` to exclude them from baking lightmaps. (**Bakery** will still require a mesh that bakes lightmaps to start a bake)
 6. Bake the scene.
+
+![](../Documentation/Preview_12.png)
 
 #### Once baking is done
 

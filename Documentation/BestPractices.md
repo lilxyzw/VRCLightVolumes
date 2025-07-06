@@ -11,7 +11,7 @@
 > - [Movable Volumes As Light Sources](Movable-Volumes-As-Light-Sources)
 > - [Bakery Volume Rotation](#Bakery-Volume-Rotation)
 > - [Fixing Bakery Light Probes](#Fixing-Bakery-Light-Probes)
-> - [Area Light Volumes Intensity](Area-Light-Volumes-Intensity)
+> - [Spawning New Light Volumes In Runtime](#Spawning-New-Light-Volumes-In-Runtime)
 
 ## Regular Light Volumes Use Cases
 
@@ -66,6 +66,6 @@ Bakery lightmapper offers high quality with Light Volumes but may not support ro
 
 Bakery bakes L1 probes to work with "Geometrics SH Evaluation", which can cause overexposure and underexposure issues. Enable **Fix Light Probes L1** in Light Volume Setup to correct the probes after each bake. This may reduce overall contrast slightly but prevents over or underexposure.
 
-## Area Light Volumes Intensity
+## Spawning New Light Volumes In Runtime
 
-Note that compared to Point Lights, Area Lights emit less light per unit of intensity. This is to match up with Unity's lightmapper, where emissive lights are Pi times too dark. If you want your area lights to match up with point light intensity, or to match emissive objects, multiply the intensity by Pi (3.14).
+You can spawn and auto-initialize both Light Volumes and Point Light Volumes in runtime. To do that, first, setup your light volume in editor and configure it as you wish. Then, you need to remove the `Light Volume` or the `Point Light Volume` component from it, to leave only the **Udon Sharp Instance script** there. Then, uncheck the `Is Initialized` flag, it will make this object auto initialize every time it spawns. Then, you can spawn it as a prefab with native `Instantiate()` method, or with help of the VRC SDK3 `VRC Player Object` component.
