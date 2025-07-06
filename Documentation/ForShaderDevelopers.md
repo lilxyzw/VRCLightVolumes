@@ -115,12 +115,11 @@ Also this values are required to calculate the final light you get from the ligh
 ```hlsl
 void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b)
 ```
-
-`float3 worldPos` - World position of the current fragment
-
-`out float3 L0` - Outputs ambient color of the current fragment.
-
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r`<br/>`out float3 L1g`<br/>`out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
 ### float3 LightVolumeSH_L0()
 
@@ -130,7 +129,9 @@ Returns ambient color L0, without calculating L1. Cheaper then LightVolumeSH(). 
 float3 LightVolumeSH_L0(float3 worldPos)
 ```
 
-`float3 worldPos` - World position of the current fragment
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment.|
 
 ### void LightVolumeAdditiveSH()
 Returns Spherical Harmonics components, just as LightVolumeSH() does, but only for volumes that work in additive mode. This function is much lighter than LightVolumeSH(), and useful for shaders that can be used in baked lightmaps mode.
@@ -141,11 +142,11 @@ Evaluate it and add to your lightmaps color if you want to implement the additiv
 void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b)
 ```
 
-`float3 worldPos` - World position of the current fragment
-
-`out float3 L0` - Outputs ambient color of the current fragment.
-
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r` <br/> `out float3 L1g` <br/> `out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
 ### float3 LightVolumeAdditiveSH_L0()
 
@@ -157,7 +158,9 @@ Evaluate it and add to your lightmaps color if you want to implement the additiv
 float3 LightVolumeAdditiveSH_L0(float3 worldPos)
 ```
 
-`float3 worldPos` - World position of the current fragment
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment. |
 
 ### float3 LightVolumeEvaluate()
 
@@ -169,9 +172,10 @@ You should usually multiply it by your "Albedo" and add to the final color, as a
 float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
-
-`float3 L0`, `float3 L1r`, `float3 L1g`, `float3 L1b` - Spherical Harmonics components you got from the LightVolumeSH() function.
+| Function argument | Description |
+| --- | --- |
+|`float3 worldNormal` | World normal of the current fragment. Must be normalized to avoid artefacts.|
+|`float3 L0` <br/> `float3 L1r` <br/> `float3 L1g` <br/> `float3 L1b` | Spherical Harmonics components you got from the LightVolumeSH() function.|
 
 ### float3 LightVolumeSpecular()
 Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
@@ -182,19 +186,15 @@ Usually works much better for avatars, because can show several color speculars 
 float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 albedo` - Final albedo color
-
-`float smoothness` - Final surface smoothness
-
-`float metallic` - Final surface metalness
-
-`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
-
-`float3 viewDir` - World space camera view direction. Must be normalized.
-
-`out float3 L0` - Outputs ambient color of the current fragment.
-
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+| Function argument | Description |
+| --- | --- |
+|`float3 albedo` | Final albedo color.|
+|`float smoothness` | Final surface smoothness.|
+|`float metallic` | Final surface metalness.|
+|`float3 worldNormal` | World normal of the current fragment. Must be normalized to avoid artefacts.|
+|`float3 viewDir` | World space camera view direction. Must be normalized.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r` <br/> `out float3 L1g` <br/> `out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
 You can also provide the surface's specular color directly.
 
@@ -202,7 +202,9 @@ You can also provide the surface's specular color directly.
 float3 LightVolumeSpecular(float3 specColor, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 specColor` - Final surface specular color
+| Function argument | Description |
+| --- | --- |
+|`float3 specColor` | Final surface specular color. |
 
 ### float3 LightVolumeSpecularDominant()
 Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
@@ -213,19 +215,15 @@ Usually works better for static PBR surfaces, because can show a one color specu
 float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 albedo` - Final albedo color
-
-`float smoothness` - Final surface smoothness
-
-`float metallic` - Final surface metalness
-
-`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
-
-`float3 viewDir` - World space camera view direction. Must be normalized.
-
-`out float3 L0` - Outputs ambient color of the current fragment.
-
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+| Function argument | Description |
+| --- | --- |
+|`float3 albedo` | Final albedo color.|
+|`float smoothness` | Final surface smoothness.|
+|`float metallic` | Final surface metalness.|
+|`float3 worldNormal` | World normal of the current fragment. Must be normalized to avoid artefacts.|
+|`float3 viewDir` | World space camera view direction. Must be normalized.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r` <br/> `out float3 L1g` <br/> `out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
 You can also provide the surface's specular color directly.
 
@@ -233,7 +231,9 @@ You can also provide the surface's specular color directly.
 float3 LightVolumeSpecularDominant(float3 specColor, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 specColor` - Final surface specular color
+| Function argument | Description |
+| --- | --- |
+|`float3 specColor` | Final surface specular color.|
 
 ### float LightVolumesEnabled()
 Returns `0` if there are no light volumes support on the current scene, or `1` if light volumes system is provided.
