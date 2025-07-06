@@ -3,7 +3,7 @@
 # For shader developers
 
 | Menu |
-| ---|
+| --- |
 |**For Shader Developers**<br />• [Integrating Light Volumes with Amplify Shader Editor (ASE)](#Integrating-Light-Volumes-with-Amplify-Shader-Editor-(ASE))<br />• [Light Volume integration through shader code](#Light-Volume-integration-through-shader-code)<br />• [Shader Functions](#Shader-Functions)|
 
 If you are a shader developer, it should be easy to integrate Light Volumes support into your shader.
@@ -18,37 +18,14 @@ Screenshot above shows the regular Light Volumes and Speculars integration into 
 
 There are few ASE nodes available for you for an easy integration. Look into `Packages/VRC Light Volumes/Shaders/ASE Shaders` folder to check the integration examples.
 
-### LightVolume
-
-Required to get the Spherical Harmonics components. Using the output values you get from it, you can calculate the speculars for your custom lighting setup.
-
-`AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. 
-
-### LightVolumeL0
-
-Required to get the L0 spherical harmonics component, or just the overall ambient color, with no directionality. This is much lighter than the LightVolume node, and recommended to use in places where there are no directionality needed.
-
-`AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. 
-
-### LightVolumeEvaluate
-
-Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
-
-You should usually multiply it by your "Albedo" and add to the final color, as an emission.
-
-### LightVolumeSpecular
-
-Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
-
-`Dominant Direction` flag specifies if you want to use a simpler and lighter way of generating speculars. Generates one color specular for the dominant light direction instead of three color speculars in a regular method.
-
-### IsLightVolumes
-
-Returns `0` if there are no light volumes support on the current scene, or `1` if light volumes system is provided.
-
-### LightVolumesVersion
-
-Returns the light volumes version. `0` means that light volumes are not presented in the scene. `1`, `2` or any other values in future, shows the global light volumes verison presented in the scene.
+| ASE Node | Description |
+| --- | --- |
+| Light Volume | Required to get the Spherical Harmonics components. Using the output values you get from it, you can calculate the speculars for your custom lighting setup. <br/> `AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. |
+| Light Volume L0 | Required to get the L0 spherical harmonics component, or just the overall ambient color, with no directionality. This is much lighter than the LightVolume node, and recommended to use in places where there are no directionality needed. <br/> `AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. |
+| Light Volume Evaluate | Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example. <br/> You should usually multiply it by your "Albedo" and add to the final color, as an emission. |
+| Light Volume Specular | Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color! <br/> `Dominant Direction` flag specifies if you want to use a simpler and lighter way of generating speculars. Generates one color specular for the dominant light direction instead of three color speculars in a regular method. |
+| Is Light Volumes | Returns `0` if there are no light volumes support on the current scene, or `1` if light volumes system is provided. |
+| Light Volumes Version | Returns the light volumes version. `0` means that light volumes are not presented in the scene. `1`, `2` or any other values in future, shows the global light volumes verison presented in the scene. |
 
 ## Light Volume integration through shader code
 
