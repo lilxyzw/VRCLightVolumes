@@ -56,10 +56,9 @@ If you see unwanted **sharp color transitions** in your additive volume, try adj
 
 ## Light Volume TVGI Component Description
 
-`Target Render Texture` - Render Texture used by your video player. Can be just a static texture if you want it to be. Make sure that **Enable Mip Maps** and **Auto Generate Mip Maps** are **Enabled** in the texture’s import settings.
-
-`Anti Flickering` - Enables smoothing algorithm that tries to smooth out flickering that is usually a problem. Recommended to always be turned on.
-
-`Target Light Volumes` - List of the **Light Volumes** that should be affected by the Light Volume TVGI script.
-
-`Target Point Light Volumes` - List of the **Point Light Volumes** that should be affected by the Light Volume TVGI script. Usually you don't need it at all.
+| Parameter | Description |
+| --- | --- |
+|`Target Render Texture` | Render Texture used by your video player. Can be just a static texture if you want it to be. Make sure that **Enable Mip Maps** and **Auto Generate Mip Maps** are **Enabled** in the texture’s import settings.|
+|`Anti Flickering` | Enables smoothing algorithm that tries to smooth out flickering that is usually a problem. Recommended to always be turned on.|
+|`Target Light Volumes` | List of the **Light Volumes** that should be affected by the Light Volume TVGI script.|
+|`Target Point Light Volumes` | List of the **Point Light Volumes** that should be affected by the Light Volume TVGI script. Usually you don't need it at all.|
