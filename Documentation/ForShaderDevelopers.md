@@ -2,9 +2,9 @@
 
 # For shader developers
 
-> - [Integrating Light Volumes with Amplify Shader Editor (ASE)](#Integrating-Light-Volumes-with-Amplify-Shader-Editor-(ASE))
-> - [Light Volume integration through shader code](#Light-Volume-integration-through-shader-code)
-> - [Shader Functions](#Shader-Functions)
+| Menu |
+| ---|
+|**For Shader Developers**<br />• [Integrating Light Volumes with Amplify Shader Editor (ASE)](#Integrating-Light-Volumes-with-Amplify-Shader-Editor-(ASE))<br />• [Light Volume integration through shader code](#Light-Volume-integration-through-shader-code)<br />• [Shader Functions](#Shader-Functions)|
 
 If you are a shader developer, it should be easy to integrate Light Volumes support into your shader.
 

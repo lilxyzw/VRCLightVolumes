@@ -2,19 +2,13 @@
 
 # How to Use
 
-> [VRC Light Volumes System](../Documentation/HowToUse.md)
->
-> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
->
-> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
->
-> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
->
-> **TV Screens Integration**
->
-> - [TV Screen Quick Setup](#TV-Screen-Quick-Setup)
-> - [Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description)
->
+| Menu |
+|----|
+|[VRC Light Volumes System](../Documentation/HowToUse.md)|
+|[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)|
+| [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)|
+| [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
+| **TV Screens Integration**<br />• [TV Screen Quick Setup](#TV-Screen-Quick-Setup)<br />• [Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description) |
 
 ## TV Screens Integration
 
@@ -38,13 +32,15 @@ It works visually similar to [LTCGI](https://github.com/PiMaker/ltcgi) in some c
 1. Create a **separate scene** and bake the area affected by the screen light as an **additive light volume**.
    See the [Additive Volumes section](#How-to-Bake-an-Additive-Light-Volume) for detailed steps.
 
-   > ⚠️ Note: Remove all unnecessary lights during baking. Keep only the screen mesh with a **bright emissive material**.
+> [!IMPORTANT]
+> Remove all unnecessary lights during baking. Keep only the screen mesh with a **bright emissive material**.
 
 2. In your main scene, add the **LightVolumeTVGI** component to a GameObject.
 
 3. Assign the `Target Render Texture` field with the **Render Texture used by your video player**.
 
-   > ⚠️ Note: Make sure that `Enable Mip Maps` and `Auto Generate Mip Maps` are **Enabled** in the texture’s import settings.
+> [!WARNING]
+> Make sure that `Enable Mip Maps` and `Auto Generate Mip Maps` are **Enabled** in the texture’s import settings.
 
 4. Add all Light Volumes you want to control to the `Target Light Volumes` list. It's usually a one additive light volume.
 

@@ -1,22 +1,13 @@
 [VRC Light Volumes](../README.md) | **How to Use** | [Best Practices](../Documentation/BestPractices.md) | [Udon Sharp API](../Documentation/UdonSharpAPI.md) | [For Shader Developers](../Documentation/ForShaderDevelopers.md) | [Compatible Shaders](../Documentation/CompatibleShaders.md)
 
 # How to Use
-
-> [VRC Light Volumes System](../Documentation/HowToUse.md)
->
-> **Regular Light Volumes**
->
-> - [Light Volumes Placement](#Light-Volumes-Placement)
-> - [Auto Light Probes Placement](#Auto-Light-Probes-Placement)
-> - [Additive Light Volumes](#Additive-Light-Volumes)
-> - [Light Volumes Color Correction](#Light-Volumes-Color-Correction)
-> - [Light Volume Component Description](#Light-Volume-Component-Description)
->
-> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
->
-> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
->
-> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
+| Menu |
+| ------|
+|[VRC Light Volumes System](../Documentation/HowToUse.md)|
+|**Regular Light Volumes**<br />• [Light Volumes Placement](#Light-Volumes-Placement)<br />• [Auto Light Probes Placement](#Auto-Light-Probes-Placement)<br />• [Additive Light Volumes](#Additive-Light-Volumes)<br />• [Light Volumes Color Correction](#Light-Volumes-Color-Correction)<br />• [Light Volume Component Description](#Light-Volume-Component-Description)|
+|[Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)|
+|[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
+|[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
 
 ## Regular Light Volumes
 
@@ -40,7 +31,8 @@ If your scene is mostly lit with soft, uniform diffuse lighting, you don’t nee
 
 However, if your scene contains sharp shadows or high-contrast lighting, using higher density is strongly recommended! In this case `Voxels Per Unit` value can be from `3` to `15` approximately, depending on the world size itself.
 
-> ⚠️ Note:  Always keep an eye on the *Size Estimation* in your Light Volume component - increasing the density can quickly make the data size extremely large.
+> [!WARNING]
+> Always keep an eye on the *size estimation* in your Light Volume component - increasing the density can quickly make the data size extremely large.
 
 A good practice is to place one large, low-resolution Light Volume to cover the entire world, and then add smaller, higher-density volumes in areas with sharp shadows or small, detailed light sources. Just make sure to extend the bounds slightly beyond the target area - some padding is needed to blend the volume edges smoothly. The `Smooth Blending` property in the Light Volume component controls the size of this padding.
 
@@ -89,7 +81,8 @@ Here will be explained how to bake a togglable light zone for your world. It's u
 5. In **Light Volume Setup**, enable `Auto Update Volumes`.
 6. In **Light Volume Setup** press `Pack Light Volumes` to generate the 3D atlas needed for volumes to work.
    
-> ⚠️ Note: If you see some sharp edges, it means that some undesirable light was baked into the volume.
+> [!IMPORTANT]
+> If you see some sharp edges, it means that some undesirable light was baked into the volume.
 > You can increase the volume size or tweak the **Color Correction** to get rid of undesirable light. Lowering `Shadows` in color correction section usually helps.
 
 Now you should see your additive volume lighting up the scene.
@@ -99,7 +92,8 @@ You can always change the color and it's intensity in runtime via udon script to
 
 You can control how many additive volumes affect a pixel using the `Additive Max Overdraw` parameter in the **Light Volume Setup** component.
 
-> ⚠️ Note: `Additive Max Overdraw` parameter limits how many **additive volumes** are sampled **per pixel**, not how many can exist in the scene overall. The more additive volumes **intersect**, the higher the performance cost.
+> [!NOTE]
+> `Additive Max Overdraw` parameter limits how many **additive volumes** are sampled **per pixel**, not how many can exist in the scene overall. The more additive volumes **intersect**, the higher the performance cost.
 
 ## Light Volumes Color Correction
 

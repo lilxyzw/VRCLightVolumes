@@ -2,20 +2,13 @@
 
 # How to Use
 
-> [VRC Light Volumes System](../Documentation/HowToUse.md)
->
-> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
->
-> **Point Light Volumes**
->
-> - [Point Light Volumes Placement](#Point-Light-Volumes-Placement)
-> - [Light Shape](#Light-Shape)
-> - [Baked Point Light Volume Shadows](#Baked-Point-Light-Volume-Shadows)
-> - [Point Light Volume Component Description](#Point-Light-Volume-Component-Description)
->
-> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
->
-> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
+| Menu |
+|----|
+|[VRC Light Volumes System](../Documentation/HowToUse.md)|
+|[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)|
+|**Point Light Volumes**<br />• [Point Light Volumes Placement](#Point-Light-Volumes-Placement)<br />• [Light Shape](#Light-Shape)<br />• [Baked Point Light Volume Shadows](#Baked-Point-Light-Volume-Shadows)<br />• [Point Light Volume Component Description](#Point-Light-Volume-Component-Description)|
+|[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
+|[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
 
 ## Point Light Volumes
 
@@ -59,7 +52,8 @@ The main difference to Unity’s built-in lights is the `Light Source Size` prop
 
 Note that `Intensity` can be very high (in the hundreds or even thousands) for small `Light Source Size` values. This is because intensity here represents the light emitted per unit of surface area. A smaller light source must emit more intense light to achieve a reasonable visible range.
 
-> ⚠️ Note: Scaling the light game object also scales the light source size!
+> [!TIP]
+> Scaling the light game object also scales the light source size!
 
 In Spot Light mode, several additional parametric shape properties are available. The `Angle` property controls the cone angle of the spotlight in degrees. Unlike Unity’s built-in Spot Light, this angle can exceed 180 degrees to create an inverted cone. The `Falloff` property adjusts the softness of the cone edges.
 
@@ -75,7 +69,8 @@ In Point Light mode, only vertical texture direction is used, as there are no co
 
 So, LUT is the only light shape mode, which can customize the light attenuation. It uses `Range` property to manually define the light range.
 
-> ⚠️ **Note:** It’s recommended to completely disable compression for any texture used as a Cookie or a LUT. The Light Volumes system does not inherit the compression settings, but compression artifacts will still remain and affect the result.
+> [!IMPORTANT]
+> It’s recommended to completely disable compression for any texture used as a Cookie or a LUT. The Light Volumes system does not inherit the compression settings, but compression artifacts will still remain and affect the result.
 
 #### Custom
 
@@ -89,13 +84,15 @@ Point Light in `Custom` light shape mode can project a cubemap instead of a regu
 
 When you assign a LUT, Cookie texture, or Cubemap, the **Light Volumes** system automatically packs everything into a single **Texture Array**. The `Resolution` and `Format` of this array can be configured in the **Light Volumes Setup** component.
 
-> ⚠️ **Note:** Higher resolutions may increase packing time and cause temporary lag in the editor.
+> [!WARNING]
+> High resolutions may increase packing time and cause temporary lag in the editor.
 
 LUTs and Cookie textures share the same resolution, as they are packed into the same texture array. Cubemaps, however, require 6 slices per entry (one for each face), so each cubemap takes up six times more space than a LUT or Cookie. If your input textures have a different resolution, they will be automatically rescaled during packing. 
 
 Duplicated LUTs, Cubemaps, and Cookie textures are only uploaded to VRChat once and are reused by all lights that reference them. So don’t worry about using the same textures across multiple Point Light Volumes - it won’t increase the build size.
 
-> ⚠️ **Note:** It’s recommended to completely disable compression for any texture used as a Cookie or a LUT. The Light Volumes system does not inherit the compression settings, but compression artifacts will still remain and affect the result.
+> [!IMPORTANT]
+> It’s recommended to completely disable compression for any texture used as a Cookie or a LUT. The Light Volumes system does not inherit the compression settings, but compression artifacts will still remain and affect the result.
 
 #### Available Texture Formats:
 
@@ -113,7 +110,8 @@ To bake shadows, simply enable the `Baked Shadows` option on the desired **Point
 
 Keep in mind that baked shadows are voxel-based and are stored directly inside each Light Volume at its configured resolution. Make sure the `Point Light Shadows` option is enabled on every Light Volume you want to include in the bake. Enabling `Blur Shadows` is also recommended in most cases to reduce blocky aliasing artifacts, though it will make shadows appear softer.
 
-> ⚠️ **Note:** Each Light Volume can support a maximum of **4 shadow-casting point lights** that intersects with each other.
+> [!IMPORTANT]
+> Each Light Volume can support a maximum of **4 shadow-casting point lights** that intersects with each other.
 
 To bake shadows for Point Light Volumes, simply rebake your scene lighting.
 

@@ -2,16 +2,9 @@
 
 # Best Practices
 
-> - [Regular Light Volumes Use Cases](#Regular-Light-Volumes-Use-Cases)
-> - [Point Light Volumes Use Cases](#Point-Light-Volumes-Use-Cases)
-> - [Naming Light Volumes](#Quick-Light-Probe-Setup)
-> - [Volume Bounds Smoothing](#Volume-Bounds-Smoothing)
-> - [Culling Light Volumes](#Culling-Light-Volumes)
-> - [Moving Light Volumes](#Moving-Light-Volumes)
-> - [Movable Volumes As Light Sources](Movable-Volumes-As-Light-Sources)
-> - [Bakery Volume Rotation](#Bakery-Volume-Rotation)
-> - [Fixing Bakery Light Probes](#Fixing-Bakery-Light-Probes)
-> - [Spawning New Light Volumes In Runtime](#Spawning-New-Light-Volumes-In-Runtime)
+| Menu |
+| ----|
+| **Best Practices**<br />• [Regular Light Volumes Use Cases](#Regular-Light-Volumes-Use-Cases)<br />• [Point Light Volumes Use Cases](#Point-Light-Volumes-Use-Cases)<br />• [Naming Light Volumes](#Quick-Light-Probe-Setup)<br />• [Volume Bounds Smoothing](#Volume-Bounds-Smoothing)<br />• [Culling Light Volumes](#Culling-Light-Volumes)<br />• [Moving Light Volumes](#Moving-Light-Volumes)<br />• [Movable Volumes As Light Sources](Movable-Volumes-As-Light-Sources)<br />• [Bakery Volume Rotation](#Bakery-Volume-Rotation)• [Fixing Bakery Light Probes](#Fixing-Bakery-Light-Probes)<br />• [Spawning New Light Volumes In Runtime](#Spawning-New-Light-Volumes-In-Runtime) |
 
 ## Regular Light Volumes Use Cases
 

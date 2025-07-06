@@ -2,18 +2,13 @@
 
 # How to Use
 
-> [VRC Light Volumes System](../Documentation/HowToUse.md)
->
-> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
->
-> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
->
-> **Audio Link Integration**
->
-> - [Audio Link Quick Setup](#Audio-Link-Quick-Setup)
-> - [Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description)
->
-> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
+| Menu |
+| ---|
+|[VRC Light Volumes System](../Documentation/HowToUse.md)|
+|[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)|
+| [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)|
+| **Audio Link Integration**<br />• [Audio Link Quick Setup](#Audio-Link-Quick-Setup)<br />• [Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description) |
+|[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
 
 ## Audio Link Integration
 
@@ -35,7 +30,8 @@ This package includes a [AudioLink](https://github.com/llealloo/audiolink/) inte
 
 5. Add all Mesh Renderers you want to change emission color by AudioLink to the `Target Mesh Renderers` list.
 
-   > ⚠️ Note: These meshes should use materials with **emission enabled**. The shader must include a property named `_EmissionColor` (the **Standard** shader supports this).
+> [!IMPORTANT]
+> These meshes should use materials with **emission enabled**. The shader must include a property named `_EmissionColor` (the **Standard** shader supports this).
 
 6. Adjust `Materials Intensity` to fine-tune the brightness of your materials. `Intensity` of Light Volumes and Point Light Volumes can be configured in their components.
 

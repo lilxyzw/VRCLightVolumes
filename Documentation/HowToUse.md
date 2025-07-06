@@ -2,19 +2,13 @@
 
 # How to Use
 
-> **VRC Light Volumes System**
->
-> - [Light Volumes for Avatars](#Light-Volumes-for-Avatars)
-> - [Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)
-> - [Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup)
->
-> [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)
->
-> [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)
->
-> [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)
->
-> [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)
+| Menu |
+|:--------------|
+| **VRC Light Volumes System**<br />• [Light Volumes for Avatars](#Light-Volumes-for-Avatars)<br />• [Light Volumes for Avatars](#Light-Volumes-for-Avatars)<br />• [Light Volumes Quick World Setup](#Light-Volumes-Quick-World-Setup)<br />• [Point Light Volumes Quick World Setup](#Point-Light-Volumes-Quick-World-Setup) |
+| [Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)|
+| [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)|
+| [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
+| [TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
 
 ## VRC Light Volumes System
 
@@ -32,7 +26,8 @@ VRC Light Volumes is fast and optimized nextgen lighting solution for VRChat. It
 
 You just need to use a [shader that has VRC Light Volumes support](/Documentation/CompatibleShaders.md) and that's it. Nothing else to do!
 
-> ⚠️ Note: Unfortunately, there is no way to make avatars cast light volumes light, it can only be integrated into worlds.
+> [!NOTE]
+> Unfortunately, there is no way to make avatars cast light volumes light, it can only be integrated into worlds.
 
 ## Light Volumes Quick World Setup
 
@@ -56,7 +51,8 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 9. Bake the scene.
 10. For reference, check out the `Example` scene in the `Packages/VRC Light Volumes/Example` folder to see a working setup.
 
-> ⚠️ Note: The number of active Light Volumes is limited to 32 per scene at a time. However, you can dynamically enable and disable volumes at runtime to work with more than 32 total, just not simultaneously.
+> [!IMPORTANT]
+> The number of active Light Volumes is limited to 32 per scene at a time. However, you can dynamically enable and disable volumes at runtime to work with more than 32 total, just not simultaneously.
 
 ## Point Light Volumes Quick World Setup
 
@@ -67,7 +63,8 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 
 2. Select your desired Point Light Volume `Type`. It can be: `Point Light`, `Spot Light`, `Area Light`
 
-   > ⚠️ Note: Point and Spot Lights are the cheapest. Area light can be ~8 times less performant than other light types, so use it only if you need a movable and scalable in runtime soft box, or if you really want to save memory. Otherwise, it's more performant to bake a regular Light Volume in a shape of an area light.
+> [!IMPORTANT]
+>  Point and Spot Lights are the cheapest. Area light can be ~8 times less performant than other light types, so use it only if you need a movable and scalable in runtime soft box, or if you really want to save memory. Otherwise, it's more performant to bake a regular Light Volume in a shape of an area light.
 
 3. In most of the cases you need to leave the `Shape` value as `Parametric` - it's the cheapest and the most useful mode. But if you want to project a light **cookie** (point light volume) or a **cubemap** (spot light volume), select `Custom` shape.
 
@@ -77,7 +74,8 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 
    Note that `Intensity` can be very high (in the hundreds or even thousands) for small `Light Source Size` values. This is because intensity here represents the light emitted per unit of surface area. A smaller light source must emit more intense light to achieve a reasonable visible range.
 
-   > ⚠️ Note: Scaling the light game object also scales the light source size!
+> [!TIP]
+> Scaling the light game object also scales the light source size!
 
 5. `Debug Range` shows the range in which point light volume affects meshes. Try not to overlap a lot of point light volumes. More overlaps means less performance.
    You can configure the `Light Brightness Cutoff` value in the **Light Volume Setup** to limit the effective range of the light and improve performance. Higher values reduce the light's visible radius, which generally increases performance, but results in less realistic light attenuation.
@@ -85,6 +83,8 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
 6. Enable `Dynamic` if your light can move in runtime. Otherwise it will be static, which is a tiny bit cheaper.
    If you want to make `Dynamic` lights auto-update their positions and other parameters in runtime, enable `Auto Update Volumes` in **Light Volume Setup**. Otherwise, they will stay in one place in game.
 
-> ⚠️ Note: You must use materials with a [shader that has VRC Light Volumes support](/Documentation/CompatibleShaders.md) for your world surfaces and props to see Point Light Volumes! Default Unity's shader will not work!
+> [!WARNING]
+> You must use materials with a [shader that has VRC Light Volumes support](/Documentation/CompatibleShaders.md) for your world surfaces and props to see Point Light Volumes! Default Unity's shader will not work!
 
-> ⚠️ Note: The number of active Point Light Volumes is limited to 128 per scene at a time. However, you can dynamically enable and disable point light volumes at runtime to work with more than 128 total, just not simultaneously.
+> [!IMPORTANT]
+> The number of active Point Light Volumes is limited to 128 per scene at a time. However, you can dynamically enable and disable point light volumes at runtime to work with more than 128 total, just not simultaneously.
