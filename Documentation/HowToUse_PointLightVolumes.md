@@ -42,7 +42,7 @@ Try not to make an insanely huge range for your lights. Use `Debug Range` flag i
 
 ## Light Shape
 
-#### Parametric
+### Parametric
 
 Point Light Volumes and Spot Light Volumes use `Parametric` light shape by default. **Point Light Volumes work differently compared to Unity’s built-in lights.** They use inverse-square light attenuation that more closely resembles how light behaves in the real world.
 
@@ -57,7 +57,7 @@ Note that `Intensity` can be very high (in the hundreds or even thousands) for s
 
 In Spot Light mode, several additional parametric shape properties are available. The `Angle` property controls the cone angle of the spotlight in degrees. Unlike Unity’s built-in Spot Light, this angle can exceed 180 degrees to create an inverted cone. The `Falloff` property adjusts the softness of the cone edges.
 
-#### LUT
+### LUT
 
 If you want to create a complex light shape and attenuation, `LUT` light shape is what you need. For the Spot Light mode, LUT works similar to IES light shape format, but easier for people to create their own LUT presets.
 
@@ -72,7 +72,7 @@ So, LUT is the only light shape mode, which can customize the light attenuation.
 > [!IMPORTANT]
 > It’s recommended to completely disable compression for any texture used as a Cookie or a LUT. The Light Volumes system does not inherit the compression settings, but compression artifacts will still remain and affect the result.
 
-#### Custom
+### Custom
 
 If you want just to project a light cookie texture, you can use `Custom` light shape mode. Unlike Unity’s built-in Spot Light, here cookie can project a colored texture, that can work as a projector. Using angle with more than 180 degrees will not create an inversed cone in this case.
 
@@ -80,7 +80,7 @@ If you want just to project a light cookie texture, you can use `Custom` light s
 
 Point Light in `Custom` light shape mode can project a cubemap instead of a regular cookie. So it's a perfect solution to make disco balls, lamps that projects stars or anything else you want.
 
-#### Custom Texture Resolution and Format
+### Custom Texture Resolution and Format
 
 When you assign a LUT, Cookie texture, or Cubemap, the **Light Volumes** system automatically packs everything into a single **Texture Array**. The `Resolution` and `Format` of this array can be configured in the **Light Volumes Setup** component.
 
@@ -94,7 +94,7 @@ Duplicated LUTs, Cubemaps, and Cookie textures are only uploaded to VRChat once 
 > [!IMPORTANT]
 > It’s recommended to completely disable compression for any texture used as a Cookie or a LUT. The Light Volumes system does not inherit the compression settings, but compression artifacts will still remain and affect the result.
 
-#### Available Texture Formats:
+### Available Texture Formats:
 
 - **`RGBA32`** – The lightest format, but it does **not** support HDR. Not recommended for LUTs, as it causes visible banding artifacts.
 - **`RGBA Half`** – The recommended format for most cases. Supports HDR and works well with LUTs. It uses half precision, so minimal banding may still be visible, but usually unnoticeable.
@@ -117,32 +117,20 @@ To bake shadows for Point Light Volumes, simply rebake your scene lighting.
 
 ## Point Light Volume Component Description
 
-`Dynamic` - Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance on the CPU side. If you want to make Dynamic lights auto-update their positions and other parameters in runtime, enable **Auto Update Volumes** in **Light Volume Setup**, or call the **UpdateVolumes()** function manually through an Udon script. Otherwise, they will stay in one place in game.
-
-`Baked Shadows` - Enables baked shadows for this light. This setting is only available for static lights, which cannot move. You must re-bake your volumes after changing this setting. This incurs some runtime VRAM and performance overhead.
-
-`Baked Shadow Radius` - Shadow radius for the baked shadows. Higher values will produce softer shadows.
-
-`Type` - Changes the light mode between Point Light, Spot Light and Area Light.
-
-`Light Source Size` - Physical radius of a light source if it was a matte glowing sphere for a point light, or a flashlight reflector for a spot light. Larger size emits more light without increasing overall intensity.
-
-`Range` - Radius in meters beyond which point and spot lights are culled. (Only available in LUT light shape mode)
-
-`Color` - Multiplies the point light volume’s color by this value.
-
-`Intensity` - Brightness of the point light volume.
-
-`Shape` - Parametric uses settings to compute light falloff. LUT uses a texture: X - cone falloff, Y - attenuation (Y only for point lights). Cookie projects a texture for spot lights. Cubemap projects a cubemap for point lights.
-
-`Angle` - Angle of a spotlight cone in degrees. (Only available in spotlight mode)
-
-`Falloff` - Spotlight cone falloff. (Only available in parametric spotlight mode)
-
-`Falloff LUT` - Texture that defines custom light shape. Similar to IES. X - cone falloff, Y - attenuation. No compression and RGBA Float or RGBA Half format is recommended.
-
-`Cookie` - Projects a square texture for spot lights.
-
-`Cubemap` - Projects a cubemap for point lights.
-
-`Debug Range` - Shows overdrawing range gizmo. Less point light volumes intersections - more performance!
+| Parameter | Description |
+| --- | --- |
+|`Dynamic` | Defines whether this point light volume can be moved in runtime. Disabling this option slightly improves performance on the CPU side. If you want to make Dynamic lights auto-update their positions and other parameters in runtime, enable **Auto Update Volumes** in **Light Volume Setup**, or call the **UpdateVolumes()** function manually through an Udon script. Otherwise, they will stay in one place in game.|
+|`Baked Shadows` | Enables baked shadows for this light. This setting is only available for static lights, which cannot move. You must re-bake your volumes after changing this setting. This incurs some runtime VRAM and performance overhead.|
+|`Baked Shadow Radius` | Shadow radius for the baked shadows. Higher values will produce softer shadows.|
+|`Type` | Changes the light mode between Point Light, Spot Light and Area Light.|
+|`Light Source Size` | Physical radius of a light source if it was a matte glowing sphere for a point light, or a flashlight reflector for a spot light. Larger size emits more light without increasing overall intensity.|
+|`Range` | Radius in meters beyond which point and spot lights are culled. (Only available in LUT light shape mode)|
+|`Color` | Multiplies the point light volume’s color by this value.|
+|`Intensity` | Brightness of the point light volume.|
+|`Shape` | Parametric uses settings to compute light falloff. LUT uses a texture: X - cone falloff, Y - attenuation (Y only for point lights). Cookie projects a texture for spot lights. Cubemap projects a cubemap for point lights.|
+|`Angle` | Angle of a spotlight cone in degrees. (Only available in spotlight mode)|
+|`Falloff` | Spotlight cone falloff. (Only available in parametric spotlight mode)|
+|`Falloff LUT` | Texture that defines custom light shape. Similar to IES. X - cone falloff, Y - attenuation. No compression and RGBA Float or RGBA Half format is recommended.|
+|`Cookie` | Projects a square texture for spot lights.|
+|`Cubemap` | Projects a cubemap for point lights.|
+|`Debug Range` | Shows overdrawing range gizmo. Less point light volumes intersections - more performance!|
