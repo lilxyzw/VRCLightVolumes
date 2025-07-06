@@ -247,7 +247,10 @@ namespace VRCLightVolumes {
             ulong vCount = 0;
             if (_lightVolumeSetup.LightVolumeManager != null && _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas != null) {
                 var tex = _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas;
-                vCount = (ulong)tex.width * (ulong)tex.height * (ulong)tex.depth;
+                if (tex is Texture3D tex3D)
+                    vCount = (ulong)tex.width * (ulong)tex.height * (ulong)tex3D.depth;
+                else if (tex is CustomRenderTexture crt && crt.volumeDepth > 0)
+                    vCount = (ulong)crt.width * (ulong)crt.height * (ulong)crt.volumeDepth;
             }
 
             GUILayout.Label($"Atlas size in VRAM: {SizeInVRAM(vCount)} MB");

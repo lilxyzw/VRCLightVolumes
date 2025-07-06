@@ -18,7 +18,7 @@ namespace VRCLightVolumes {
     {
         public const float Version = 2; // VRC Light Volumes Current version. This value used in shaders (_UdonLightVolumeEnabled) to determine which features are can be used
         [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
-        public Texture3D LightVolumeAtlas;
+        public Texture LightVolumeAtlas;
         [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
         public bool LightProbesBlending = true;
         [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
