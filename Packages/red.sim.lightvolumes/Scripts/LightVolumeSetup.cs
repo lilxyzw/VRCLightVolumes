@@ -418,7 +418,8 @@ namespace VRCLightVolumes {
 
                 if (atlas.Texture == null || DontSync) return; // Return if atlas packing failed
 
-                LightVolumeManager.LightVolumeAtlas = atlas.Texture;
+                LightVolumeManager.LightVolumeAtlasBase = atlas.Texture;
+                UpdatePostProcessors();
 
                 LightVolumeDataList.Clear();
 
@@ -622,6 +623,64 @@ namespace VRCLightVolumes {
                 list.Add(PointLightVolumes[i].PointLightVolumeInstance);
             }
             return list.ToArray();
+        }
+
+        public void RegisterPostProcessorCRT(CustomRenderTexture crt) {
+            if (crt == null || Array.IndexOf(LightVolumeManager.AtlasPostProcessors, crt) != -1) return;
+            LightVolumeManager.AtlasPostProcessors ??= new CustomRenderTexture[0];
+            Array.Resize(ref LightVolumeManager.AtlasPostProcessors, LightVolumeManager.AtlasPostProcessors.Length + 1);
+            LightVolumeManager.AtlasPostProcessors[^1] = crt;
+            Debug.Log($"[LightVolumeSetup] Registered post processor CRT: {crt.name}");
+            UpdatePostProcessors();
+        }
+
+        public void UnregisterPostProcessorCRT(CustomRenderTexture crt) {
+            if (crt == null) return;
+            var index = Array.IndexOf(LightVolumeManager.AtlasPostProcessors, crt);
+            if (index < 0) return;
+            var newArray = new CustomRenderTexture[LightVolumeManager.AtlasPostProcessors.Length - 1];
+            for (int i = 0, j = 0; i < LightVolumeManager.AtlasPostProcessors.Length; i++) {
+                if (i != index) {
+                    newArray[j++] = LightVolumeManager.AtlasPostProcessors[i];
+                }
+            }
+            LightVolumeManager.AtlasPostProcessors = newArray;
+            Debug.Log($"[LightVolumeSetup] Unregistered post processor CRT: {crt.name}");
+            UpdatePostProcessors();
+        }
+
+        private void UpdatePostProcessors() {
+            if (LightVolumeManager.AtlasPostProcessors == null || LightVolumeManager.AtlasPostProcessors.Length == 0) {
+                // no post processors, just use base atlas
+                LightVolumeManager.LightVolumeAtlas = LightVolumeManager.LightVolumeAtlasBase;
+                return;
+            }
+
+            Texture3D baseAtlas = LightVolumeManager.LightVolumeAtlasBase;
+            Texture prevAtlas = baseAtlas;
+            foreach (var crt in LightVolumeManager.AtlasPostProcessors) {
+                if (crt == null) continue;
+
+                // enforce some base settings to ensure no quality loss between post processors
+                crt.Release();
+                crt.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+                crt.graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat;
+                crt.updateMode = CustomRenderTextureUpdateMode.Realtime;
+                if (baseAtlas != null) {
+                    crt.width = baseAtlas.width;
+                    crt.height = baseAtlas.height;
+                    crt.volumeDepth = baseAtlas.depth;
+                }
+
+                // build processing chain
+                crt.material.mainTexture = prevAtlas;
+                prevAtlas = crt;
+
+                // store last CRT as active
+                LightVolumeManager.LightVolumeAtlas = crt;
+
+                crt.Update();
+            }
         }
 
         
