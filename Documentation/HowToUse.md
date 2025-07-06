@@ -18,7 +18,9 @@
 
 ## VRC Light Volumes System
 
-![](../Documentation/Preview_1.png)VRC Light Volumes is fast and optimized nextgen lighting solution for VRChat. It can also work without VRChat, but was mostly designed to work with VRChat SDK3 and Udon.
+![](../Documentation/Preview_1.png)
+
+VRC Light Volumes is fast and optimized nextgen lighting solution for VRChat. It can also work without VRChat, but was mostly designed to work with VRChat SDK3 and Udon.
 
 #### VRC Light Volumes system consists of two main parts:
 

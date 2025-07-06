@@ -20,7 +20,9 @@
 
 ## Regular Light Volumes
 
-![](../Documentation/Preview_3.png)Light Volumes is a fast and optimized solution that replaces Unity's light probes with a better per-pixel voxel based lighting. It's similar to Adaptive Probe Volumes (APV) in Unity 6, but with manual ReflectionProbe-like volumes placement and some other extra features.
+![](../Documentation/Preview_3.png)
+
+Light Volumes is a fast and optimized solution that replaces Unity's light probes with a better per-pixel voxel based lighting. It's similar to Adaptive Probe Volumes (APV) in Unity 6, but with manual ReflectionProbe-like volumes placement and some other extra features.
 
 **Light Volumes** consist of two components in the editor: `Light Volume` and `Light Volume Instance`.
 
@@ -30,7 +32,11 @@ The `Light Volume Instance` component is a VRChat Udon script that stores all th
 
 ## Light Volumes Placement
 
-**Light Volumes** should be placed to cover most of the walkable areas in your world. It's perfectly fine to leave some areas uncovered - in those cases, regular Unity Light Probes will be used as a fallback.![](../Documentation/Preview_10.png)If your scene is mostly lit with soft, uniform diffuse lighting, you don’t need to use very high light volumes resolution. In this case `Voxels Per Unit` value can be from `1` to `3` approximately, or even less for big open worlds.
+**Light Volumes** should be placed to cover most of the walkable areas in your world. It's perfectly fine to leave some areas uncovered - in those cases, regular Unity Light Probes will be used as a fallback.
+
+![](../Documentation/Preview_10.png)
+
+If your scene is mostly lit with soft, uniform diffuse lighting, you don’t need to use very high light volumes resolution. In this case `Voxels Per Unit` value can be from `1` to `3` approximately, or even less for big open worlds.
 
 However, if your scene contains sharp shadows or high-contrast lighting, using higher density is strongly recommended! In this case `Voxels Per Unit` value can be from `3` to `15` approximately, depending on the world size itself.
 
@@ -58,7 +64,9 @@ They use baked lighting data from the volume that contains a mesh and has the **
 
 #### Additive light volumes work differently
 
-![](../Documentation/Preview_11.png)They **add their light** on top of the regular volumes. Additive volumes can also affect **lightmapped static geometry**, making them ideal for dynamic lighting like toggleable or interactive lights, etc.
+![](../Documentation/Preview_11.png)
+
+They **add their light** on top of the regular volumes. Additive volumes can also affect **lightmapped static geometry**, making them ideal for dynamic lighting like toggleable or interactive lights, etc.
 
 #### How to Bake an Additive Light Volume
 

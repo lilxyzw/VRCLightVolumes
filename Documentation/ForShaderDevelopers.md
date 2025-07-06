@@ -12,7 +12,9 @@ Both shader code way with a .cginc file and Amplify Shader Editor way with speci
 
 ## Integrating Light Volumes with Amplify Shader Editor (ASE)
 
-![](../Documentation/Preview_15.png)Screenshot above shows the regular Light Volumes and Speculars integration into a PBR shader in Amplify Shader Editor.
+![](../Documentation/Preview_15.png)
+
+Screenshot above shows the regular Light Volumes and Speculars integration into a PBR shader in Amplify Shader Editor.
 
 There are few ASE nodes available for you for an easy integration. Look into `Packages/VRC Light Volumes/Shaders/ASE Shaders` folder to check the integration examples.
 
