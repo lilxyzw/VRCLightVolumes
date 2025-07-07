@@ -299,7 +299,6 @@ namespace VRCLightVolumes {
             for (int i = 0; i < LightVolumeInstances.Length && _enabledCount < 32; i++) {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance == null) continue;
-                instance.UpdateNotifier = this; // Setting update notifier for the instance
                 if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
@@ -383,8 +382,7 @@ namespace VRCLightVolumes {
                 if (IsRangeDirty) { // If Brightness cutoff changed, force recalculate every light's range
                     instance.UpdateRange();
                 }
-                instance.UpdateNotifier = this; // Setting update notifier for the instance
-                if (instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
+                if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else

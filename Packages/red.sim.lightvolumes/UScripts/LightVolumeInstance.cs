@@ -58,8 +58,6 @@ namespace VRCLightVolumes {
         public bool IsInitialized = false;
         [Tooltip("Reference to the Light Volume Manager. Needed for runtime initialization.")]
         public LightVolumeManager LightVolumeManager;
-        [Tooltip("Reference to the LightVolumeManager that manages this volume. Used to notify the manager about changes in this volume.")]
-        public LightVolumeManager UpdateNotifier;
 
         [HideInInspector] // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
         public bool IsIterartedThrough = false;
@@ -71,33 +69,33 @@ namespace VRCLightVolumes {
 
         private Color _old_Color;
         public void _onVarChange_Color() {
-            if (_old_Color != Color && Utilities.IsValid(UpdateNotifier))
-                UpdateNotifier.RequestUpdateVolumes();
+            if (_old_Color != Color && Utilities.IsValid(LightVolumeManager))
+                LightVolumeManager.RequestUpdateVolumes();
         }
 
         private float _old_Intensity;
         public void _onVarChange_Intensity() {
-            if (_old_Intensity != Intensity && Utilities.IsValid(UpdateNotifier))
-                UpdateNotifier.RequestUpdateVolumes();
+            if (_old_Intensity != Intensity && Utilities.IsValid(LightVolumeManager))
+                LightVolumeManager.RequestUpdateVolumes();
         }
 #endif
 
         private void OnEnable() {
 #if UDONSHARP
-            if (Utilities.IsValid(UpdateNotifier))
+            if (Utilities.IsValid(LightVolumeManager))
 #else
-            if (UpdateNotifier != null)
+            if (LightVolumeManager != null)
 #endif
-                UpdateNotifier.RequestUpdateVolumes();
+                LightVolumeManager.RequestUpdateVolumes();
         }
 
         private void OnDisable() {
 #if UDONSHARP
-            if (Utilities.IsValid(UpdateNotifier))
+            if (Utilities.IsValid(LightVolumeManager))
 #else
-            if (UpdateNotifier != null)
+            if (LightVolumeManager != null)
 #endif
-                UpdateNotifier.RequestUpdateVolumes();
+                LightVolumeManager.RequestUpdateVolumes();
         }
 
         // Calculates and sets invLocalEdgeBlending
@@ -106,7 +104,7 @@ namespace VRCLightVolumes {
             InvLocalEdgeSmoothing = scl / Mathf.Max(radius, 0.00001f);
 
 #if COMPILER_UDONSHARP
-            if (Utilities.IsValid(UpdateNotifier)) UpdateNotifier.RequestUpdateVolumes();
+            if (Utilities.IsValid(LightVolumeManager)) LightVolumeManager.RequestUpdateVolumes();
 #endif
         }
 
