@@ -17,8 +17,12 @@ namespace VRCLightVolumes {
 #endif
     {
         public const float Version = 2; // VRC Light Volumes Current version. This value used in shaders (_UdonLightVolumeEnabled) to determine which features are can be used
-        [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
-        public Texture3D LightVolumeAtlas;
+        [Tooltip("Combined texture containing all Light Volumes' textures.")]
+        public Texture LightVolumeAtlas;
+        [Tooltip("Combined Texture3D containing all baked Light Volume data. This field is not used at runtime, see LightVolumeAtlas instead. It specifies the base for the post process chain, if given.")]
+        public Texture3D LightVolumeAtlasBase;
+        [Tooltip("Custom Render Textures that will be applied top to bottom to the Light Volume Atlas at runtime. External scripts can register themselves here using `RegisterPostProcessorCRT`. You probably don't want to mess with this field manually.")]
+        public CustomRenderTexture[] AtlasPostProcessors;
         [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
         public bool LightProbesBlending = true;
         [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
@@ -72,6 +76,10 @@ namespace VRCLightVolumes {
         private int[] _enabledIDs = new int[32];
         private Vector4[] _boundsScale = new Vector4[3];
         private Vector4[] _bounds = new Vector4[6]; // Legacy
+
+        // Public API for other U# scripts
+        public int EnabledCount => _enabledCount;
+        public int[] EnabledIDs => _enabledIDs;
 
         #region Shader Property IDs
         // Light Volumes
@@ -154,7 +162,6 @@ namespace VRCLightVolumes {
             // Light Volumes
             lightVolumeInvLocalEdgeSmoothID = VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth");
             lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
-            lightVolumeUvwID = VRCShader.PropertyToID("_UdonLightVolumeUvw");
             lightVolumeColorID = VRCShader.PropertyToID("_UdonLightVolumeColor");
             lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
             lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
@@ -165,7 +172,6 @@ namespace VRCLightVolumes {
             lightVolumeSharpBoundsID = VRCShader.PropertyToID("_UdonLightVolumeSharpBounds");
             lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
             lightVolumeRotationQuaternionID = VRCShader.PropertyToID("_UdonLightVolumeRotationQuaternion");
-            lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
             lightVolumeUvwScaleID = VRCShader.PropertyToID("_UdonLightVolumeUvwScale");
             lightVolumeOcclusionUvwID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionUvw");
             lightVolumeOcclusionCountID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionCount");

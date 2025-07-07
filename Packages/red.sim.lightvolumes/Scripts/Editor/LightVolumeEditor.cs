@@ -175,7 +175,7 @@ namespace VRCLightVolumes {
             Handles.matrix = Matrix4x4.identity;
         }
 
-        private void OnSceneGUI() {
+        protected void OnSceneGUI() {
 
             // Drawing bounds for each of selected light volumes
             foreach (var obj in Selection.gameObjects) {

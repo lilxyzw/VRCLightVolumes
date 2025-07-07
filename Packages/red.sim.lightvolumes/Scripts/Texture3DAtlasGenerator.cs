@@ -16,12 +16,16 @@ namespace VRCLightVolumes {
 
         const int maxAtlasSize = 2048;
 
+        public static event Action<LightVolume[]> OnPreAtlasCreate;
+
         public static IEnumerator CreateAtlas(LightVolume[] volumes, Action<Atlas3D> onComplete) {
 
             Texture3D[] texs = null;
             const int padding = 1;
 
             try {
+
+                OnPreAtlasCreate?.Invoke(volumes);
 
                 // Stacking textures into array
                 Texture3D[] textures = new Texture3D[volumes.Length * 4];
