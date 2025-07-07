@@ -45,7 +45,7 @@ namespace VRCLightVolumes {
         [Tooltip("Inversed TRS matrix of this volume that transforms it into the 1x1x1 cube. Recalculates via the UpdateRotation() method.")]
         public Matrix4x4 InvWorldMatrix = Matrix4x4.identity;
         [Tooltip("Current volume's rotation relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method.")]
-        public Vector4 RelativeRotation = new Vector4(0,0,0,1);
+        public Vector4 RelativeRotation = new Vector4(0, 0, 0, 1);
         [Tooltip("Current volume's rotation matrix row 0 relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method. (Legacy)")]
         public Vector3 RelativeRotationRow0 = Vector3.zero;
         [Tooltip("Current volume's rotation matrix row 1 relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method. (Legacy)")]
@@ -81,6 +81,9 @@ namespace VRCLightVolumes {
 #endif
 
         private void OnEnable() {
+#if UDONSHARP
+            SendCustomEventDelayedFrames(nameof(DelayInitialize), 0);
+#endif
 #if UDONSHARP
             if (Utilities.IsValid(LightVolumeManager))
 #else
@@ -127,7 +130,13 @@ namespace VRCLightVolumes {
             RelativeRotation = new Vector4(rot.x, rot.y, rot.z, rot.w);
         }
 
+#if !UDONSHARP
         private void Update() {
+            DelayInitialize();
+        }
+#endif
+
+        public void DelayInitialize() {
             if (!IsInitialized && LightVolumeManager != null) {
                 LightVolumeManager.InitializeLightVolume(this);
             }
