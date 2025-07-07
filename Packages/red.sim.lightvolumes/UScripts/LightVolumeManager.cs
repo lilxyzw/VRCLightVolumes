@@ -37,8 +37,8 @@ namespace VRCLightVolumes {
         public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
         [Tooltip("All Point Light Volume instances. You can enable or disable point light volumes game objects at runtime. Manually disabling unnecessary point light volumes improves performance.")]
         public PointLightVolumeInstance[] PointLightVolumeInstances = new PointLightVolumeInstance[0];
-        [Tooltip("All textures that can be used for as Cubemaps, LUT or Cookies")]
-        public Texture2DArray CustomTextures;
+        [Tooltip("A texture array that can be used for as Cubemaps, LUT or Cookies")]
+        public Texture CustomTextures;
         [Tooltip("Cubemaps count that stored in CustomTextures. Cubemap array elements starts from the beginning, 6 elements each.")]
         public int CubemapsCount = 0;
         [HideInInspector] public bool IsRangeDirty = false;
