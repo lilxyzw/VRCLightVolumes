@@ -175,7 +175,7 @@ namespace VRCLightVolumes {
             Handles.matrix = Matrix4x4.identity;
         }
 
-        private void OnSceneGUI() {
+        protected void OnSceneGUI() {
 
             // Drawing bounds for each of selected light volumes
             foreach (var obj in Selection.gameObjects) {
@@ -262,6 +262,7 @@ namespace VRCLightVolumes {
         // Bring back tools
         void OnDisable() {
             LightVolume.PreviewVoxels = false;
+            LightVolume.ResetProbesPositions(); // Needs to be resetted to prevent unity stall
             Tools.hidden = false;
             if (_isEditMode) {
                 // Went from edit mode

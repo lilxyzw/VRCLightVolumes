@@ -26,8 +26,8 @@ namespace VRCLightVolumes {
         [Header("Point Light Volumes")]
         public TextureArrayResolution Resolution = TextureArrayResolution._128x128;
         public TextureArrayFormat Format = TextureArrayFormat.RGBAHalf;
-        [Tooltip("The minimum brightness at a point due to lighting from an area light, before the area light is culled. Larger values will result in better performance, but light the cutoff edge will be visually noticable.")]
-        [Range(0.0f, 1f)] public float AreaLightBrightnessCutoff = 0.35f;
+        [Tooltip("The minimum brightness at a point due to lighting from a Point Light Volume, before the light is culled. Larger values will result in better performance, but light attenuation will be less physically correct.")]
+        [Range(0.05f, 1f)] public float LightsBrightnessCutoff = 0.35f;
 
         [Header("Baking")]
         [Tooltip("Bakery usually gives better results and works faster.")]
@@ -66,6 +66,13 @@ namespace VRCLightVolumes {
         public bool IsBakeryMode => BakingMode == Baking.Bakery; // Just a shortcut
         public LightVolumeManager LightVolumeManager;
 
+        // Disables syncing with udon script to make it possible to destroy the manager and the other volumes and don't break the udon script
+        private bool _dontSync = true;
+        public bool DontSync {
+            get { return Application.isPlaying ? _dontSync : false; }
+            set { _dontSync = value; }
+        }
+
 #if UDONSHARP
         // UdonBehaviour is a real udon VM script. We need it to change public variables in play mode
         private UdonBehaviour _lightVolumeManagerBehaviour = null;
@@ -82,6 +89,9 @@ namespace VRCLightVolumes {
         private EditorCoroutine _generateTextureArrayCoroutine = null;
 #endif
         public void RefreshVolumesList() {
+
+            if(DontSync) return;
+
             // Searching for all light volumes in scene
             var volumes = FindObjectsOfType<LightVolume>(true);
             for (int i = 0; i < volumes.Length; i++) {
@@ -137,7 +147,7 @@ namespace VRCLightVolumes {
 
             SetupDependencies();
 
-            if (LightVolumeManager == null) return;
+            if (LightVolumeManager == null || DontSync) return;
 
             // Cubemap Textures - store first
             List<Texture> cubeTextures = new List<Texture>(); 
@@ -188,6 +198,8 @@ namespace VRCLightVolumes {
                 _generateTextureArrayCoroutine = null;
             }
             _generateTextureArrayCoroutine = EditorCoroutineUtility.StartCoroutine(TextureArrayGenerator.CreateTexture2DArrayAsync(textures, (int)Resolution, (TextureFormat)Format, (texArray, ids) => {
+
+                if(DontSync) return;
 
                 if (texArray != null) {
                     for (int i = 0; i < ids.Length; i++) {
@@ -336,6 +348,7 @@ namespace VRCLightVolumes {
         }
 
         private void Update() {
+            if (DontSync) return;
             SetupDependencies();
             ConvertLegacyUVW();
             // Resetup required game objects and components for light volumes in new baking mode
@@ -392,7 +405,7 @@ namespace VRCLightVolumes {
         // Generates atlas and setups udon script
         public void GenerateAtlas() {
 
-            if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0) return;
+            if (LVUtils.IsInPrefabAsset(this) || LightVolumes.Count == 0 || DontSync) return;
 
             SetupDependencies();
 
@@ -403,9 +416,10 @@ namespace VRCLightVolumes {
 
             _generateAtlasCoroutine = EditorCoroutineUtility.StartCoroutine(Texture3DAtlasGenerator.CreateAtlas(LightVolumes.ToArray(), (Atlas3D atlas) => {
 
-                if (atlas.Texture == null) return; // Return if atlas packing failed
+                if (atlas.Texture == null || DontSync) return; // Return if atlas packing failed
 
-                LightVolumeManager.LightVolumeAtlas = atlas.Texture;
+                LightVolumeManager.LightVolumeAtlasBase = atlas.Texture;
+                UpdatePostProcessors();
 
                 LightVolumeDataList.Clear();
 
@@ -466,7 +480,7 @@ namespace VRCLightVolumes {
 
         // Looks for LightVolumeManager udon script and setups it if needed
         public void SetupDependencies() {
-            if (this == null || gameObject == null) return;
+            if (this == null || gameObject == null || DontSync) return;
             if (LightVolumeManager == null && !TryGetComponent(out LightVolumeManager)) {
                 LightVolumeManager = gameObject.AddComponent<LightVolumeManager>();
             }
@@ -509,7 +523,7 @@ namespace VRCLightVolumes {
 #if UNITY_EDITOR
             SetupDependencies();
 #endif
-            if (LightVolumeManager == null) return;
+            if (LightVolumeManager == null || DontSync) return;
 #if UDONSHARP
             if (Application.isPlaying) {
 
@@ -518,7 +532,7 @@ namespace VRCLightVolumes {
                 _lightVolumeManagerBehaviour.SetProgramVariable("LightProbesBlending", LightProbesBlending);
                 _lightVolumeManagerBehaviour.SetProgramVariable("SharpBounds", SharpBounds);
                 _lightVolumeManagerBehaviour.SetProgramVariable("AdditiveMaxOverdraw", AdditiveMaxOverdraw);
-                _lightVolumeManagerBehaviour.SetProgramVariable("AreaLightBrightnessCutoff", AreaLightBrightnessCutoff + 0.05f);
+                _lightVolumeManagerBehaviour.SetProgramVariable("AreaLightBrightnessCutoff", LightsBrightnessCutoff);
 
                 if (LightVolumes.Count != 0) {
                     var instances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
@@ -546,7 +560,7 @@ namespace VRCLightVolumes {
                 LightVolumeManager.LightProbesBlending = LightProbesBlending;
                 LightVolumeManager.SharpBounds = SharpBounds;
                 LightVolumeManager.AdditiveMaxOverdraw = AdditiveMaxOverdraw;
-                LightVolumeManager.AreaLightBrightnessCutoff = AreaLightBrightnessCutoff + 0.05f;
+                LightVolumeManager.LightsBrightnessCutoff = LightsBrightnessCutoff;
 
                 if (LightVolumes.Count != 0) {
                     LightVolumeManager.LightVolumeInstances = LightVolumeDataSorter.GetData(LightVolumeDataSorter.SortData(LightVolumeDataList));
@@ -567,12 +581,16 @@ namespace VRCLightVolumes {
         private static void CommitSudoku() {
             if (Application.isPlaying) {
 
+                bool isDestroy = false;
                 var s = FindObjectsByType<LightVolumeSetup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 for (int i = 0; i < s.Length; i++) {
                     if (!s[i].DestroyInPlayMode) {
-                        return;
+                        s[i].DontSync = false;
+                    } else {
+                        isDestroy = true;
                     }
                 }
+                if(!isDestroy) return;
 
                 // Killing Light Volumes
                 var lvs = FindObjectsByType<LightVolume>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -601,10 +619,68 @@ namespace VRCLightVolumes {
             List<PointLightVolumeInstance> list = new List<PointLightVolumeInstance>();
             int count = PointLightVolumes.Count;
             for (int i = 0; i < count; i++) {
-                if(PointLightVolumes[i].PointLightVolumeInstance == null) continue;
+                if(PointLightVolumes[i] == null || PointLightVolumes[i].PointLightVolumeInstance == null) continue;
                 list.Add(PointLightVolumes[i].PointLightVolumeInstance);
             }
             return list.ToArray();
+        }
+
+        public void RegisterPostProcessorCRT(CustomRenderTexture crt) {
+            if (crt == null || Array.IndexOf(LightVolumeManager.AtlasPostProcessors, crt) != -1) return;
+            LightVolumeManager.AtlasPostProcessors ??= new CustomRenderTexture[0];
+            Array.Resize(ref LightVolumeManager.AtlasPostProcessors, LightVolumeManager.AtlasPostProcessors.Length + 1);
+            LightVolumeManager.AtlasPostProcessors[^1] = crt;
+            Debug.Log($"[LightVolumeSetup] Registered post processor CRT: {crt.name}");
+            UpdatePostProcessors();
+        }
+
+        public void UnregisterPostProcessorCRT(CustomRenderTexture crt) {
+            if (crt == null) return;
+            var index = Array.IndexOf(LightVolumeManager.AtlasPostProcessors, crt);
+            if (index < 0) return;
+            var newArray = new CustomRenderTexture[LightVolumeManager.AtlasPostProcessors.Length - 1];
+            for (int i = 0, j = 0; i < LightVolumeManager.AtlasPostProcessors.Length; i++) {
+                if (i != index) {
+                    newArray[j++] = LightVolumeManager.AtlasPostProcessors[i];
+                }
+            }
+            LightVolumeManager.AtlasPostProcessors = newArray;
+            Debug.Log($"[LightVolumeSetup] Unregistered post processor CRT: {crt.name}");
+            UpdatePostProcessors();
+        }
+
+        private void UpdatePostProcessors() {
+            if (LightVolumeManager.AtlasPostProcessors == null || LightVolumeManager.AtlasPostProcessors.Length == 0) {
+                // no post processors, just use base atlas
+                LightVolumeManager.LightVolumeAtlas = LightVolumeManager.LightVolumeAtlasBase;
+                return;
+            }
+
+            Texture3D baseAtlas = LightVolumeManager.LightVolumeAtlasBase;
+            Texture prevAtlas = baseAtlas;
+            foreach (var crt in LightVolumeManager.AtlasPostProcessors) {
+                if (crt == null) continue;
+
+                // enforce some base settings to ensure no quality loss between post processors
+                crt.Release();
+                crt.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+                crt.graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16A16_SFloat;
+                crt.updateMode = CustomRenderTextureUpdateMode.Realtime;
+                if (baseAtlas != null) {
+                    crt.width = baseAtlas.width;
+                    crt.height = baseAtlas.height;
+                    crt.volumeDepth = baseAtlas.depth;
+                }
+
+                // build processing chain
+                crt.material.mainTexture = prevAtlas;
+                prevAtlas = crt;
+
+                // store last CRT as active
+                LightVolumeManager.LightVolumeAtlas = crt;
+
+                crt.Update();
+            }
         }
 
         

@@ -568,18 +568,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 33498727}
-  Color: {r: 0.29329407, g: 1, b: 0.082352936, a: 1}
-  Intensity: 3
+  Color: {r: 0.4615385, g: 1, b: 0.2999999, a: 1}
+  Intensity: 100
   IsDynamic: 1
-  PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -0.01}
+  PositionData: {x: 6.75, y: 0.5800003, z: 8.78339, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 115.38307
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &33498727
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -614,9 +617,9 @@ Transform:
   m_GameObject: {fileID: 33498725}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
-  m_LocalPosition: {x: 0, y: 0.71072906, z: -0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0, y: 0.71072906, z: 0}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666646}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1690786707}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
@@ -636,16 +639,17 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 10
-  Color: {r: 0.29329407, g: 1, b: 0.082352936, a: 1}
-  Intensity: 3
+  LightSourceSize: 0.15
+  Range: 0.15
+  Color: {r: 0.4615385, g: 1, b: 0.2999999, a: 1}
+  Intensity: 100
   Shape: 0
   Angle: 60
   Falloff: 1
   FalloffLUT: {fileID: 0}
   Cookie: {fileID: 0}
   Cubemap: {fileID: 0}
-  DebugRange: 0
+  DebugRange: 1
   CustomID: -1
   PointLightVolumeInstance: {fileID: 33498726}
   LightVolumeSetup: {fileID: 834285433}
@@ -899,7 +903,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 7cd8219b2223a14459b4fcc39e1e0edb, type: 2}
   - {fileID: 2100000, guid: d102c05e48d614a489538849889bb3bd, type: 2}
   - {fileID: 2100000, guid: 71429951089f80e40815e5771e768997, type: 2}
-  - {fileID: 2100000, guid: 1c987494452b85f4ab4cac3322415907, type: 2}
   - {fileID: 2100000, guid: 3e18d5d47ac91fd40bad6504f8058659, type: 2}
   LightMapsNear: []
   LightMapsFar: []
@@ -1157,14 +1160,6 @@ MonoBehaviour:
     - VRC.SDK3.Components.VRCObjectSync
   - gameObject: {fileID: 1038735941}
     ID: 71
-    SerializedTypeNames:
-    - VRC.Udon.UdonBehaviour
-  - gameObject: {fileID: 0}
-    ID: 73
-    SerializedTypeNames:
-    - VRC.SDK3.Components.VRCPlayerObject
-  - gameObject: {fileID: 0}
-    ID: 72
     SerializedTypeNames:
     - VRC.Udon.UdonBehaviour
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
@@ -1657,14 +1652,17 @@ MonoBehaviour:
   Intensity: 1
   IsDynamic: 1
   PositionData: {x: -8.787, y: 0.5800005, z: 17.861, w: -0.01}
-  DirectionData: {x: -1.0000002, y: 0.0000043832724, z: -0.0000032186556, w: 3.4142134}
-  CustomID: 4
+  DirectionData: {x: -1.0000002, y: 0.0000043832697, z: -0.0000032186556, w: 3.4142134}
+  CustomID: 5
   Angle: 0.7853982
   AngleData: 0.70710677
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 100.0001
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &154949970
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -1698,9 +1696,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 154949968}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
-  m_LocalPosition: {x: 0, y: 1.1, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalRotation: {x: -0.7071065, y: 2.3305802e-12, z: 2.2737368e-12, w: 0.7071072}
+  m_LocalPosition: {x: 0, y: 1.0999997, z: 0}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666656}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 160393087}
@@ -1721,6 +1719,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.25
   Range: 10
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
   Intensity: 1
@@ -1731,7 +1730,7 @@ MonoBehaviour:
   Cookie: {fileID: 0}
   Cubemap: {fileID: 0}
   DebugRange: 0
-  CustomID: 3
+  CustomID: 4
   PointLightVolumeInstance: {fileID: 154949969}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!1 &157755609
@@ -1874,8 +1873,8 @@ Transform:
   m_LocalScale: {x: 0.10000001, y: 0.15, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 154949971}
   - {fileID: 1454813988}
+  - {fileID: 154949971}
   m_Father: {fileID: 630457543}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 90}
 --- !u!114 &160393088
@@ -2648,9 +2647,9 @@ Transform:
   m_LocalScale: {x: 0.1, y: 0.15, z: 0.10000001}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 377300960}
   - {fileID: 1259795754}
   - {fileID: 1952084561}
+  - {fileID: 377300960}
   m_Father: {fileID: 630457543}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: -105}
 --- !u!114 &201829608
@@ -3181,17 +3180,20 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 309589256}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 3
+  Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -0.014206138}
+  PositionData: {x: -8.041999, y: 1.45, z: 9.215, w: -0.0225}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
-  CustomID: -4
+  CustomID: -5
   Angle: 0.36651915
   AngleData: 0.38386405
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 57.680244
+  SquaredScale: 1.0000002
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &309589256
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -3248,9 +3250,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 8.39
+  LightSourceSize: 0.15
+  Range: 0.15
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 3
+  Intensity: 50
   Shape: 2
   Angle: 42
   Falloff: 1
@@ -3258,7 +3261,7 @@ MonoBehaviour:
   Cookie: {fileID: 2800000, guid: 27f1c5cfd1135214cad2e74411322a39, type: 3}
   Cubemap: {fileID: 0}
   DebugRange: 0
-  CustomID: 3
+  CustomID: 4
   PointLightVolumeInstance: {fileID: 309589255}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!1 &335930214
@@ -3487,9 +3490,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 355306799}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 20, y: 20, z: 20}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2012566742}
@@ -3542,17 +3545,20 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 355306801}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 50
+  Intensity: 100
   IsDynamic: 1
-  PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 0.015625}
+  PositionData: {x: -0.04, y: 2.62, z: -18.29, w: 0.0625}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
   CustomID: -1
   Angle: 0
   AngleData: 0
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 320.5082
+  SquaredScale: 1
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &355306803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3569,9 +3575,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
-  Range: 8
+  LightSourceSize: 0.25
+  Range: 0.5
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 50
+  Intensity: 100
   Shape: 2
   Angle: 60
   Falloff: 1
@@ -3609,9 +3616,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 377300959}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
-  m_LocalPosition: {x: 0, y: 2.22, z: -0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalRotation: {x: -0.7071065, y: -0.000000032754087, z: 0.00000002685158, w: 0.7071072}
+  m_LocalPosition: {x: 0, y: 2.2200015, z: -0}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666646}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 201829607}
@@ -3663,18 +3670,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 377300961}
-  Color: {r: 1, g: 0.7589134, b: 0.2320754, a: 1}
-  Intensity: 1
+  Color: {r: 1, g: 0.8126781, b: 0.39811313, a: 1}
+  Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -0.01}
-  DirectionData: {x: 0.9659258, y: 0.00000040007035, z: 0.25881994, w: 3.0931816}
+  PositionData: {x: -7.9183464, y: 0.57999974, z: -18.083813, w: -0.0081}
+  DirectionData: {x: 0.9659258, y: 0.000000396039, z: 0.25881994, w: 3.0931816}
   CustomID: 0
   Angle: 2.6529005
   AngleData: -0.88294756
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 20.764902
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &377300963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3691,9 +3701,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 10
-  Color: {r: 1, g: 0.7589134, b: 0.2320754, a: 1}
-  Intensity: 1
+  LightSourceSize: 0.09
+  Range: 0.1
+  Color: {r: 1, g: 0.8126781, b: 0.39811313, a: 1}
+  Intensity: 50
   Shape: 0
   Angle: 304
   Falloff: 0.184
@@ -3859,7 +3870,6 @@ MonoBehaviour:
   VoxelsPerUnit: 8
   Resolution: {x: 62, y: 38, z: 98}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 458847875}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!114 &458847875
@@ -4596,8 +4606,11 @@ MonoBehaviour:
   AngleData: 4
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 95.68202
+  SquaredScale: 1.067778
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &569909709
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -4654,6 +4667,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 2
+  LightSourceSize: 0.25
   Range: 5
   Color: {r: 1, g: 0.5405387, b: 0.18823528, a: 1}
   Intensity: 5
@@ -4663,7 +4677,7 @@ MonoBehaviour:
   FalloffLUT: {fileID: 0}
   Cookie: {fileID: 0}
   Cubemap: {fileID: 0}
-  DebugRange: 0
+  DebugRange: 1
   CustomID: -1
   PointLightVolumeInstance: {fileID: 569909708}
   LightVolumeSetup: {fileID: 834285433}
@@ -4698,7 +4712,7 @@ Transform:
   m_GameObject: {fileID: 604750244}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4, y: 2, z: -22}
+  m_LocalPosition: {x: -4, y: 1.561, z: -22}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4805,7 +4819,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: baede57ab42d19d4899dcbc2e280bd1c, type: 2}
+  - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5142,7 +5156,7 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 657256791}
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  Intensity: 10
+  Intensity: 20
   IsDynamic: 1
   PositionData: {x: 6.097, y: 0.58000046, z: -4.275, w: -0.01}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 3.4142134}
@@ -5151,8 +5165,11 @@ MonoBehaviour:
   AngleData: 0.70710677
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 100.0001
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &657256791
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -5187,8 +5204,8 @@ Transform:
   m_GameObject: {fileID: 657256789}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
-  m_LocalPosition: {x: 0, y: 1.1, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalPosition: {x: 0, y: 1.0999998, z: 0}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666646}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1138401654}
@@ -5209,9 +5226,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
+  LightSourceSize: 0.25
   Range: 10
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  Intensity: 10
+  Intensity: 20
   Shape: 1
   Angle: 90
   Falloff: 1
@@ -5651,7 +5669,7 @@ Transform:
   m_GameObject: {fileID: 787206873}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4, y: 2, z: -22}
+  m_LocalPosition: {x: 4, y: 1.561, z: -22}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5758,7 +5776,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 12a5139a31f84464381c92aad42d14a9, type: 2}
+  - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5938,7 +5956,7 @@ Transform:
   m_GameObject: {fileID: 799621378}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4, y: 2, z: -16}
+  m_LocalPosition: {x: 4, y: 1.561, z: -16}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6045,7 +6063,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 269af33bf0eb06c49ae1e2bafde895bd, type: 2}
+  - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6224,18 +6242,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 832882188}
-  Color: {r: 1, g: 0.88851196, b: 0.109803915, a: 1}
-  Intensity: 1
+  Color: {r: 1, g: 0.925283, b: 0.40566033, a: 1}
+  Intensity: 50
   IsDynamic: 1
-  PositionData: {x: 4, y: 2, z: -22, w: 0.027777778}
+  PositionData: {x: 4, y: 1.561, z: -22, w: 0.25}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 6.4089146
+  SquaredScale: 0.010000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &832882188
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -6271,7 +6292,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 787206874}
@@ -6292,9 +6313,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
-  Range: 6
-  Color: {r: 1, g: 0.88851196, b: 0.109803915, a: 1}
-  Intensity: 1
+  LightSourceSize: 0.5
+  Range: 0.05
+  Color: {r: 1, g: 0.925283, b: 0.40566033, a: 1}
+  Intensity: 50
   Shape: 0
   Angle: 60
   Falloff: 1
@@ -6376,7 +6398,7 @@ MonoBehaviour:
   SharpBounds: 1
   AutoUpdateVolumes: 1
   AdditiveMaxOverdraw: 8
-  AreaLightBrightnessCutoff: 0.4
+  LightsBrightnessCutoff: 0.35
   LightVolumeInstances:
   - {fileID: 1548001777}
   - {fileID: 458847875}
@@ -6393,7 +6415,6 @@ MonoBehaviour:
   - {fileID: 377300962}
   - {fileID: 569909708}
   - {fileID: 1773416815}
-  - {fileID: 309589255}
   - {fileID: 1748442014}
   - {fileID: 938222481}
   - {fileID: 996561022}
@@ -6402,8 +6423,10 @@ MonoBehaviour:
   - {fileID: 2070359844}
   - {fileID: 154949969}
   - {fileID: 1038735944}
+  - {fileID: 309589255}
   CustomTextures: {fileID: 18700000, guid: 80f51f693c32ab84283c18d6a248e954, type: 2}
   CubemapsCount: 2
+  IsRangeDirty: 0
 --- !u!114 &834285433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6437,7 +6460,6 @@ MonoBehaviour:
   - {fileID: 377300963}
   - {fileID: 569909711}
   - {fileID: 1773416816}
-  - {fileID: 309589258}
   - {fileID: 1748442017}
   - {fileID: 938222484}
   - {fileID: 996561025}
@@ -6446,9 +6468,10 @@ MonoBehaviour:
   - {fileID: 2070359847}
   - {fileID: 154949972}
   - {fileID: 1038735945}
+  - {fileID: 309589258}
   Resolution: 256
   Format: 17
-  AreaLightBrightnessCutoff: 0.35
+  LightsBrightnessCutoff: 0.35
   BakingMode: 0
   Denoise: 1
   DilateInvalidProbes: 1
@@ -6459,7 +6482,7 @@ MonoBehaviour:
   SharpBounds: 1
   AutoUpdateVolumes: 1
   AdditiveMaxOverdraw: 8
-  DestroyInPlayMode: 1
+  DestroyInPlayMode: 0
   LightVolumeDataList:
   - Weight: 0
     LightVolumeInstance: {fileID: 1400850657}
@@ -6837,17 +6860,20 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 938222482}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 3
+  Intensity: 10
   IsDynamic: 1
-  PositionData: {x: -4.154, y: 1.787, z: 14.23, w: 0.01}
+  PositionData: {x: -4.154, y: 1.787, z: 14.23, w: 0.25}
   DirectionData: {x: 0, y: 0, z: 0, w: 1}
   CustomID: -2
   Angle: 0
   AngleData: 0
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 127.97828
+  SquaredScale: 1
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &938222482
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -6881,9 +6907,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 938222480}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 20, y: 20, z: 20}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 988899788}
@@ -6904,9 +6930,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
-  Range: 10
+  LightSourceSize: 0.5
+  Range: 0.5
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 3
+  Intensity: 10
   Shape: 2
   Angle: 60
   Falloff: 1
@@ -7094,18 +7121,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 969307523}
-  Color: {r: 0.109803915, g: 0.6058649, b: 1, a: 1}
-  Intensity: 1
+  Color: {r: 0.3679244, g: 0.7187681, b: 1, a: 1}
+  Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -4, y: 2, z: -22, w: 0.027777778}
+  PositionData: {x: -4, y: 1.561, z: -22, w: 0.25}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 6.4089146
+  SquaredScale: 0.010000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &969307523
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7141,7 +7171,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 604750245}
@@ -7162,9 +7192,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
-  Range: 6
-  Color: {r: 0.109803915, g: 0.6058649, b: 1, a: 1}
-  Intensity: 1
+  LightSourceSize: 0.5
+  Range: 0.05
+  Color: {r: 0.3679244, g: 0.7187681, b: 1, a: 1}
+  Intensity: 50
   Shape: 0
   Angle: 60
   Falloff: 1
@@ -7552,18 +7583,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 996561023}
-  Color: {r: 1, g: 0.11841071, b: 0.081131995, a: 1}
-  Intensity: 3
+  Color: {r: 1, g: 0.3051524, b: 0.27735847, a: 1}
+  Intensity: 100
   IsDynamic: 1
-  PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -0.01}
+  PositionData: {x: 0, y: 0.5800003, z: 8.78339, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 115.38307
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &996561023
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7598,8 +7632,8 @@ Transform:
   m_GameObject: {fileID: 996561021}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
-  m_LocalPosition: {x: 0, y: 0.71072906, z: -0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalPosition: {x: 0, y: 0.71072906, z: 0}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666646}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817655155}
@@ -7620,9 +7654,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 10
-  Color: {r: 1, g: 0.11841071, b: 0.081131995, a: 1}
-  Intensity: 3
+  LightSourceSize: 0.15
+  Range: 0.15
+  Color: {r: 1, g: 0.3051524, b: 0.27735847, a: 1}
+  Intensity: 100
   Shape: 0
   Angle: 60
   Falloff: 1
@@ -7884,18 +7919,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1036732746}
-  Color: {r: 0.082352936, g: 0.34083718, b: 1, a: 1}
-  Intensity: 3
+  Color: {r: 0.19433957, g: 0.42157716, b: 1, a: 1}
+  Intensity: 100
   IsDynamic: 1
-  PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -0.01}
+  PositionData: {x: -6.75, y: 0.5800003, z: 8.78339, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 115.38307
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &1036732746
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -7931,7 +7969,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
   m_LocalPosition: {x: 0, y: 0.71072906, z: -0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666646}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1831541747}
@@ -7952,9 +7990,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 10
-  Color: {r: 0.082352936, g: 0.34083718, b: 1, a: 1}
-  Intensity: 3
+  LightSourceSize: 0.15
+  Range: 0.15
+  Color: {r: 0.19433957, g: 0.42157716, b: 1, a: 1}
+  Intensity: 100
   Shape: 0
   Angle: 60
   Falloff: 1
@@ -7992,9 +8031,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1038735941}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
-  m_LocalPosition: {x: -0, y: 1.05, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalRotation: {x: -0.7071065, y: 0.0000000029682492, z: 0.0000000029682492, w: 0.7071071}
+  m_LocalPosition: {x: 0, y: 1.0500015, z: -0}
+  m_LocalScale: {x: 4, y: 4, z: 2.6666658}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 31709544}
@@ -8047,17 +8086,20 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1038735943}
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  Intensity: 3
+  Intensity: 200
   IsDynamic: 1
-  PositionData: {x: -8.090002, y: 1.5800012, z: 0.71112424, w: -0.0025}
-  DirectionData: {x: 0.8660247, y: 0.000004213666, z: -0.50000226, w: 3.9833612}
+  PositionData: {x: -8.090002, y: 1.5800012, z: 0.71112394, w: -0.09}
+  DirectionData: {x: 0.8660247, y: 0.000004084261, z: -0.50000226, w: 3.9833612}
   CustomID: 0
   Angle: 0.72431165
   AngleData: 0.7489557
   ShadowmaskIndex: 0
   IsInitialized: 1
+  SquaredRange: 923.1547
+  SquaredScale: 1.0000012
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &1038735945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8074,9 +8116,10 @@ MonoBehaviour:
   BakedShadows: 1
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 20
+  LightSourceSize: 0.3
+  Range: 0.3
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  Intensity: 3
+  Intensity: 200
   Shape: 0
   Angle: 83
   Falloff: 1
@@ -8645,7 +8688,6 @@ MonoBehaviour:
   VoxelsPerUnit: 3
   Resolution: {x: 60, y: 15, z: 89}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1137550075}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!114 &1137550075
@@ -8783,8 +8825,8 @@ Transform:
   m_LocalScale: {x: 0.1, y: 0.15, z: 0.10000001}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 657256792}
   - {fileID: 12836627}
+  - {fileID: 657256792}
   m_Father: {fileID: 630457543}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &1138401655
@@ -10864,7 +10906,6 @@ MonoBehaviour:
   VoxelsPerUnit: 0.75
   Resolution: {x: 15, y: 11, z: 38}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1400850657}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!114 &1400850657
@@ -12421,18 +12462,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1541482805}
-  Color: {r: 0.2668302, g: 1, b: 0.109803915, a: 1}
-  Intensity: 1
+  Color: {r: 0.49795517, g: 1, b: 0.390566, a: 1}
+  Intensity: 50
   IsDynamic: 1
-  PositionData: {x: -4, y: 2, z: -16, w: 0.027777778}
+  PositionData: {x: -4, y: 1.561, z: -16, w: 0.25}
   DirectionData: {x: 0, y: 0, z: 0, w: 0}
   CustomID: 0
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 6.4089146
+  SquaredScale: 0.010000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &1541482805
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -12468,7 +12512,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1987167977}
@@ -12489,9 +12533,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
-  Range: 6
-  Color: {r: 0.2668302, g: 1, b: 0.109803915, a: 1}
-  Intensity: 1
+  LightSourceSize: 0.5
+  Range: 0.05
+  Color: {r: 0.49795517, g: 1, b: 0.390566, a: 1}
+  Intensity: 50
   Shape: 0
   Angle: 60
   Falloff: 1
@@ -12744,7 +12789,6 @@ MonoBehaviour:
   VoxelsPerUnit: 3
   Resolution: {x: 44, y: 10, z: 33}
   PreviewVoxels: 0
-  BakeryVolume: {fileID: 0}
   LightVolumeInstance: {fileID: 1548001777}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!4 &1548001779
@@ -13381,18 +13425,21 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1644032074}
-  Color: {r: 1, g: 0.111320674, b: 0.111320674, a: 1}
-  Intensity: 1
+  Color: {r: 1, g: 0.435849, b: 0.435849, a: 1}
+  Intensity: 50
   IsDynamic: 1
-  PositionData: {x: 4, y: 2, z: -16, w: 0.027777778}
+  PositionData: {x: 4, y: 1.561, z: -16, w: 0.25}
   DirectionData: {x: -0, y: -0, z: -0, w: 1}
   CustomID: 0
   Angle: 0
   AngleData: 1
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 6.4089146
+  SquaredScale: 0.010000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &1644032074
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -13428,7 +13475,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 799621379}
@@ -13449,16 +13496,17 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 0
-  Range: 6
-  Color: {r: 1, g: 0.111320674, b: 0.111320674, a: 1}
-  Intensity: 1
+  LightSourceSize: 0.5
+  Range: 0.05
+  Color: {r: 1, g: 0.435849, b: 0.435849, a: 1}
+  Intensity: 50
   Shape: 0
   Angle: 60
   Falloff: 1
   FalloffLUT: {fileID: 0}
   Cookie: {fileID: 0}
   Cubemap: {fileID: 0}
-  DebugRange: 0
+  DebugRange: 1
   CustomID: -1
   PointLightVolumeInstance: {fileID: 1644032073}
   LightVolumeSetup: {fileID: 834285433}
@@ -20279,8 +20327,8 @@ Transform:
   m_LocalScale: {x: 0.1, y: 0.15, z: 0.10000001}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 33498728}
   - {fileID: 1543553981}
+  - {fileID: 33498728}
   m_Father: {fileID: 630457543}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &1690786708
@@ -20576,17 +20624,20 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 1748442015}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 3
+  Intensity: 50
   IsDynamic: 1
-  PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -0.014206138}
+  PositionData: {x: 7.2080016, y: 1.45, z: 9.214701, w: -0.0225}
   DirectionData: {x: 0, y: -0.00000023841858, z: 0, w: 1.0000001}
-  CustomID: -5
+  CustomID: -4
   Angle: 0.36651915
   AngleData: 0.38386405
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 57.680244
+  SquaredScale: 1.0000002
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &1748442015
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -20643,9 +20694,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 8.39
+  LightSourceSize: 0.15
+  Range: 0.15
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: 3
+  Intensity: 50
   Shape: 2
   Angle: 42
   Falloff: 1
@@ -20653,7 +20705,7 @@ MonoBehaviour:
   Cookie: {fileID: 2800000, guid: bb1f2d82f0d4ed4409124d71498e075a, type: 3}
   Cubemap: {fileID: 0}
   DebugRange: 0
-  CustomID: 4
+  CustomID: 3
   PointLightVolumeInstance: {fileID: 1748442014}
   LightVolumeSetup: {fileID: 834285433}
 --- !u!1 &1750787734
@@ -20957,8 +21009,11 @@ MonoBehaviour:
   AngleData: 4
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 95.68202
+  SquaredScale: 1.067778
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &1773416816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20975,6 +21030,7 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 2
+  LightSourceSize: 0.25
   Range: 5
   Color: {r: 0.18823528, g: 0.48519114, b: 1, a: 1}
   Intensity: 5
@@ -21373,8 +21429,8 @@ Transform:
   m_LocalScale: {x: 0.1, y: 0.15, z: 0.10000001}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 996561024}
   - {fileID: 1331226641}
+  - {fileID: 996561024}
   m_Father: {fileID: 630457543}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &1817655156
@@ -21558,8 +21614,8 @@ Transform:
   m_LocalScale: {x: 0.1, y: 0.15, z: 0.10000001}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1036732747}
   - {fileID: 1592088053}
+  - {fileID: 1036732747}
   m_Father: {fileID: 630457543}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &1831541748
@@ -23249,7 +23305,7 @@ Transform:
   m_GameObject: {fileID: 1987167976}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4, y: 2, z: -16}
+  m_LocalPosition: {x: -4, y: 1.561, z: -16}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -23356,7 +23412,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9ec09f8f5a313cc4c91bd7feaf546635, type: 2}
+  - {fileID: 2100000, guid: 7c585b132fe0e0547943e27b6db50c43, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -23834,17 +23890,20 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2070359845}
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: -3
+  Intensity: -50
   IsDynamic: 1
-  PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -0.01}
+  PositionData: {x: 8.25, y: 0.5800003, z: -17.21661, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 57.680286
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &2070359845
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -23880,7 +23939,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
   m_LocalPosition: {x: 0, y: 0.71072906, z: -0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666646}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2133127359}
@@ -23901,16 +23960,17 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 10
+  LightSourceSize: 0.15
+  Range: 0.15
   Color: {r: 1, g: 1, b: 1, a: 1}
-  Intensity: -3
+  Intensity: -50
   Shape: 0
   Angle: 60
   Falloff: 1
   FalloffLUT: {fileID: 0}
   Cookie: {fileID: 0}
   Cubemap: {fileID: 0}
-  DebugRange: 0
+  DebugRange: 1
   CustomID: -1
   PointLightVolumeInstance: {fileID: 2070359844}
   LightVolumeSetup: {fileID: 834285433}
@@ -24095,17 +24155,20 @@ MonoBehaviour:
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 2088816032}
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  Intensity: 3
+  Intensity: 100
   IsDynamic: 1
-  PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -0.01}
+  PositionData: {x: -6.770999, y: 0.5800003, z: -4.2166095, w: -0.0225}
   DirectionData: {x: 0, y: 0.0000040531163, z: -1.0000005, w: 7.464101}
   CustomID: 0
   Angle: 0.5235988
   AngleData: 0.8660254
   ShadowmaskIndex: -1
   IsInitialized: 1
+  SquaredRange: 115.38307
+  SquaredScale: 1.000001
   LightVolumeManager: {fileID: 834285432}
   IsIterartedThrough: 0
+  IsRangeDirty: 0
 --- !u!114 &2088816032
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -24141,7 +24204,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071065, y: -0, z: -0, w: 0.7071072}
   m_LocalPosition: {x: 0, y: 0.71072906, z: -0}
-  m_LocalScale: {x: 1.5, y: 1.5000001, z: 0.3333333}
+  m_LocalScale: {x: 10, y: 10, z: 6.6666646}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1568656724}
@@ -24162,9 +24225,10 @@ MonoBehaviour:
   BakedShadows: 0
   BakedShadowRadius: 0.1
   Type: 1
-  Range: 10
+  LightSourceSize: 0.15
+  Range: 0.15
   Color: {r: 1, g: 0.8445727, b: 0.57169807, a: 1}
-  Intensity: 3
+  Intensity: 100
   Shape: 0
   Angle: 60
   Falloff: 1
@@ -24315,8 +24379,8 @@ Transform:
   m_LocalScale: {x: 0.1, y: 0.15, z: 0.10000001}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2070359846}
   - {fileID: 493030544}
+  - {fileID: 2070359846}
   m_Father: {fileID: 630457543}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &2133127360

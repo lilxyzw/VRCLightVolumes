@@ -245,9 +245,15 @@ namespace VRCLightVolumes {
             }
 
             ulong vCount = 0;
-            if (_lightVolumeSetup.LightVolumeManager != null && _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas != null) {
-                var tex = _lightVolumeSetup.LightVolumeManager.LightVolumeAtlas;
+            if (_lightVolumeSetup.LightVolumeManager != null && _lightVolumeSetup.LightVolumeManager.LightVolumeAtlasBase != null) {
+                var tex = _lightVolumeSetup.LightVolumeManager.LightVolumeAtlasBase;
                 vCount = (ulong)tex.width * (ulong)tex.height * (ulong)tex.depth;
+
+                foreach (var crt in _lightVolumeSetup.LightVolumeManager.AtlasPostProcessors) {
+                    if (crt != null) {
+                        vCount += (ulong)crt.width * (ulong)crt.height * (ulong)crt.volumeDepth;
+                    }
+                }
             }
 
             GUILayout.Label($"Atlas size in VRAM: {SizeInVRAM(vCount)} MB");
@@ -265,7 +271,7 @@ namespace VRCLightVolumes {
             } else {
                 hiddenFields.Add("Resolution");
                 hiddenFields.Add("Format");
-                hiddenFields.Add("AreaLightBrightnessCutoff");
+                hiddenFields.Add("LightsBrightnessCutoff");
             }
 
             GUILayout.Space(-15);
