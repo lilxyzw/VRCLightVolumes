@@ -21,7 +21,7 @@ Stores the light volumes 3D atlas and references to all of the Light Volume Inst
 |`int AdditiveMaxOverdraw` | Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance. |
 | `float LightsBrightnessCutoff` | The minimum brightness at a point due to lighting from a Point Light Volume, before the light is culled. Larger values will result in better performance, but light attenuation will be less physically correct. You should never set it to zero or below, otherwise lights will never be culled at all. |
 |`LightVolumeInstance[] LightVolumeInstances` | All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance. |
-|`Texture2DArray CustomTextures` | All textures that can be used for as Cubemaps, LUT or Cookies, stored in a single Texture Array. Faces of the used cubemaps always stores first.|
+|`Texture CustomTextures` | Texture array that can be used for as Cubemaps, LUT or Cookies, stored in a single Texture Array. Faces of the used cubemaps always stores first.|
 |`int CubemapsCount` | Cubemaps count that stored in CustomTextures texture array. Cubemaps faces starts from the beginning, 6 elements per each cubemap.|
 |`bool IsRangeDirty` | Flag that defines if range of all of the point lights should be recalculated in the next frame. Recalculates automatically when `AutoUpdateVolumes` is enabled. Resets to false after being recalculated.|
 
