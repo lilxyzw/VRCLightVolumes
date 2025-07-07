@@ -12,7 +12,9 @@ Stores the light volumes 3D atlas and references to all of the Light Volume Inst
 ### Public Fields
 | Public Field | Description |
 | --- | --- |
-|`Texture3D LightVolumeAtlas` | 3D Texture atlas that is an atlas that contains all the Light Volumes SH baked data. |
+|`Texture LightVolumeAtlas` | Combined Texture containing all Light Volumes' baked SH data. |
+|`Texture3D LightVolumeAtlasBase` | Combined Texture3D containing all Light Volumes' baked SH data. This field is not used at runtime, see LightVolumeAtlas instead. It specifies the base for the post process chain, if given. |
+|`CustomRenderTexture[] AtlasPostProcessors` | Custom Render Textures that will be applied top to bottom to the Light Volume Atlas at runtime. External scripts can register themselves here using `RegisterPostProcessorCRT()` method in `LightVolumeSetup`. You probably don't want to mess with this field manually. |
 |`bool LightProbesBlending` | When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance. |
 |`bool SharpBounds` | Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance. |
 |`bool AutoUpdateVolumes` | Automatically updates a volume's position, rotation, and scale in Play mode using an Udon script. Use only if you have movable volumes in your scene. |
@@ -21,7 +23,7 @@ Stores the light volumes 3D atlas and references to all of the Light Volume Inst
 |`LightVolumeInstance[] LightVolumeInstances` | All Light Volume instances sorted in decreasing order by weight. You can enable or disable volumes game objects at runtime. Manually disabling unnecessary volumes improves performance. |
 |`Texture2DArray CustomTextures` | All textures that can be used for as Cubemaps, LUT or Cookies, stored in a single Texture Array. Faces of the used cubemaps always stores first.|
 |`int CubemapsCount` | Cubemaps count that stored in CustomTextures texture array. Cubemaps faces starts from the beginning, 6 elements per each cubemap.|
-|`bool IsRangeDirty` | Flag that defines if range of all of the point lights should be recalculated in the next frame. Recalculates automatically when **AutoUpdateVolumes** is enabled. Resets to false after being recalculated.|
+|`bool IsRangeDirty` | Flag that defines if range of all of the point lights should be recalculated in the next frame. Recalculates automatically when `AutoUpdateVolumes` is enabled. Resets to false after being recalculated.|
 
 ### Public Methods
 | Public Method | Description |
