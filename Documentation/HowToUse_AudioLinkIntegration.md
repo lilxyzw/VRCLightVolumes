@@ -9,6 +9,7 @@
 | [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)|
 | **Audio Link Integration**<br />• [Audio Link Quick Setup](#Audio-Link-Quick-Setup)<br />• [Light Volume Audio Link Component Description](#Light-Volume-Audio-Link-Component-Description) |
 |[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
+|[How Light Volumes Work?](../Documentation/HowToUse_HowItWorks.md)|
 
 ## Audio Link Integration
 

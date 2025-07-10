@@ -9,6 +9,7 @@
 | [Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)|
 | [Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
 | **TV Screens Integration**<br />• [TV Screen Quick Setup](#TV-Screen-Quick-Setup)<br />• [Light Volume TVGI Component Description](#Light-Volume-TVGI-Component-Description) |
+| [How Light Volumes Work?](../Documentation/HowToUse_HowItWorks.md) |
 
 ## TV Screens Integration
 

@@ -8,6 +8,7 @@
 |[Point Light Volumes](../Documentation/HowToUse_PointLightVolumes.md)|
 |[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
 |[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
+|[How Light Volumes Work?](../Documentation/HowToUse_HowItWorks.md)|
 
 ## Regular Light Volumes
 

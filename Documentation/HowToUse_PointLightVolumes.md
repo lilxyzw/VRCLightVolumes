@@ -9,6 +9,7 @@
 |**Point Light Volumes**<br />• [Point Light Volumes Placement](#Point-Light-Volumes-Placement)<br />• [Light Shape](#Light-Shape)<br />• [Baked Point Light Volume Shadows](#Baked-Point-Light-Volume-Shadows)<br />• [Point Light Volume Component Description](#Point-Light-Volume-Component-Description)|
 |[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
 |[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
+|[How Light Volumes Work?](../Documentation/HowToUse_HowItWorks.md)|
 
 ## Point Light Volumes
 
