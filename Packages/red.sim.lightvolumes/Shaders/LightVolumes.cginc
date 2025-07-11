@@ -1,6 +1,9 @@
 ﻿#ifndef VRC_LIGHT_VOLUMES_INCLUDED
 #define VRC_LIGHT_VOLUMES_INCLUDED
 #define VRCLV_VERSION 2
+#define VRCLV_MAX_VOLUMES_COUNT 32
+#define VRCLV_MAX_LIGHTS_COUNT 128
+
 
 #ifndef SHADER_TARGET_SURFACE_ANALYSIS
 cbuffer LightVolumeUniforms {
@@ -28,25 +31,25 @@ uniform float _UdonLightVolumeProbesBlend;
 uniform float _UdonLightVolumeSharpBounds;
 
 // World to Local (-0.5, 0.5) UVW Matrix 4x4
-uniform float4x4 _UdonLightVolumeInvWorldMatrix[32];
+uniform float4x4 _UdonLightVolumeInvWorldMatrix[VRCLV_MAX_VOLUMES_COUNT];
 
 // L1 SH quaternion rotation (relative to baked rotation)
 //uniform float4 _UdonLightVolumeRotationQuaternion[32];
-uniform float4 _UdonLightVolumeRotation[64]; // Legacy! Used in this version to have back compatibility with older worlds. Array commented above will be used in future releases! Legacy!
+uniform float4 _UdonLightVolumeRotation[VRCLV_MAX_VOLUMES_COUNT * 2]; // Legacy! Used in this version to have back compatibility with older worlds. Array commented above will be used in future releases! Legacy!
 
 // Value that is needed to smoothly blend volumes ( BoundsScale / edgeSmooth )
-uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[32];
+uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[VRCLV_MAX_VOLUMES_COUNT];
 
 // AABB Bounds of islands on the 3D Texture atlas. XYZ: UvwMin, W: Scale per axis
 // uniform float4 _UdonLightVolumeUvwScale[96];
-uniform float3 _UdonLightVolumeUvw[192]; // Legacy! AABB Bounds of islands on the 3D Texture atlas. Array commented above will be used in future releases! Legacy!
+uniform float3 _UdonLightVolumeUvw[VRCLV_MAX_VOLUMES_COUNT * 6]; // Legacy! AABB Bounds of islands on the 3D Texture atlas. Array commented above will be used in future releases! Legacy!
 
 // AABB Bounds of islands on the 3D Texture atlas storing occlusion.
 // This is optional data. If the volume has no occlusion, the value will be (-1, -1, -1, -1).
-uniform float3 _UdonLightVolumeOcclusionUvw[32];
+uniform float3 _UdonLightVolumeOcclusionUvw[VRCLV_MAX_VOLUMES_COUNT];
 
 // Color multiplier (RGB) | If we actually need to rotate L1 components at all (A)
-uniform float4 _UdonLightVolumeColor[32];
+uniform float4 _UdonLightVolumeColor[VRCLV_MAX_VOLUMES_COUNT];
 
 // Point Lights count
 uniform float _UdonPointLightVolumeCount;
@@ -57,17 +60,17 @@ uniform float _UdonPointLightVolumeCubeCount;
 // For point light: XYZ = Position, W = Inverse squared range
 // For spot light: XYZ = Position, W = Inverse squared range, negated
 // For area light: XYZ = Position, W = Width
-uniform float4 _UdonPointLightVolumePosition[128];
+uniform float4 _UdonPointLightVolumePosition[VRCLV_MAX_LIGHTS_COUNT];
 
 // For point light: XYZ = Color, W = Cos of angle (for LUT)
 // For spot light: XYZ = Color, W = Cos of outer angle if no custom texture, tan of outer angle otherwise
 // For area light: XYZ = Color, W = 2 + Height
-uniform float4 _UdonPointLightVolumeColor[128];
+uniform float4 _UdonPointLightVolumeColor[VRCLV_MAX_LIGHTS_COUNT];
 
 // For point light: XYZW = Rotation quaternion
 // For spot light: XYZ = Direction, W = Cone falloff
 // For area light: XYZW = Rotation quaternion
-uniform float4 _UdonPointLightVolumeDirection[128];
+uniform float4 _UdonPointLightVolumeDirection[VRCLV_MAX_LIGHTS_COUNT];
 
 // X = Custom ID:
 //   If parametric: X stores 0
@@ -75,7 +78,7 @@ uniform float4 _UdonPointLightVolumeDirection[128];
 //   If uses custom texture: X stores texture ID with negative sign
 // Y = Shadowmask index. If light doesn't use shadowmask, the index will be negative.
 // Z = Squared Culling Range. Just a precalculated culling range to not recalculate in in shader.
-uniform float3 _UdonPointLightVolumeCustomID[128];
+uniform float3 _UdonPointLightVolumeCustomID[VRCLV_MAX_LIGHTS_COUNT];
 
 // If we are far enough from a light that the irradiance
 // is guaranteed lower than the threshold defined by this value,
@@ -182,7 +185,7 @@ float4 LV_SampleCubemapArray(uint id, float3 dir) {
 float4 LV_ProjectQuadLightIrradianceSH(float3 shadingPosition, float3 lightVertices[4]) {
     // Transform the vertices into local space centered on the shading position,
     // project, the polygon onto the unit sphere.
-    for (uint edge0 = 0; edge0 < 4; edge0++) {
+    [unroll] for (uint edge0 = 0; edge0 < 4; edge0++) {
         lightVertices[edge0] = normalize(lightVertices[edge0] - shadingPosition);
     }
 
@@ -616,14 +619,15 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
 // Calculates L1 SH based on the world position and occlusion factor. Only samples point lights, not light volumes.
 void LV_PointLightVolumeSH(float3 worldPos, float4 occlusion, inout float3 L0, inout float3 L1r, inout float3 L1g, inout float3 L1b) {
     
-    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
+    uint pointCount = min((uint) _UdonPointLightVolumeCount, VRCLV_MAX_LIGHTS_COUNT);
     if (pointCount == 0) return;
     
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, VRCLV_MAX_LIGHTS_COUNT);
     uint pcount = 0; // Point lights counter
 
     [loop]
-    for (uint pid = 0; pid < pointCount && pcount < maxOverdraw; pid++) {
+    for (uint pid = 0; pid < VRCLV_MAX_LIGHTS_COUNT; pid++) {
+        [branch] if (pid >= pointCount || pcount >= maxOverdraw) break;
         LV_PointLight(pid, worldPos, occlusion, L0, L1r, L1g, L1b, pcount);
     }
     
@@ -636,7 +640,7 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
     occlusion = 1;
     
     // Clamping gloabal iteration counts
-    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
+    uint volumesCount = min((uint) _UdonLightVolumeCount, VRCLV_MAX_VOLUMES_COUNT);
     
     //if (_UdonLightVolumeVersion < VRCLV_VERSION || volumesCount == 0 ) { // Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support
     if (volumesCount == 0) { // Legacy! Fallback to default light probes if Light Volume are not enabled or a version is too old to have a support. Legacy!
@@ -644,8 +648,8 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
         return;
     }
     
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
-    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, VRCLV_MAX_VOLUMES_COUNT);
+    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, VRCLV_MAX_VOLUMES_COUNT);
     bool lightProbesBlend = _UdonLightVolumeProbesBlend;
     
     uint volumeID_A = -1; // Main, dominant volume ID
@@ -664,7 +668,8 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
     
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
     [loop]
-    for (uint id = 0; id < volumesCount; id++) {
+    for (uint id = 0; id < VRCLV_MAX_VOLUMES_COUNT; id++) {
+        [branch] if(id >= volumesCount) break;
         localUVW = LV_LocalFromVolume(id, worldPos);
         if (LV_PointLocalAABB(localUVW)) { // Intersection test
             if (id < additiveCount) { // Sampling additive volumes
@@ -758,15 +763,14 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
     occlusion = 1;
     
     // Clamping gloabal iteration counts
-    uint pointCount = min((uint) _UdonPointLightVolumeCount, 128);
-    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, 32);
+    uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, VRCLV_MAX_VOLUMES_COUNT);
     
     //if (_UdonLightVolumeVersion < VRCLV_VERSION || (additiveCount == 0 && pointCount == 0)) return;
-    if (additiveCount == 0 && pointCount == 0)
+    if (additiveCount == 0)
         return; // Legacy!
 
-    uint volumesCount = min((uint) _UdonLightVolumeCount, 32);
-    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, 32);
+    uint volumesCount = min((uint) _UdonLightVolumeCount, VRCLV_MAX_VOLUMES_COUNT);
+    uint maxOverdraw = min((uint) _UdonLightVolumeAdditiveMaxOverdraw, VRCLV_MAX_VOLUMES_COUNT);
     
     uint volumeID_A = -1; // Main, dominant volume ID
     uint volumeID_B = -1; // Secondary volume ID to blend main with
@@ -783,9 +787,10 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
     uint addVolumesCount = 0;
 
     // Iterating through all light volumes with simplified algorithm requiring Light Volumes to be sorted by weight in descending order
-    uint count = min(_UdonLightVolumeOcclusionCount == 0 ? additiveCount : volumesCount, 32); // Only use all volumes if occlusion volumes are enabled
+    uint count = min(_UdonLightVolumeOcclusionCount == 0 ? additiveCount : volumesCount, VRCLV_MAX_VOLUMES_COUNT); // Only use all volumes if occlusion volumes are enabled
     [loop]
-    for (uint id = 0; id < count; id++) {
+    for (uint id = 0; id < VRCLV_MAX_VOLUMES_COUNT; id++) {
+        [branch] if(id >= count) break;
         localUVW = LV_LocalFromVolume(id, worldPos);
         if (LV_PointLocalAABB(localUVW)) { // Intersection test
             if (id < additiveCount) { // Sampling additive volumes
