@@ -47,9 +47,9 @@ namespace VRCLightVolumes {
         private bool _isInitialized = false;
         private float _prevLightsBrightnessCutoff = 0.35f;
 #if UDONSHARP
-        private bool _isUpdateRequested = false;
+        private bool _isUpdateRequested = false; // Flag that specifies if volumes update requested.
 #else
-        private Coroutine _updateCoroutine = null;
+        private Coroutine _updateCoroutine = null; // Coroutine that auto-updates volumes if auto-update enabled (Non-Udon only)
 #endif
 
         // Light Volumes Data
@@ -87,7 +87,7 @@ namespace VRCLightVolumes {
         public int EnabledCount => _enabledCount;
         public int[] EnabledIDs => _enabledIDs;
 
-        #region Shader Property IDs
+#region Shader Property IDs
         // Light Volumes
         private int lightVolumeInvLocalEdgeSmoothID;
         private int lightVolumeColorID;
@@ -117,64 +117,6 @@ namespace VRCLightVolumes {
         private int _areaLightBrightnessCutoffID;
         private int lightVolumeRotationID;
         private int lightVolumeUvwID;
-
-#if UDONSHARP
-        // Low level Udon hacks:
-        // _old_(Name) variables are the old values of the variables.
-        // _onVarChange_(Name) methods (events) are called when the variable changes.
-
-        private bool _old_AutoUpdateVolumes;
-        public void _onVarChange_AutoUpdateVolumes() {
-            if (!_old_AutoUpdateVolumes && AutoUpdateVolumes) RequestUpdateVolumes();
-        }
-#endif
-
-        private void OnDisable() {
-#if !UDONSHARP
-            if (_updateCoroutine != null) {
-                StopCoroutine(_updateCoroutine);
-                _updateCoroutine = null;
-            }
-#endif
-            TryInitialize();
-            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
-        }
-
-        // Initrializes Light Volume by adding it to the light volumes array. Automalycally calls in runtime on object spawn
-        public void InitializeLightVolume(LightVolumeInstance lightVolume) {
-            int count = LightVolumeInstances.Length;
-            // If there's an empty element in the array, use it!
-            for (int i = 0; i < count; i++) {
-                if (LightVolumeInstances[i] == null) {
-                    LightVolumeInstances[i] = lightVolume;
-                    lightVolume.IsInitialized = true;
-                    return;
-                }
-            }
-            // No empty element, then increase the array size
-            LightVolumeInstance[] targetArray = new LightVolumeInstance[count + 1];
-            Array.Copy(LightVolumeInstances, targetArray, count);
-            targetArray[count] = lightVolume;
-            lightVolume.IsInitialized = true;
-            LightVolumeInstances = targetArray;
-        }
-        public void InitializePointLightVolume(PointLightVolumeInstance pointLightVolume) {
-            int count = PointLightVolumeInstances.Length;
-            // If there's an empty element in the array, use it!
-            for (int i = 0; i < count; i++) {
-                if (PointLightVolumeInstances[i] == null) {
-                    PointLightVolumeInstances[i] = pointLightVolume;
-                    pointLightVolume.IsInitialized = true;
-                    return;
-                }
-            }
-            // No empty element, then increase the array size
-            PointLightVolumeInstance[] targetArray = new PointLightVolumeInstance[count + 1];
-            Array.Copy(PointLightVolumeInstances, targetArray, count);
-            targetArray[count] = pointLightVolume;
-            pointLightVolume.IsInitialized = true;
-            PointLightVolumeInstances = targetArray;
-        }
 
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
@@ -234,7 +176,29 @@ namespace VRCLightVolumes {
             _isInitialized = true;
         }
 
-        #endregion
+#endregion
+
+#if UDONSHARP
+        // Low level Udon hacks:
+        // _old_(Name) variables are the old values of the variables.
+        // _onVarChange_(Name) methods (events) are called when the variable changes.
+
+        private bool _old_AutoUpdateVolumes;
+        public void _onVarChange_AutoUpdateVolumes() {
+            if (!_old_AutoUpdateVolumes && AutoUpdateVolumes) RequestUpdateVolumes();
+        }
+#endif
+
+        private void OnDisable() {
+            TryInitialize();
+#if !UDONSHARP
+            if (_updateCoroutine != null) {
+                StopCoroutine(_updateCoroutine);
+                _updateCoroutine = null;
+            }
+#endif
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
+        }
 
         private void OnEnable() {
             if (!AutoUpdateVolumes) return;
@@ -246,28 +210,66 @@ namespace VRCLightVolumes {
             UpdateVolumes();
         }
 
+        // Initrializes Light Volume by adding it to the light volumes array. Automalycally calls in runtime on object spawn
+        public void InitializeLightVolume(LightVolumeInstance lightVolume) {
+            int count = LightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (LightVolumeInstances[i] == null) {
+                    LightVolumeInstances[i] = lightVolume;
+                    lightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            LightVolumeInstance[] targetArray = new LightVolumeInstance[count + 1];
+            Array.Copy(LightVolumeInstances, targetArray, count);
+            targetArray[count] = lightVolume;
+            lightVolume.IsInitialized = true;
+            LightVolumeInstances = targetArray;
+        }
+        public void InitializePointLightVolume(PointLightVolumeInstance pointLightVolume) {
+            int count = PointLightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (PointLightVolumeInstances[i] == null) {
+                    PointLightVolumeInstances[i] = pointLightVolume;
+                    pointLightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            PointLightVolumeInstance[] targetArray = new PointLightVolumeInstance[count + 1];
+            Array.Copy(PointLightVolumeInstances, targetArray, count);
+            targetArray[count] = pointLightVolume;
+            pointLightVolume.IsInitialized = true;
+            PointLightVolumeInstances = targetArray;
+        }
+
+        // Requests to update volumes next frame
         public void RequestUpdateVolumes() {
 #if UDONSHARP
             if (_isUpdateRequested) return; // Prevent multiple requests
             _isUpdateRequested = true;
-            SendCustomEventDelayedFrames(nameof(DeferredUpdateVolumes), 1);
+            SendCustomEventDelayedFrames(nameof(UpdateVolumesProcess), 1);
 #else
             if (_updateCoroutine != null || !isActiveAndEnabled) return;
-            _updateCoroutine = StartCoroutine(DeferredUpdateVolumes());
+            _updateCoroutine = StartCoroutine(UpdateVolumesCoroutine());
 #endif
         }
 
 #if UDONSHARP
-        public void DeferredUpdateVolumes() {
+        // Internal method to auto update volumes every frame recursively
+        public void UpdateVolumesProcess() {
             if (AutoUpdateVolumes && enabled && gameObject.activeInHierarchy) {
-                SendCustomEventDelayedFrames(nameof(DeferredUpdateVolumes), 1); // Auto schedule next update if AutoUpdateVolumes is enabled
+                SendCustomEventDelayedFrames(nameof(UpdateVolumesProcess), 1); // Auto schedule next update if AutoUpdateVolumes is enabled
             } else {
                 _isUpdateRequested = false;
             }
-            UpdateVolumes();
+            UpdateVolumes(); // Actually update volumes
         }
 #else
-        private IEnumerator DeferredUpdateVolumes() {
+        private IEnumerator UpdateVolumesCoroutine() {
             do {
                 yield return null;
                 UpdateVolumes();
@@ -276,8 +278,8 @@ namespace VRCLightVolumes {
         }
 #endif
 
+        // Main processing method that recalculates all the volumes data and sets it to the shader variables
         public void UpdateVolumes() {
-
 
             TryInitialize();
 
