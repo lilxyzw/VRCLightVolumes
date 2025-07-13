@@ -5,6 +5,7 @@ using System;
 using VRC.SDKBase;
 using UdonSharp;
 #else
+using System.Collections;
 using VRCShader = UnityEngine.Shader;
 #endif
 
@@ -45,6 +46,11 @@ namespace VRCLightVolumes {
 
         private bool _isInitialized = false;
         private float _prevLightsBrightnessCutoff = 0.35f;
+#if UDONSHARP
+        private bool _isUpdateRequested = false;
+#else
+        private Coroutine _updateCoroutine = null;
+#endif
 
         // Light Volumes Data
         private int _enabledCount = 0;
@@ -112,7 +118,24 @@ namespace VRCLightVolumes {
         private int lightVolumeRotationID;
         private int lightVolumeUvwID;
 
+#if UDONSHARP
+        // Low level Udon hacks:
+        // _old_(Name) variables are the old values of the variables.
+        // _onVarChange_(Name) methods (events) are called when the variable changes.
+
+        private bool _old_AutoUpdateVolumes;
+        public void _onVarChange_AutoUpdateVolumes() {
+            if (!_old_AutoUpdateVolumes && AutoUpdateVolumes) RequestUpdateVolumes();
+        }
+#endif
+
         private void OnDisable() {
+#if !UDONSHARP
+            if (_updateCoroutine != null) {
+                StopCoroutine(_updateCoroutine);
+                _updateCoroutine = null;
+            }
+#endif
             TryInitialize();
             VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
         }
@@ -213,15 +236,45 @@ namespace VRCLightVolumes {
 
         #endregion
 
-        private void Update() {
+        private void OnEnable() {
             if (!AutoUpdateVolumes) return;
-            UpdateVolumes();
+            RequestUpdateVolumes();
         }
 
         private void Start() {
             _isInitialized = false;
             UpdateVolumes();
         }
+
+        public void RequestUpdateVolumes() {
+#if UDONSHARP
+            if (_isUpdateRequested) return; // Prevent multiple requests
+            _isUpdateRequested = true;
+            SendCustomEventDelayedFrames(nameof(DeferredUpdateVolumes), 1);
+#else
+            if (_updateCoroutine != null || !isActiveAndEnabled) return;
+            _updateCoroutine = StartCoroutine(DeferredUpdateVolumes());
+#endif
+        }
+
+#if UDONSHARP
+        public void DeferredUpdateVolumes() {
+            if (AutoUpdateVolumes && enabled && gameObject.activeInHierarchy) {
+                SendCustomEventDelayedFrames(nameof(DeferredUpdateVolumes), 1); // Auto schedule next update if AutoUpdateVolumes is enabled
+            } else {
+                _isUpdateRequested = false;
+            }
+            UpdateVolumes();
+        }
+#else
+        private IEnumerator DeferredUpdateVolumes() {
+            do {
+                yield return null;
+                UpdateVolumes();
+            } while (AutoUpdateVolumes);
+            _updateCoroutine = null;
+        }
+#endif
 
         public void UpdateVolumes() {
 
@@ -329,7 +382,7 @@ namespace VRCLightVolumes {
                 if (IsRangeDirty) { // If Brightness cutoff changed, force recalculate every light's range
                     instance.UpdateRange();
                 }
-                if (instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
+                if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
 #if UNITY_EDITOR
                     instance.UpdateTransform();
 #else

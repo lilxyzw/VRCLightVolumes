@@ -51,6 +51,40 @@ namespace VRCLightVolumes {
         // Previous SquaredScale to recalculater range only if there were some scale changes
         private float _prevSquaredScale = 1;
 
+#if UDONSHARP
+        // Low level Udon hacks:
+        // _old_(Name) variables are the old values of the variables.
+        // _onVarChange_(Name) methods (events) are called when the variable changes.
+
+        private Color _old_Color;
+        public void _onVarChange_Color() {
+            if (_old_Color != Color) MarkRangeDirtyAndRequestUpdate();
+        }
+
+        private float _old_Intensity;
+        public void _onVarChange_Intensity() {
+            if (_old_Intensity != Intensity) MarkRangeDirtyAndRequestUpdate();
+        }
+#endif
+
+        private void OnEnable() {
+#if UDONSHARP
+            if (Utilities.IsValid(LightVolumeManager))
+#else
+            if (LightVolumeManager != null)
+#endif
+                LightVolumeManager.RequestUpdateVolumes();
+        }
+
+        private void OnDisable() {
+#if UDONSHARP
+            if (Utilities.IsValid(LightVolumeManager))
+#else
+            if (LightVolumeManager != null)
+#endif
+                LightVolumeManager.RequestUpdateVolumes();
+        }
+
         // Checks if it's a spotlight
         public bool IsSpotLight() {
             return PositionData.w < 0;
@@ -88,14 +122,14 @@ namespace VRCLightVolumes {
             } else {
                 PositionData.w = Mathf.Sign(PositionData.w) * size * size; // Saving the sign that was here before. Squared light size
             }
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets LUT ID
         public void SetLut(int id) {
             CustomID = id + 1;
             AngleData = Mathf.Cos(Angle);
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets Cubemap or a Cookie ID
@@ -104,20 +138,20 @@ namespace VRCLightVolumes {
             if(IsSpotLight()) { // If it's spotlight
                 AngleData = Mathf.Tan(Angle);
             }
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets light into parametric mode
         public void SetParametric() {
             CustomID = 0;
             AngleData = Mathf.Cos(Angle);
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets light into the point light type
         public void SetPointLight() {
             PositionData.w = Mathf.Abs(PositionData.w);
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets light into the spot light type with both angle and falloff because angle required to determine falloff anyway
@@ -130,7 +164,7 @@ namespace VRCLightVolumes {
                 DirectionData.w = 1 / (Mathf.Cos(Angle * (1.0f - Mathf.Clamp01(falloff))) - AngleData);
             }
             PositionData.w = - Mathf.Abs(PositionData.w);
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets light into the spot light type with angle specified
@@ -142,26 +176,33 @@ namespace VRCLightVolumes {
                 AngleData = Mathf.Cos(Angle);
             }
             PositionData.w = - Mathf.Abs(PositionData.w);
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
         
         // Sets light into the area light type
         public void SetAreaLight() {
             PositionData.w = Mathf.Max(Mathf.Abs(transform.lossyScale.x), 0.001f);
             AngleData = 2 + Mathf.Max(Mathf.Abs(transform.lossyScale.y), 0.001f); // Add 2 to get out of [-1; 1] codomain of cosine
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets light source color
         public void SetColor(Color color) {
             Color = color;
-            IsRangeDirty = true;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Sets light source intensity
         public void SetIntensity(float intensity) {
             Intensity = intensity;
+            MarkRangeDirtyAndRequestUpdate();
+        }
+
+        private void MarkRangeDirtyAndRequestUpdate() {
             IsRangeDirty = true;
+#if COMPILER_UDONSHARP
+            if (Utilities.IsValid(LightVolumeManager)) LightVolumeManager.RequestUpdateVolumes();
+#endif
         }
 
         // Updates data required for shader

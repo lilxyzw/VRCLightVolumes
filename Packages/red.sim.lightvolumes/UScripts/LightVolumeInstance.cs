@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 #if UDONSHARP
+using VRC.SDKBase;
 using UdonSharp;
 #endif
 
@@ -44,7 +45,7 @@ namespace VRCLightVolumes {
         [Tooltip("Inversed TRS matrix of this volume that transforms it into the 1x1x1 cube. Recalculates via the UpdateRotation() method.")]
         public Matrix4x4 InvWorldMatrix = Matrix4x4.identity;
         [Tooltip("Current volume's rotation relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method.")]
-        public Vector4 RelativeRotation = new Vector4(0,0,0,1);
+        public Vector4 RelativeRotation = new Vector4(0, 0, 0, 1);
         [Tooltip("Current volume's rotation matrix row 0 relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method. (Legacy)")]
         public Vector3 RelativeRotationRow0 = Vector3.zero;
         [Tooltip("Current volume's rotation matrix row 1 relative to the rotation it was baked with. Mandatory for dynamic volumes. Recalculates via the UpdateRotation() method. (Legacy)")]
@@ -61,10 +62,53 @@ namespace VRCLightVolumes {
         [HideInInspector] // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
         public bool IsIterartedThrough = false;
 
+#if UDONSHARP
+        // Low level Udon hacks:
+        // _old_(Name) variables are the old values of the variables.
+        // _onVarChange_(Name) methods (events) are called when the variable changes.
+
+        private Color _old_Color;
+        public void _onVarChange_Color() {
+            if (_old_Color != Color && Utilities.IsValid(LightVolumeManager))
+                LightVolumeManager.RequestUpdateVolumes();
+        }
+
+        private float _old_Intensity;
+        public void _onVarChange_Intensity() {
+            if (_old_Intensity != Intensity && Utilities.IsValid(LightVolumeManager))
+                LightVolumeManager.RequestUpdateVolumes();
+        }
+#endif
+
+        private void OnEnable() {
+#if UDONSHARP
+            SendCustomEventDelayedFrames(nameof(DelayInitialize), 0);
+#endif
+#if UDONSHARP
+            if (Utilities.IsValid(LightVolumeManager))
+#else
+            if (LightVolumeManager != null)
+#endif
+                LightVolumeManager.RequestUpdateVolumes();
+        }
+
+        private void OnDisable() {
+#if UDONSHARP
+            if (Utilities.IsValid(LightVolumeManager))
+#else
+            if (LightVolumeManager != null)
+#endif
+                LightVolumeManager.RequestUpdateVolumes();
+        }
+
         // Calculates and sets invLocalEdgeBlending
         public void SetSmoothBlending(float radius) {
             Vector3 scl = transform.lossyScale;
             InvLocalEdgeSmoothing = scl / Mathf.Max(radius, 0.00001f);
+
+#if COMPILER_UDONSHARP
+            if (Utilities.IsValid(LightVolumeManager)) LightVolumeManager.RequestUpdateVolumes();
+#endif
         }
 
         // Recalculates inv TRS matrix and Relative L1 rotation
@@ -86,7 +130,13 @@ namespace VRCLightVolumes {
             RelativeRotation = new Vector4(rot.x, rot.y, rot.z, rot.w);
         }
 
+#if !UDONSHARP
         private void Update() {
+            DelayInitialize();
+        }
+#endif
+
+        public void DelayInitialize() {
             if (!IsInitialized && LightVolumeManager != null) {
                 LightVolumeManager.InitializeLightVolume(this);
             }
