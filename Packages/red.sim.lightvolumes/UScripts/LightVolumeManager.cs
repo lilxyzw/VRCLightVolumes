@@ -176,13 +176,26 @@ namespace VRCLightVolumes {
             _isInitialized = true;
         }
 
-#endregion
+        #endregion
+
+#if UNITY_EDITOR
+        // To make it work when changing values on UdonSharpBehaviour in editor
+        private bool _prevAutoUpdateVolumes = false;
+        private void Update() {
+            if (_prevAutoUpdateVolumes != AutoUpdateVolumes) {
+                _prevAutoUpdateVolumes = AutoUpdateVolumes;
+                if (AutoUpdateVolumes) {
+                    RequestUpdateVolumes();
+                }
+            }
+        }
+#endif
 
 #if UDONSHARP
+        // Works only when changing values directly on UdonBehaviour
         // Low level Udon hacks:
         // _old_(Name) variables are the old values of the variables.
         // _onVarChange_(Name) methods (events) are called when the variable changes.
-
         private bool _old_AutoUpdateVolumes;
         public void _onVarChange_AutoUpdateVolumes() {
             if (!_old_AutoUpdateVolumes && AutoUpdateVolumes) RequestUpdateVolumes();
@@ -201,13 +214,12 @@ namespace VRCLightVolumes {
         }
 
         private void OnEnable() {
-            if (!AutoUpdateVolumes) return;
             RequestUpdateVolumes();
         }
 
         private void Start() {
             _isInitialized = false;
-            UpdateVolumes();
+            UpdateVolumes(); // Force update volumes first time at start even if auto update is disabled
         }
 
         // Initrializes Light Volume by adding it to the light volumes array. Automalycally calls in runtime on object spawn
@@ -302,10 +314,18 @@ namespace VRCLightVolumes {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance == null) continue;
                 if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
-#if UNITY_EDITOR
-                    instance.UpdateTransform();
-#else
+#if UDONSHARP
+#if COMPILER_UDONSHARP
                     if (instance.IsDynamic) instance.UpdateTransform();
+#else
+                    instance.UpdateTransform();
+#endif
+#else
+                    if (Application.isPlaying) {
+                        if (instance.IsDynamic) instance.UpdateTransform();
+                    } else {
+                        instance.UpdateTransform();
+                    }
 #endif
                     if (instance.IsAdditive) _additiveCount++;
                     else if (instance.BakeOcclusion) _occlusionCount++;
@@ -385,10 +405,18 @@ namespace VRCLightVolumes {
                     instance.UpdateRange();
                 }
                 if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
-#if UNITY_EDITOR
-                    instance.UpdateTransform();
-#else
+#if UDONSHARP
+#if COMPILER_UDONSHARP
                     if (instance.IsDynamic) instance.UpdateTransform();
+#else
+                    instance.UpdateTransform();
+#endif
+#else
+                    if (Application.isPlaying) {
+                        if (instance.IsDynamic) instance.UpdateTransform();
+                    } else {
+                        instance.UpdateTransform();
+                    }
 #endif
                     _enabledPointIDs[_pointLightCount] = i;
                     _pointLightCount++;

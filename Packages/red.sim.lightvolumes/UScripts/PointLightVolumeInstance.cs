@@ -42,16 +42,28 @@ namespace VRCLightVolumes {
         [Tooltip("Reference to the Light Volume Manager. Needed for runtime initialization.")]
         public LightVolumeManager LightVolumeManager;
 
-        [HideInInspector] // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
-        public bool IsIterartedThrough = false;
+        
+        [HideInInspector] public bool IsIterartedThrough = false; // Sets to true by the manager to check if we already iterated through this light. Prevents adding the same lights to the array muntiple times.
+        [HideInInspector] public bool IsRangeDirty = false; // Sets to true to recalculate the range automatically by the manager
+        private Vector3 _prevPosition = Vector3.zero;
+        private Quaternion _prevRotation = Quaternion.identity;
+        private Vector3 _prevScale = Vector3.one;
 
-        [HideInInspector] // Sets to true to recalculate the range automatically by the manager
-        public bool IsRangeDirty = false;
-
-        // Previous SquaredScale to recalculater range only if there were some scale changes
-        private float _prevSquaredScale = 1;
+#if UNITY_EDITOR
+        // To make it work when changing values on UdonSharpBehaviour in editor
+        private Color _prevColor = Color.white;
+        private float _prevIntensity = 1;
+        private void Update() {
+            if (_prevColor != Color || _prevIntensity != Intensity) {
+                _prevColor = Color;
+                _prevIntensity = Intensity;
+                LightVolumeManager.RequestUpdateVolumes();
+            }
+        }
+#endif
 
 #if UDONSHARP
+        // Works only when changing values directly on UdonBehaviour
         // Low level Udon hacks:
         // _old_(Name) variables are the old values of the variables.
         // _onVarChange_(Name) methods (events) are called when the variable changes.
@@ -208,34 +220,42 @@ namespace VRCLightVolumes {
         // Updates data required for shader
         public void UpdateTransform() {
 
+            // Position Update
             Vector3 pos = transform.position;
-            PositionData = new Vector4(pos.x, pos.y, pos.z, PositionData.w);
+            if (_prevPosition != pos) {
+                _prevPosition = pos;
+                PositionData = new Vector4(pos.x, pos.y, pos.z, PositionData.w);
+            }
 
+            // Scale Update
             Vector3 lscale = transform.lossyScale;
-            SquaredScale = (lscale.x + lscale.y + lscale.z) / 3;
-            SquaredScale *= SquaredScale;
-            if (_prevSquaredScale != SquaredScale) {
-                IsRangeDirty = true;
-                _prevSquaredScale = SquaredScale;
+            if (_prevScale != lscale) {
+                _prevScale = lscale;
+                if (IsAreaLight()) SetAreaLight();
+                SquaredScale = (lscale.x + lscale.y + lscale.z) / 3;
+                SquaredScale *= SquaredScale;
+                MarkRangeDirtyAndRequestUpdate();
             }
 
-            if (IsAreaLight()) {
-                Quaternion rot = transform.rotation;
-                DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
-                SetAreaLight();
-            } else if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
-                Vector3 dir = transform.forward;
-                DirectionData = new Vector4(dir.x, dir.y, dir.z, DirectionData.w);
-            } else if (!IsParametric()) { // If Point Light with a cubemap or a spot light with cookie
-                Quaternion rot = Quaternion.Inverse(transform.rotation);
-                DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
+            // Rotation Update
+            Quaternion rot = transform.rotation;
+            if (_prevRotation != rot) {
+                _prevRotation = rot;
+                if (IsAreaLight()) {
+                    DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
+                } else if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
+                    Vector3 dir = transform.forward;
+                    DirectionData = new Vector4(dir.x, dir.y, dir.z, DirectionData.w);
+                } else if (!IsParametric()) { // If Point Light with a cubemap or a spot light with cookie
+                    rot = Quaternion.Inverse(rot);
+                    DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
+                }
             }
-
+              
         }
 
         // Recalculates squared culling range for the light
         public void UpdateRange() {
-            
             float cutoff = LightVolumeManager != null ? LightVolumeManager.LightsBrightnessCutoff : 0.35f;
             if (IsAreaLight()) { // Area light squared distance math
                 SquaredRange = ComputeAreaLightSquaredBoundingSphere(Mathf.Abs(SquaredScale / PositionData.w), AngleData - 2, Color, Intensity * Mathf.PI, cutoff);

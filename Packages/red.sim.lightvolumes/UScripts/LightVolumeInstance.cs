@@ -130,9 +130,19 @@ namespace VRCLightVolumes {
             RelativeRotation = new Vector4(rot.x, rot.y, rot.z, rot.w);
         }
 
-#if !UDONSHARP
+#if !UDONSHARP || UNITY_EDITOR
+        // To make it work when changing values on UdonSharpBehaviour in editor
+        private Color _prevColor = Color.white;
+        private float _prevIntensity = 1f;
         private void Update() {
+#if !UDONSHARP
             DelayInitialize();
+#endif
+            if(_prevColor != Color || _prevIntensity != Intensity) {
+                _prevColor = Color;
+                _prevIntensity = Intensity;
+                LightVolumeManager.RequestUpdateVolumes();
+            }
         }
 #endif
 

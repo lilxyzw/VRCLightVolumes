@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: LightVolumeAudioLink
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 5976372e5b142614cb4e07766a43bebf, type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: df15dbf7b88a28645919c12a81d9fc3a, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: d4187fdecde7aec4082fe5f231a8ab54, type: 3}

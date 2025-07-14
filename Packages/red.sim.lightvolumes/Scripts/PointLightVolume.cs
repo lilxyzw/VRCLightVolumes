@@ -130,8 +130,6 @@ namespace VRCLightVolumes {
                 SyncUdonScript();
                 LightVolumeSetup.SyncUdonScript();
             }
-
-            //LightVolumeSetup.RefreshVolumesList();
 #endif
         }
 
