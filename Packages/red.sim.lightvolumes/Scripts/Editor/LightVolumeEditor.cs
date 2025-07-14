@@ -69,15 +69,19 @@ namespace VRCLightVolumes {
 
             Vector3 rotEuler = LightVolume.transform.rotation.eulerAngles;
 
-            if (typeof(BakeryVolume).GetField("rotateAroundY") != null) {
-                if ((rotEuler.x != 0 || rotEuler.z != 0) && LightVolume.LightVolumeSetup.IsBakeryMode) {
-                    GUILayout.Space(10);
-                    EditorGUILayout.HelpBox("In Bakery baking mode, only Y-axis rotation is supported in the editor. Free rotation will still work at runtime.", MessageType.Warning);
-                }
-            } else {
-                if ((rotEuler.x != 0 || rotEuler.z != 0 || rotEuler.y != 0) && LightVolume.LightVolumeSetup.IsBakeryMode) {
-                    GUILayout.Space(10);
-                    EditorGUILayout.HelpBox("In Bakery baking mode with your Bakery version, volume rotation is not supported in the editor. Update Bakery to the latest version to bring the Y-axis rotation support. Free rotation will still work at runtime.", MessageType.Warning);
+            bool isFullRotationSupported = typeof(BakeryVolume).GetField("_rotateAroundXYZ") != null;
+            if (!isFullRotationSupported) {
+                bool isYRotationSupported = typeof(BakeryVolume).GetField("rotateAroundY") != null;
+                if (isYRotationSupported) {
+                    if ((rotEuler.x != 0 || rotEuler.z != 0) && LightVolume.LightVolumeSetup.IsBakeryMode) {
+                        GUILayout.Space(10);
+                        EditorGUILayout.HelpBox("With your Bakery version, only Y-axis rotation is supported in the editor. Apply the Bakery latest patch to have full rotation support. Free rotation will still work at runtime.", MessageType.Warning);
+                    }
+                } else {
+                    if ((rotEuler.x != 0 || rotEuler.z != 0 || rotEuler.y != 0) && LightVolume.LightVolumeSetup.IsBakeryMode) {
+                        GUILayout.Space(10);
+                        EditorGUILayout.HelpBox("With your Bakery version, volume rotation is not supported in the editor. Apply the Bakery latest patch to have full rotation support. Free rotation will still work at runtime.", MessageType.Warning);
+                    }
                 }
             }
 

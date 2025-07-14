@@ -403,9 +403,10 @@ MonoBehaviour:
       Data: 23|UnityEngine.TooltipAttribute, UnityEngine.CoreModule
     - Name: tooltip
       Entry: 1
-      Data: 'Automatically updates any volumes data in runtime: Enabling/Disabling,
-        Color, Edge Smoothing, all the global settings and more. Position, Rotation
-        and Scale gets updated only for volumes that are marked dynamic.'
+      Data: Automatically updates most of the volumes properties in runtime. Enabling/Disabling,
+        Color and Intensity updates automatically even without this option enabled.
+        Position, Rotation and Scale gets updated only for volumes that are marked
+        dynamic.
     - Name: 
       Entry: 8
       Data: 
