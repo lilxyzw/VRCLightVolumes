@@ -44,14 +44,12 @@ It works visually similar to [LTCGI](https://github.com/PiMaker/ltcgi) in some c
 > Make sure that `Enable Mip Maps` and `Auto Generate Mip Maps` are **Enabled** in the texture’s import settings.
 
 4. Add all Light Volumes you want to control to the `Target Light Volumes` list. It's usually a one additive light volume.
-
 5. **Optionally:** Add all Point Light Volumes you want to control to the `Target Point Light Volumes` list. This can be useful to make other lights to inherit your screen's color.
-
 6. Tweak the `Intensity` of your additive light volumes in their own LightVolume components. Because sometimes GI from a screen can look too dim.
+7. Done! The system will now update the light color at runtime, even affecting avatars.
 
-7. Enable `Auto Update Volumes` in your **Light Volume Setup** to let it update the colors automatically in runtime.
-
-8. Done! The system will now update the light color at runtime, even affecting avatars.
+>[!TIP]
+> Enabling `Auto Update Volumes` for Audio-Link support is no more required in Light Volumes v.2.0.0
 
 If you see unwanted **sharp color transitions** in your additive volume, try adjusting the **Color Correction** settings in the Light Volume component. Lowering `Shadows` in color correction section usually helps.
 

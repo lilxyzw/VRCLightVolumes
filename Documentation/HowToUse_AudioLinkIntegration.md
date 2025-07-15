@@ -35,13 +35,12 @@ This package includes a [AudioLink](https://github.com/llealloo/audiolink/) inte
 > These meshes should use materials with **emission enabled**. The shader must include a property named `_EmissionColor` (the **Standard** shader supports this).
 
 6. Adjust `Materials Intensity` to fine-tune the brightness of your materials. `Intensity` of Light Volumes and Point Light Volumes can be configured in their components.
-
 7. In your **AudioLink** component, make sure that **GPU Readback** is enabled. Click `Enable readback` if it’s not already active.
-
-8. Enable `Auto Update Volumes` in your **Light Volume Setup** to let it update the colors automatically in runtime.
-
-9. Done! You should now see visual changes reacting to audio.
+8. Done! You should now see visual changes reacting to audio.
    Add more **LightVolumeAudioLink** components to control other AudioLink bands.
+
+>[!TIP]
+>Enabling `Auto Update Volumes` for Audio-Link support is no more required in Light Volumes v.2.0.0
 
 ## Light Volume Audio Link Component Description
 

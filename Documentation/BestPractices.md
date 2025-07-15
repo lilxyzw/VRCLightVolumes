@@ -53,7 +53,7 @@ For dynamic lighting, set the volume to **Additive** so it layers on top of othe
 
 ## Bakery Volume Rotation
 
-Bakery lightmapper offers high quality with Light Volumes but may not support rotation during baking in some versions. Upgrade to the latest Bakery (via **Bakery → Utilities → Check for Patches**) to bake with Y‑axis rotation. Runtime rotation is still always supported.
+Bakery lightmapper offers high quality with Light Volumes but may not support rotation during baking in some older versions. Upgrade to the latest Bakery Patch (via **Bakery → Utilities → Check for Patches**) to support full rotation. Runtime rotation is still always supported.
 
 ## Fixing Bakery Light Probes
 
