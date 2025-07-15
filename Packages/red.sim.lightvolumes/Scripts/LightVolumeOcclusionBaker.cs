@@ -21,8 +21,8 @@ namespace VRCLightVolumes
             public static readonly int OcclusionID = Shader.PropertyToID("_Occlusion");
             public static readonly int OcclusionCountID = Shader.PropertyToID("_OcclusionCount");
 
-            public const string UnlitShaderPath = "Packages/red.sim.lightvolumes/Shaders/OcclusionShader.shader";
-            public const string ComputeShaderPath = "Packages/red.sim.lightvolumes/Shaders/CountUnoccludedPixels.compute";
+            public const string UnlitShaderPath = "Packages/red.sim.lightvolumes/Shaders/Editor/OcclusionShader.shader";
+            public const string ComputeShaderPath = "Packages/red.sim.lightvolumes/Shaders/Editor/CountUnoccludedPixels.compute";
             
             public const string CountKernel = "CountUnoccludedPixels";
             public const string RatioKernel = "ComputeOcclusionRatio";

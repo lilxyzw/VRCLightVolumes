@@ -121,10 +121,14 @@ namespace VRCLightVolumes {
             SetupDependencies();
             if (LightVolumeSetup.IsBakeryMode && !Application.isPlaying && Bake) {
 #if BAKERY_INCLUDED
-                if (typeof(BakeryVolume).GetField("rotateAroundY") != null) { // Some Bakery versions does not support rotateAroundY, so we'll check it
-                    return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+                if (typeof(BakeryVolume).GetField("_rotateAroundXYZ") != null) { // Check if this Bakery version supports full rotation
+                    return transform.rotation;
                 } else {
-                    return Quaternion.identity;
+                    if (typeof(BakeryVolume).GetField("rotateAroundY") != null) { // Some Bakery versions does not support rotateAroundY, so we'll check it
+                        return Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+                    } else {
+                        return Quaternion.identity;
+                    }
                 }
 #else
                 return Quaternion.identity;
@@ -487,9 +491,16 @@ namespace VRCLightVolumes {
                 BakeryVolume.resolutionZ = Resolution.z;
                 BakeryVolume.encoding = BakeryVolume.Encoding.Half4;
 
-                // Even some latest Bakery versions does not support Rotate Around Y
-                var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
-                if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);
+                var bakeryRotationfield = typeof(BakeryVolume).GetField("_rotateAroundXYZ");
+                if (bakeryRotationfield != null) {
+                    bakeryRotationfield.SetValue(BakeryVolume, true);
+                    var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
+                    if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, false);
+                } else {
+                    // Even some latest Bakery versions does not support Rotate Around Y
+                    var bakeryRotationYfield = typeof(BakeryVolume).GetField("rotateAroundY");
+                    if (bakeryRotationYfield != null) bakeryRotationYfield.SetValue(BakeryVolume, true);
+                }
 
                 LVUtils.MarkDirty(BakeryVolume);
             }

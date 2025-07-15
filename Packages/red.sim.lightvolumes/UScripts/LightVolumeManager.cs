@@ -5,6 +5,7 @@ using System;
 using VRC.SDKBase;
 using UdonSharp;
 #else
+using System.Collections;
 using VRCShader = UnityEngine.Shader;
 #endif
 
@@ -17,13 +18,17 @@ namespace VRCLightVolumes {
 #endif
     {
         public const float Version = 2; // VRC Light Volumes Current version. This value used in shaders (_UdonLightVolumeEnabled) to determine which features are can be used
-        [Tooltip("Combined Texture3D containing all Light Volumes' textures.")]
-        public Texture3D LightVolumeAtlas;
+        [Tooltip("Combined texture containing all Light Volumes' textures.")]
+        public Texture LightVolumeAtlas;
+        [Tooltip("Combined Texture3D containing all baked Light Volume data. This field is not used at runtime, see LightVolumeAtlas instead. It specifies the base for the post process chain, if given.")]
+        public Texture3D LightVolumeAtlasBase;
+        [Tooltip("Custom Render Textures that will be applied top to bottom to the Light Volume Atlas at runtime. External scripts can register themselves here using `RegisterPostProcessorCRT`. You probably don't want to mess with this field manually.")]
+        public CustomRenderTexture[] AtlasPostProcessors;
         [Tooltip("When enabled, areas outside Light Volumes fall back to light probes. Otherwise, the Light Volume with the smallest weight is used as fallback. It also improves performance.")]
         public bool LightProbesBlending = true;
         [Tooltip("Disables smooth blending with areas outside Light Volumes. Use it if your entire scene's play area is covered by Light Volumes. It also improves performance.")]
         public bool SharpBounds = true;
-        [Tooltip("Automatically updates any volumes data in runtime: Enabling/Disabling, Color, Edge Smoothing, all the global settings and more. Position, Rotation and Scale gets updated only for volumes that are marked dynamic.")]
+        [Tooltip("Automatically updates most of the volumes properties in runtime. Enabling/Disabling, Color and Intensity updates automatically even without this option enabled. Position, Rotation and Scale gets updated only for volumes that are marked dynamic.")]
         public bool AutoUpdateVolumes = false;
         [Tooltip("Limits the maximum number of additive volumes that can affect a single pixel. If you have many dynamic additive volumes that may overlap, it's good practice to limit overdraw to maintain performance.")]
         public int AdditiveMaxOverdraw = 4;
@@ -33,14 +38,19 @@ namespace VRCLightVolumes {
         public LightVolumeInstance[] LightVolumeInstances = new LightVolumeInstance[0];
         [Tooltip("All Point Light Volume instances. You can enable or disable point light volumes game objects at runtime. Manually disabling unnecessary point light volumes improves performance.")]
         public PointLightVolumeInstance[] PointLightVolumeInstances = new PointLightVolumeInstance[0];
-        [Tooltip("All textures that can be used for as Cubemaps, LUT or Cookies")]
-        public Texture2DArray CustomTextures;
+        [Tooltip("A texture array that can be used for as Cubemaps, LUT or Cookies")]
+        public Texture CustomTextures;
         [Tooltip("Cubemaps count that stored in CustomTextures. Cubemap array elements starts from the beginning, 6 elements each.")]
         public int CubemapsCount = 0;
         [HideInInspector] public bool IsRangeDirty = false;
 
         private bool _isInitialized = false;
         private float _prevLightsBrightnessCutoff = 0.35f;
+#if UDONSHARP
+        private bool _isUpdateRequested = false; // Flag that specifies if volumes update requested.
+#else
+        private Coroutine _updateCoroutine = null; // Coroutine that auto-updates volumes if auto-update enabled (Non-Udon only)
+#endif
 
         // Light Volumes Data
         private int _enabledCount = 0;
@@ -73,7 +83,11 @@ namespace VRCLightVolumes {
         private Vector4[] _boundsScale = new Vector4[3];
         private Vector4[] _bounds = new Vector4[6]; // Legacy
 
-        #region Shader Property IDs
+        // Public API for other U# scripts
+        public int EnabledCount => _enabledCount;
+        public int[] EnabledIDs => _enabledIDs;
+
+#region Shader Property IDs
         // Light Volumes
         private int lightVolumeInvLocalEdgeSmoothID;
         private int lightVolumeColorID;
@@ -104,47 +118,6 @@ namespace VRCLightVolumes {
         private int lightVolumeRotationID;
         private int lightVolumeUvwID;
 
-        private void OnDisable() {
-            TryInitialize();
-            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
-        }
-
-        // Initrializes Light Volume by adding it to the light volumes array. Automalycally calls in runtime on object spawn
-        public void InitializeLightVolume(LightVolumeInstance lightVolume) {
-            int count = LightVolumeInstances.Length;
-            // If there's an empty element in the array, use it!
-            for (int i = 0; i < count; i++) {
-                if (LightVolumeInstances[i] == null) {
-                    LightVolumeInstances[i] = lightVolume;
-                    lightVolume.IsInitialized = true;
-                    return;
-                }
-            }
-            // No empty element, then increase the array size
-            LightVolumeInstance[] targetArray = new LightVolumeInstance[count + 1];
-            Array.Copy(LightVolumeInstances, targetArray, count);
-            targetArray[count] = lightVolume;
-            lightVolume.IsInitialized = true;
-            LightVolumeInstances = targetArray;
-        }
-        public void InitializePointLightVolume(PointLightVolumeInstance pointLightVolume) {
-            int count = PointLightVolumeInstances.Length;
-            // If there's an empty element in the array, use it!
-            for (int i = 0; i < count; i++) {
-                if (PointLightVolumeInstances[i] == null) {
-                    PointLightVolumeInstances[i] = pointLightVolume;
-                    pointLightVolume.IsInitialized = true;
-                    return;
-                }
-            }
-            // No empty element, then increase the array size
-            PointLightVolumeInstance[] targetArray = new PointLightVolumeInstance[count + 1];
-            Array.Copy(PointLightVolumeInstances, targetArray, count);
-            targetArray[count] = pointLightVolume;
-            pointLightVolume.IsInitialized = true;
-            PointLightVolumeInstances = targetArray;
-        }
-
         // Initializing gloabal shader arrays if needed 
         private void TryInitialize() {
 
@@ -154,7 +127,6 @@ namespace VRCLightVolumes {
             // Light Volumes
             lightVolumeInvLocalEdgeSmoothID = VRCShader.PropertyToID("_UdonLightVolumeInvLocalEdgeSmooth");
             lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
-            lightVolumeUvwID = VRCShader.PropertyToID("_UdonLightVolumeUvw");
             lightVolumeColorID = VRCShader.PropertyToID("_UdonLightVolumeColor");
             lightVolumeCountID = VRCShader.PropertyToID("_UdonLightVolumeCount");
             lightVolumeAdditiveCountID = VRCShader.PropertyToID("_UdonLightVolumeAdditiveCount");
@@ -165,7 +137,6 @@ namespace VRCLightVolumes {
             lightVolumeSharpBoundsID = VRCShader.PropertyToID("_UdonLightVolumeSharpBounds");
             lightVolumeID = VRCShader.PropertyToID("_UdonLightVolume");
             lightVolumeRotationQuaternionID = VRCShader.PropertyToID("_UdonLightVolumeRotationQuaternion");
-            lightVolumeInvWorldMatrixID = VRCShader.PropertyToID("_UdonLightVolumeInvWorldMatrix");
             lightVolumeUvwScaleID = VRCShader.PropertyToID("_UdonLightVolumeUvwScale");
             lightVolumeOcclusionUvwID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionUvw");
             lightVolumeOcclusionCountID = VRCShader.PropertyToID("_UdonLightVolumeOcclusionCount");
@@ -207,18 +178,120 @@ namespace VRCLightVolumes {
 
         #endregion
 
+#if UNITY_EDITOR
+        // To make it work when changing values on UdonSharpBehaviour in editor
+        private bool _prevAutoUpdateVolumes = false;
         private void Update() {
-            if (!AutoUpdateVolumes) return;
-            UpdateVolumes();
+            if (_prevAutoUpdateVolumes != AutoUpdateVolumes) {
+                _prevAutoUpdateVolumes = AutoUpdateVolumes;
+                if (AutoUpdateVolumes) {
+                    RequestUpdateVolumes();
+                }
+            }
+        }
+#endif
+
+#if UDONSHARP
+        // Works only when changing values directly on UdonBehaviour
+        // Low level Udon hacks:
+        // _old_(Name) variables are the old values of the variables.
+        // _onVarChange_(Name) methods (events) are called when the variable changes.
+        private bool _old_AutoUpdateVolumes;
+        public void _onVarChange_AutoUpdateVolumes() {
+            if (!_old_AutoUpdateVolumes && AutoUpdateVolumes) RequestUpdateVolumes();
+        }
+#endif
+
+        private void OnDisable() {
+            TryInitialize();
+#if !UDONSHARP
+            if (_updateCoroutine != null) {
+                StopCoroutine(_updateCoroutine);
+                _updateCoroutine = null;
+            }
+#endif
+            VRCShader.SetGlobalFloat(lightVolumeEnabledID, 0);
+        }
+
+        private void OnEnable() {
+            RequestUpdateVolumes();
         }
 
         private void Start() {
             _isInitialized = false;
-            UpdateVolumes();
+            UpdateVolumes(); // Force update volumes first time at start even if auto update is disabled
         }
 
-        public void UpdateVolumes() {
+        // Initrializes Light Volume by adding it to the light volumes array. Automalycally calls in runtime on object spawn
+        public void InitializeLightVolume(LightVolumeInstance lightVolume) {
+            int count = LightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (LightVolumeInstances[i] == null) {
+                    LightVolumeInstances[i] = lightVolume;
+                    lightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            LightVolumeInstance[] targetArray = new LightVolumeInstance[count + 1];
+            Array.Copy(LightVolumeInstances, targetArray, count);
+            targetArray[count] = lightVolume;
+            lightVolume.IsInitialized = true;
+            LightVolumeInstances = targetArray;
+        }
+        public void InitializePointLightVolume(PointLightVolumeInstance pointLightVolume) {
+            int count = PointLightVolumeInstances.Length;
+            // If there's an empty element in the array, use it!
+            for (int i = 0; i < count; i++) {
+                if (PointLightVolumeInstances[i] == null) {
+                    PointLightVolumeInstances[i] = pointLightVolume;
+                    pointLightVolume.IsInitialized = true;
+                    return;
+                }
+            }
+            // No empty element, then increase the array size
+            PointLightVolumeInstance[] targetArray = new PointLightVolumeInstance[count + 1];
+            Array.Copy(PointLightVolumeInstances, targetArray, count);
+            targetArray[count] = pointLightVolume;
+            pointLightVolume.IsInitialized = true;
+            PointLightVolumeInstances = targetArray;
+        }
 
+        // Requests to update volumes next frame
+        public void RequestUpdateVolumes() {
+#if UDONSHARP
+            if (_isUpdateRequested) return; // Prevent multiple requests
+            _isUpdateRequested = true;
+            SendCustomEventDelayedFrames(nameof(UpdateVolumesProcess), 1);
+#else
+            if (_updateCoroutine != null || !isActiveAndEnabled) return;
+            _updateCoroutine = StartCoroutine(UpdateVolumesCoroutine());
+#endif
+        }
+
+#if UDONSHARP
+        // Internal method to auto update volumes every frame recursively
+        public void UpdateVolumesProcess() {
+            if (AutoUpdateVolumes && enabled && gameObject.activeInHierarchy) {
+                SendCustomEventDelayedFrames(nameof(UpdateVolumesProcess), 1); // Auto schedule next update if AutoUpdateVolumes is enabled
+            } else {
+                _isUpdateRequested = false;
+            }
+            UpdateVolumes(); // Actually update volumes
+        }
+#else
+        private IEnumerator UpdateVolumesCoroutine() {
+            do {
+                yield return null;
+                UpdateVolumes();
+            } while (AutoUpdateVolumes);
+            _updateCoroutine = null;
+        }
+#endif
+
+        // Main processing method that recalculates all the volumes data and sets it to the shader variables
+        public void UpdateVolumes() {
 
             TryInitialize();
 
@@ -241,10 +314,18 @@ namespace VRCLightVolumes {
                 LightVolumeInstance instance = LightVolumeInstances[i];
                 if (instance == null) continue;
                 if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
-#if UNITY_EDITOR
-                    instance.UpdateTransform();
-#else
+#if UDONSHARP
+#if COMPILER_UDONSHARP
                     if (instance.IsDynamic) instance.UpdateTransform();
+#else
+                    instance.UpdateTransform();
+#endif
+#else
+                    if (Application.isPlaying) {
+                        if (instance.IsDynamic) instance.UpdateTransform();
+                    } else {
+                        instance.UpdateTransform();
+                    }
 #endif
                     if (instance.IsAdditive) _additiveCount++;
                     else if (instance.BakeOcclusion) _occlusionCount++;
@@ -323,11 +404,19 @@ namespace VRCLightVolumes {
                 if (IsRangeDirty) { // If Brightness cutoff changed, force recalculate every light's range
                     instance.UpdateRange();
                 }
-                if (instance.gameObject.activeInHierarchy &&  instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
-#if UNITY_EDITOR
-                    instance.UpdateTransform();
-#else
+                if (instance.gameObject.activeInHierarchy && instance.Intensity != 0 && instance.Color != Color.black && !instance.IsIterartedThrough) {
+#if UDONSHARP
+#if COMPILER_UDONSHARP
                     if (instance.IsDynamic) instance.UpdateTransform();
+#else
+                    instance.UpdateTransform();
+#endif
+#else
+                    if (Application.isPlaying) {
+                        if (instance.IsDynamic) instance.UpdateTransform();
+                    } else {
+                        instance.UpdateTransform();
+                    }
 #endif
                     _enabledPointIDs[_pointLightCount] = i;
                     _pointLightCount++;

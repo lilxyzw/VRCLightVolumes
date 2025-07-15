@@ -94,3 +94,7 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]cenes/VRCDefaultWorldScene.unity
 /[Aa]ssets/[Ss]cenes/VRCDefaultWorldScene.unity.meta
 /[Cc]lientSimStorage/*
+ProjectSettings/ProjectSettings.asset
+ProjectSettings/Packages/com.unity.testtools.codecoverage
+[Bb]akery-*
+[Aa]ssets/VRC Light Volumes Examples*
