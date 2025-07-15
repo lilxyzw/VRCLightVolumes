@@ -288,6 +288,16 @@ namespace VRCLightVolumes {
             return sh;
         }
 
+        // Checks if any L2 data is provided in SphericalHarmonicsL2
+        public static bool CheckSHL2(SphericalHarmonicsL2 sh) {
+            for(int rgb = 0; rgb < 3; rgb++) { // Iterating RGB color components
+                for(int coeff = 4; coeff < 9; coeff++) { // Iterating L1 and L2 coeffs
+                    if(sh[rgb, coeff] != 0) return true;
+                }
+            }
+            return false;
+        }
+
         public static void TextureSetReadWrite(Texture texture, bool enabled) {
 #if UNITY_EDITOR
             if (texture == null) {

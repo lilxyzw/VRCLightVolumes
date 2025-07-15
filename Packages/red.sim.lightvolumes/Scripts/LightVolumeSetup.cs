@@ -12,6 +12,7 @@ using Unity.EditorCoroutines.Editor;
 using System.IO;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
+using UnityEngine.Diagnostics;
 #endif
 
 namespace VRCLightVolumes {
@@ -497,6 +498,9 @@ namespace VRCLightVolumes {
             var probes = LightmapSettings.lightProbes;
             if (probes == null || probes.count == 0) {
                 Debug.LogWarning("[LightVolumeSetup] No Light Probes found to fix.");
+                return;
+            } else if (LVUtils.CheckSHL2(probes.bakedProbes[0])) {
+                Debug.Log("[LightVolumeSetup] L2 Light Probes detected - no need to apply L1 Bakery fix.");
                 return;
             }
 
