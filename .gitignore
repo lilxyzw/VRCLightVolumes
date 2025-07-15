@@ -96,3 +96,4 @@ crashlytics-build.properties
 /[Cc]lientSimStorage/*
 ProjectSettings/ProjectSettings.asset
 ProjectSettings/Packages/com.unity.testtools.codecoverage
+[Bb]akery-*
