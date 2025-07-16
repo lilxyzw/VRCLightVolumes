@@ -84,10 +84,10 @@ namespace VRCLightVolumes
             countShader.GetKernelThreadGroupSizes(countKernel, out uint countKernelX, out uint countKernelY, out _);
             int ratioKernel = countShader.FindKernel(ShaderConstants.RatioKernel);
             countShader.GetKernelThreadGroupSizes(ratioKernel, out uint ratioKernelX, out _, out _);
-            
+
             // Create and initialize GPU resources
             RenderTexture tempRT = RenderTexture.GetTemporary(resolution, resolution, 16, RenderTextureFormat.R8);
-            var nullRT = new RenderTargetIdentifier();
+            var nullRT = new RenderTargetIdentifier(BuiltinRenderTextureType.None);
             Debug.Assert(tempRT.width % countKernelX == 0 && tempRT.height % countKernelY == 0);
             using GraphicsBuffer occlusionBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, probePositions.Length * 4, sizeof(float));
             float[] occlusionBufferInit = new float[occlusionBuffer.count];
