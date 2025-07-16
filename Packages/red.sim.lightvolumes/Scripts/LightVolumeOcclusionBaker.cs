@@ -98,12 +98,29 @@ namespace VRCLightVolumes
 
             // Find all GI contributors - these are the occluders
             MeshRenderer[] occluders = Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
-                .Where(mr => GameObjectUtility.AreStaticEditorFlagsSet(mr.gameObject, StaticEditorFlags.ContributeGI))
-                .ToArray();
-            Mesh[] occluderMeshes = occluders.Select(mr => mr.GetComponent<MeshFilter>().sharedMesh).ToArray();
-            Matrix4x4[] occluderMatrices = occluders.Select(mr => Matrix4x4.TRS(mr.transform.position, mr.transform.rotation, mr.transform.lossyScale)).ToArray();
-            Bounds[] occluderBounds = occluders.Select(mr => mr.bounds).ToArray();
-            
+                .Where(mr => GameObjectUtility.AreStaticEditorFlagsSet(mr.gameObject, StaticEditorFlags.ContributeGI)).ToArray();
+
+            // Filter out occluders without valid mesh data
+            List<MeshRenderer> validOccluders = new List<MeshRenderer>();
+            List<Mesh> validOccluderMeshes = new List<Mesh>();
+            List<Matrix4x4> validOccluderMatrices = new List<Matrix4x4>();
+            List<Bounds> validOccluderBounds = new List<Bounds>();
+
+            for (int i = 0; i < occluders.Length; i++) {
+                MeshFilter meshFilter = occluders[i].GetComponent<MeshFilter>();
+                if (meshFilter != null && meshFilter.sharedMesh != null) {
+                    validOccluders.Add(occluders[i]);
+                    validOccluderMeshes.Add(meshFilter.sharedMesh);
+                    validOccluderMatrices.Add(Matrix4x4.TRS(occluders[i].transform.position, occluders[i].transform.rotation, occluders[i].transform.lossyScale));
+                    validOccluderBounds.Add(occluders[i].bounds);
+                }
+            }
+
+            occluders = validOccluders.ToArray();
+            Mesh[] occluderMeshes = validOccluderMeshes.ToArray();
+            Matrix4x4[] occluderMatrices = validOccluderMatrices.ToArray();
+            Bounds[] occluderBounds = validOccluderBounds.ToArray();
+
             // Set up command buffer with uniforms that don't change per probe
             using CommandBuffer cmd = new CommandBuffer();
             cmd.name = "Light Volume Occlusion Baking";
