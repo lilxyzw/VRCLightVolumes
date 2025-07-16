@@ -296,7 +296,6 @@ namespace VRCLightVolumes {
             for (int i = 0; i < volumes.Length; i++) {
                 if (volumes[i].Bake && volumes[i].LightVolumeInstance != null) {
                     volumes[i].RecalculateProbesPositions();
-                    volumes[i].BakeOcclusionTexture();
 
                     volumes[i].LightVolumeInstance.InvBakedRotation = Quaternion.Inverse(volumes[i].GetRotation());
                     if (IsBakeryMode && volumes[i].BakeryVolume != null) {
@@ -323,7 +322,6 @@ namespace VRCLightVolumes {
                 if (volumes[i].Bake) {
                     Debug.Log($"[LightVolumeSetup] Adding additional probes to bake with Light Volume \"{volumes[i].gameObject.name}\" using Unity Lightmapper. Group {i}");
                     volumes[i].SetAdditionalProbes(i);
-                    volumes[i].BakeOcclusionTexture();
                 }
             }
         }
@@ -687,7 +685,16 @@ namespace VRCLightVolumes {
             }
         }
 
-        
+        public void BakeOcclusionVolumes() {
+            bool isRebaked = false;
+            for (int i = 0; i < LightVolumes.Count; i++) {
+                if (LightVolumes[i].PointLightShadows && LightVolumes[i].LightVolumeInstance != null) {
+                    bool isBaked = LightVolumes[i].BakeOcclusionTexture();
+                    isRebaked = isRebaked || isBaked;
+                }
+            }
+            if(isRebaked) GenerateAtlas();
+        }
 
         public enum Baking {
             Progressive,

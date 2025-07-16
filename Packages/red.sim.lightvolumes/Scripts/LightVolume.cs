@@ -182,7 +182,7 @@ namespace VRCLightVolumes {
             UnityEditor.Experimental.Lightmapping.SetAdditionalBakedProbes(id, new Vector3[0]);
         }
 
-        public void BakeOcclusionTexture() {
+        public bool BakeOcclusionTexture() {
             // Occlusion data is optional, check if requested and needed
             // Additive volumes don't get occlusion, because adding occlusion values doesn't make any sense
             bool needOcclusion = PointLightShadows && !Additive && LightVolumeSetup.PointLightVolumes.Any(l => l.BakedShadows);
@@ -193,7 +193,7 @@ namespace VRCLightVolumes {
                     LVUtils.MarkDirty(LightVolumeInstance);
                 ShadowsTexture = null;
                 LightVolumeInstance.BakeOcclusion = false;
-                return;
+                return false;
             }
             
             // Precompute some properties of each shadow casting light
@@ -240,6 +240,8 @@ namespace VRCLightVolumes {
             
             LightVolumeInstance.BakeOcclusion = occ != null;
             LVUtils.MarkDirty(LightVolumeInstance);
+
+            return true;
         }
 #endif
 
