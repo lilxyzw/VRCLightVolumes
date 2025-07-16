@@ -132,6 +132,7 @@ namespace VRCLightVolumes {
             }
             if (!LightVolume.PointLightShadows) {
                 hiddenFields.Add("BlurShadows");
+                hiddenFields.Add("ShadowsScale");
             }
             
             if (!LightVolume.Bake) {
