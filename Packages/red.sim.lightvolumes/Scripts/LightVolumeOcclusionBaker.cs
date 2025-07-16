@@ -59,7 +59,7 @@ namespace VRCLightVolumes
             IList<PointLightVolume> pixelLights,
             float[] pixelLightRadii,
             Vector2[] pixelLightAreas,
-            int resolution = 256) {
+            int resolution = 256, string infoString = "") {
             
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             
@@ -193,7 +193,7 @@ namespace VRCLightVolumes
                     // But doing flushing too rarely will cause CommandBuffer operations to become slow.
                     if (probesProcessed++ % 1024 == 0) {
                         float progress = (float)probesProcessed / totalProbesNeedingOcclusion;
-                        string progressTitle = "Light Volume Occlusion Baking (1/2)";
+                        string progressTitle = "Light Volume Shadow Mask Baking " + infoString;
                         string progressMessage = $"Dispatching probe bakes ({probesProcessed}/{totalProbesNeedingOcclusion})";
                         if (EditorUtility.DisplayCancelableProgressBar(progressTitle, progressMessage, progress)) {
                             EditorUtility.ClearProgressBar();
@@ -210,7 +210,7 @@ namespace VRCLightVolumes
             cmd.DispatchCompute(countShader, ratioKernel, (occlusionBuffer.count + (int)ratioKernelX - 1) / (int)ratioKernelX,1,1);
             
             // Read back the occlusion data
-            EditorUtility.DisplayProgressBar("Light Volume Occlusion Baking (2/2)", "Waiting for GPU to finish...", -1);
+            EditorUtility.DisplayProgressBar("Light Volume Shadow Mask Baking " + infoString, "Waiting for GPU to finish...", -1);
             float[] occlusion = new float[occlusionBuffer.count];
             cmd.RequestAsyncReadback(occlusionBuffer, readback => {
                 using NativeArray<float> occlusionReadback = readback.GetData<float>();
@@ -227,7 +227,7 @@ namespace VRCLightVolumes
             Object.DestroyImmediate(whiteMat);
 
             stopwatch.Stop();
-            Debug.Log("[LightVolumeOcclusionBaker] Occlusion baking took " + stopwatch.ElapsedMilliseconds + " ms for " + probePositions.Length + " probes.");
+            Debug.Log("[LightVolumeOcclusionBaker] Shadow mask baking took " + stopwatch.ElapsedMilliseconds + " ms for " + probePositions.Length + " probes.");
             
             return occlusion;
             
@@ -419,7 +419,7 @@ namespace VRCLightVolumes
             float[] shadowLightInfluenceRadii,
             float[] shadowLightRadii,
             Vector2[] shadowLightArea,
-            bool blurOcclusion) {
+            bool blurOcclusion, string infoString = "") {
             
             // For each probe, we need to find the lights that affect it. 4 entries per probe. -1 means no light affects this probe.
             int[] perProbeLights = new int[volumeResolution.x * volumeResolution.y * volumeResolution.z * 4];
@@ -450,7 +450,7 @@ namespace VRCLightVolumes
                         continue;
                     
                     // Assign the light to the probe's shadowmask slot
-                    perProbeLights[probeIdx * 4 + shadowmaskIndex] = lightIdx;
+                    perProbeLights[probeIdx * 4 + Mathf.Clamp(shadowmaskIndex, 0, 3)] = lightIdx;
                     anyLightsAffectVolume = true;
                     
                     // If we already filled all slots, we can stop
@@ -465,7 +465,7 @@ namespace VRCLightVolumes
                 return null;
             
             // Calculate occlusion factors for each probe position and populate the texture
-            float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, shadowLights, shadowLightRadii, shadowLightArea, 256);
+            float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, shadowLights, shadowLightRadii, shadowLightArea, 256, infoString);
             Color[] occlusionColors = new Color[volumeResolution.x * volumeResolution.y * volumeResolution.z];
             for (int texelIdx = 0; texelIdx < occlusionColors.Length; texelIdx++) {
                 occlusionColors[texelIdx] = new Color(

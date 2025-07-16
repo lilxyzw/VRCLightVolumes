@@ -44,9 +44,9 @@ uniform float3 _UdonLightVolumeInvLocalEdgeSmooth[VRCLV_MAX_VOLUMES_COUNT];
 // uniform float4 _UdonLightVolumeUvwScale[96];
 uniform float3 _UdonLightVolumeUvw[VRCLV_MAX_VOLUMES_COUNT * 6]; // Legacy! AABB Bounds of islands on the 3D Texture atlas. Array commented above will be used in future releases! Legacy!
 
-// AABB Bounds of islands on the 3D Texture atlas storing occlusion.
+// XYZ: AABB Bounds of islands on the 3D Texture atlas storing occlusion. W: Scale factor for the occlusion volume UVW
 // This is optional data. If the volume has no occlusion, the value will be (-1, -1, -1, -1).
-uniform float3 _UdonLightVolumeOcclusionUvw[VRCLV_MAX_VOLUMES_COUNT];
+uniform float4 _UdonLightVolumeOcclusionUvw[VRCLV_MAX_VOLUMES_COUNT];
 
 // Color multiplier (RGB) | If we actually need to rotate L1 components at all (A)
 uniform float4 _UdonLightVolumeColor[VRCLV_MAX_VOLUMES_COUNT];
@@ -590,7 +590,7 @@ void LV_SampleVolume(uint id, float3 localUVW, inout float3 L0, inout float3 L1r
 float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
     
     // Sample occlusion
-    float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz;
+    float4 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id];
     
     [branch] if (uvwOcclusion.x >= 0) {
         //uint uvwID = id * 3;
@@ -604,7 +604,7 @@ float4 LV_SampleVolumeOcclusion(uint id, float3 localUVW) {
         uint uvwID = id * 6;
         float3 uvwScaled = saturate(localUVW + 0.5) * (_UdonLightVolumeUvw[uvwID + 1].xyz - _UdonLightVolumeUvw[uvwID].xyz);
         
-        return 1.0f - LV_SAMPLE(_UdonLightVolume, uvwOcclusion + uvwScaled);
+        return 1.0f - LV_SAMPLE(_UdonLightVolume, uvwOcclusion.xyz + uvwScaled * uvwOcclusion.w);
     } else {
         return 1;
     }
