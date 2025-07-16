@@ -391,7 +391,7 @@ namespace VRCLightVolumes
                     for (int voxelX = 0; voxelX < volumeResolution.x; voxelX++) {
                         int centerIdx = voxelX + voxelY * volumeResolution.x + voxelZ * volumeResolution.x * volumeResolution.y;
 
-                        Color sum = Color.black;
+                        Color sum = Color.clear;
                         float weightSum = 0.0f;
                         for (int dz = -1; dz <= 1; dz++)
                             for (int dy = -1; dy <= 1; dy++)
