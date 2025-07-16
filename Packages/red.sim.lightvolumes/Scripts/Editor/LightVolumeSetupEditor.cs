@@ -295,26 +295,32 @@ namespace VRCLightVolumes {
 
             GUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(new GUIContent("Pack Light Volumes", "Repacks Light Volumes 3D Atlas. Should be done manually if you added new volumes to your scene, or made some changes with their 3D textures."))) {
-                _lightVolumeSetup.GenerateAtlas();
-            }
-
-            int lvcount = _lightVolumeSetup.LightVolumes.Count;
-            bool isShadowMask = false;
-            for (int i = 0; i < lvcount; i++) {
-                if (_lightVolumeSetup.LightVolumes[i].PointLightShadows && _lightVolumeSetup.LightVolumes[i].LightVolumeInstance != null) {
-                    isShadowMask = true;
-                    break;
+            if (_lightVolumeSetup.LightVolumes.Count > 0) {
+                if (GUILayout.Button(new GUIContent("Pack Light Volumes", "Repacks Light Volumes 3D Atlas. Should be done manually if you added new volumes to your scene, or made some changes with their 3D textures."))) {
+                    _lightVolumeSetup.GenerateAtlas();
                 }
             }
 
-            GUILayout.Space(5);
+            int lvcount = _lightVolumeSetup.LightVolumes.Count;
+            if (lvcount > 0) {
 
-            GUI.enabled = isShadowMask;
-            if (GUILayout.Button(new GUIContent("Bake Shadow Mask", "Calculates baked shadows for Point Light Volumes with PointLightShadows flag enabled"))) {
-                _lightVolumeSetup.BakeOcclusionVolumes();
+                bool isShadowMask = false;
+                for (int i = 0; i < lvcount; i++) {
+                    if (_lightVolumeSetup.LightVolumes[i].PointLightShadows && _lightVolumeSetup.LightVolumes[i].LightVolumeInstance != null) {
+                        isShadowMask = true;
+                        break;
+                    }
+                }
+
+                GUILayout.Space(5);
+
+                GUI.enabled = isShadowMask;
+                if (GUILayout.Button(new GUIContent("Bake Shadow Mask", "Calculates baked shadows for Point Light Volumes with PointLightShadows flag enabled"))) {
+                    _lightVolumeSetup.BakeOcclusionVolumes();
+                }
+                GUI.enabled = true;
+
             }
-            GUI.enabled = true;
 
             GUILayout.EndHorizontal();
 
