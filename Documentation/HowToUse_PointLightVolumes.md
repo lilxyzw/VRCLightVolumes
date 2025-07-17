@@ -103,18 +103,24 @@ Duplicated LUTs, Cubemaps, and Cookie textures are only uploaded to VRChat once 
 
 ## Baked Point Light Volume Shadows
 
-**Point Light Volumes** do not support real-time shadows. However, you can bake static shadows for them. While this goes against the idea of Point Light Volumes being fully movable, it can still be useful for static lights or lights that move only slightly. That said, this feature is intended for rare and specific use cases.
+**Point Light Volumes** do not support real-time shadows. However, you can bake static shadows (shadow masks) for them. While this goes against the idea of Point Light Volumes being fully movable, it can still be useful for static lights or lights that move only slightly. That said, this feature is intended for rare and specific use cases.
 
 ![](../Documentation/Preview_9.png)
 
-To bake shadows, simply enable the `Baked Shadows` option on the desired **Point Light Volume**. The `Light Source Size` parameter also controls the softness of the shadows — increasing its value will make them blurrier. In the `LUT` light shape mode,  `Baked Shadow Radius` parameter controls the shadows blur.
+To bake shadows, simply enable the `Baked Shadows` option on the desired **Point Light Volume**. The `Baked Shadow Radius` parameter controls the shadows blur. `Shadows Scale` parameter controls the scale multiplier for the volume texture resolution of the shadow mask. So, the final resolution of the shadow mask volume is the `Resolurion * ShadowsScale`.
 
 Keep in mind that baked shadows are voxel-based and are stored directly inside each Light Volume at its configured resolution. Make sure the `Point Light Shadows` option is enabled on every Light Volume you want to include in the bake. Enabling `Blur Shadows` is also recommended in most cases to reduce blocky aliasing artifacts, though it will make shadows appear softer.
 
+Press `Bake Shadow Mask` in your **Light Volumes Setup** component or simply rebake your scene lighting to bake your shadow mask.
+
+> [!Important]
+> Shadow Masks baking doesn't support transparent or semi-transparent mesh materials! So, if you have meshes like glass, water or foliage, disable them completely while baking shadow masks!
+
+> [!Warning]
+> If you changed volume `Resolution` and pressed `Bake Shadow Mask` in your **Light Volumes Setup** component to rebake shadow mask, it will generate the wrong shadow mask UVW and will just not work correctly. `Resolution` must stay the same as for the baked light volume textures. If you want to change `Resolution`, please, rebake the whole scene.
+
 > [!IMPORTANT]
 > Each Light Volume can support a maximum of **4 shadow-casting point lights** that intersects with each other.
-
-To bake shadows for Point Light Volumes, simply rebake your scene lighting.
 
 ## Point Light Volume Component Description
 
