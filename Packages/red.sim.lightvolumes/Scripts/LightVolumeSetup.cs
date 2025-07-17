@@ -691,6 +691,7 @@ namespace VRCLightVolumes {
         }
 
         public void BakeOcclusionVolumes() {
+#if UNITY_EDITOR
             bool isRebaked = false;
             for (int i = 0; i < LightVolumes.Count; i++) {
                 if (LightVolumes[i].PointLightShadows && LightVolumes[i].LightVolumeInstance != null) {
@@ -699,6 +700,7 @@ namespace VRCLightVolumes {
                 }
             }
             if(isRebaked) GenerateAtlas();
+#endif
         }
 
         public enum Baking {
