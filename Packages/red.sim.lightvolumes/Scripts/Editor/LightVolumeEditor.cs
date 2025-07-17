@@ -61,8 +61,9 @@ namespace VRCLightVolumes {
                 EditorGUILayout.HelpBox("Volume density is too high and impossible to calculate and store! Consider using lower density.", MessageType.Error);
             } else {
                 bool bakeOcclusion = LightVolume.PointLightShadows && !LightVolume.Additive;
-                GUILayout.Label($"Size in VRAM: {SizeInVRAM(vCount, bakeOcclusion)} MB");
-                GUILayout.Label($"Size in bundle: {SizeInBundle(vCount, bakeOcclusion)} MB (Approximately)");
+                int occlusionVCount = bakeOcclusion ? LightVolume.GetOcclusionVoxelCount() : 0;
+                GUILayout.Label($"Size in VRAM: {SizeInVRAM(vCount, occlusionVCount)} MB");
+                GUILayout.Label($"Size in bundle: {SizeInBundle(vCount, occlusionVCount)} MB (Approximately)");
             }
 
 #if BAKERY_INCLUDED
@@ -132,6 +133,7 @@ namespace VRCLightVolumes {
             }
             if (!LightVolume.PointLightShadows) {
                 hiddenFields.Add("BlurShadows");
+                hiddenFields.Add("ShadowsScale");
             }
             
             if (!LightVolume.Bake) {
@@ -276,14 +278,14 @@ namespace VRCLightVolumes {
         }
 
         // Real size in VRAM
-        string SizeInVRAM(int vCount, bool isOcclusion) {
-            double mb = (ulong)vCount * 8 * (isOcclusion ? 4f : 3f) / (double)(1024 * 1024);
+        string SizeInVRAM(int vCount, int occlusionVcount) {
+            double mb = (ulong)(vCount * 3f + occlusionVcount) * 8 / (double)(1024 * 1024);
             return mb.ToString("0.00");
         }
 
         // Approximate size in Asset bundle
-        string SizeInBundle(int vCount, bool isOcclusion) {
-            double mb = (ulong)vCount * 8 * (isOcclusion ? 4f : 3f) * 0.315f / (double)(1024 * 1024);
+        string SizeInBundle(int vCount, int occlusionVcount) {
+            double mb = (ulong)(vCount * 3f + occlusionVcount) * 8 * 0.315f / (double)(1024 * 1024);
             return mb.ToString("0.00");
         }
 

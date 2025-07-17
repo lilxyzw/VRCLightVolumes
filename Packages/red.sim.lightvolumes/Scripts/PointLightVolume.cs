@@ -170,6 +170,7 @@ namespace VRCLightVolumes {
                     // Use it as Point Light
                     // SetPointLight()
                     _pointLightVolumeBehaviour.SendCustomEvent("SetPointLight");
+                    _pointLightVolumeBehaviour.SendCustomEvent("UpdateRotation");
                 } else if (Type == LightType.SpotLight) { // Spot Light
                     // SetRange(Range)
                     _pointLightVolumeBehaviour.SetProgramVariable("__0_size__param", Range);
@@ -199,11 +200,13 @@ namespace VRCLightVolumes {
                     // SetSpotLight(Angle, Falloff)
                     _pointLightVolumeBehaviour.SetProgramVariable("__0_angleDeg__param", Angle);
                     _pointLightVolumeBehaviour.SetProgramVariable("__0_falloff__param", Falloff);
-                    _pointLightVolumeBehaviour.SendCustomEvent("__0_SetSpotLight"); 
+                    _pointLightVolumeBehaviour.SendCustomEvent("__0_SetSpotLight");
+                    _pointLightVolumeBehaviour.SendCustomEvent("UpdateRotation");
 
                 } else if (Type == LightType.AreaLight) { // Area light
                     // SetAreaLight()
                     _pointLightVolumeBehaviour.SendCustomEvent("SetAreaLight");
+                    _pointLightVolumeBehaviour.SendCustomEvent("UpdateRotation");
                 }
 
             } else {
@@ -227,6 +230,7 @@ namespace VRCLightVolumes {
                         PointLightVolumeInstance.SetParametric(); // Use this light in parametric mode
                     }
                     PointLightVolumeInstance.SetPointLight(); // Use it as Point Light
+                    PointLightVolumeInstance.UpdateRotation();
                 } else if (Type == LightType.SpotLight) { // Spot Light
                     PointLightVolumeInstance.SetLightSourceSize(Range);
                     if (Shape == LightShape.Custom && Cookie != null) {
@@ -240,8 +244,10 @@ namespace VRCLightVolumes {
                         PointLightVolumeInstance.SetParametric(); // Use this light in parametric mode
                     }
                     PointLightVolumeInstance.SetSpotLight(Angle, Falloff); // Don't use custom tex
+                    PointLightVolumeInstance.UpdateRotation();
                 } else if (Type == LightType.AreaLight) { // Area light
                     PointLightVolumeInstance.SetAreaLight();
+                    PointLightVolumeInstance.UpdateRotation();
                 }
 #if UDONSHARP
             }

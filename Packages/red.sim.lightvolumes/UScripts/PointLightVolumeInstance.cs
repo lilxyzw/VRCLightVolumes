@@ -224,34 +224,52 @@ namespace VRCLightVolumes {
             Vector3 pos = transform.position;
             if (_prevPosition != pos) {
                 _prevPosition = pos;
-                PositionData = new Vector4(pos.x, pos.y, pos.z, PositionData.w);
-            }
-
-            // Scale Update
-            Vector3 lscale = transform.lossyScale;
-            if (_prevScale != lscale) {
-                _prevScale = lscale;
-                if (IsAreaLight()) SetAreaLight();
-                SquaredScale = (lscale.x + lscale.y + lscale.z) / 3;
-                SquaredScale *= SquaredScale;
-                MarkRangeDirtyAndRequestUpdate();
+                UpdatePosition();
             }
 
             // Rotation Update
             Quaternion rot = transform.rotation;
             if (_prevRotation != rot) {
                 _prevRotation = rot;
-                if (IsAreaLight()) {
-                    DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
-                } else if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
-                    Vector3 dir = transform.forward;
-                    DirectionData = new Vector4(dir.x, dir.y, dir.z, DirectionData.w);
-                } else if (!IsParametric()) { // If Point Light with a cubemap or a spot light with cookie
-                    rot = Quaternion.Inverse(rot);
-                    DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
-                }
+                UpdateRotation();
+            }
+
+            // Scale Update
+            Vector3 lscale = transform.lossyScale;
+            if (_prevScale != lscale) {
+                _prevScale = lscale;
+                UpdateScale();
             }
               
+        }
+
+        // Force update position
+        public void UpdatePosition() {
+            Vector3 pos = transform.position;
+            PositionData = new Vector4(pos.x, pos.y, pos.z, PositionData.w);
+        }
+        
+        // Force update rotation
+        public void UpdateRotation() {
+            Quaternion rot = transform.rotation;
+            if (IsAreaLight()) {
+                DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
+            } else if (IsSpotLight() && !IsCustomTexture()) { // If Spot Light with no cookie
+                Vector3 dir = transform.forward;
+                DirectionData = new Vector4(dir.x, dir.y, dir.z, DirectionData.w);
+            } else if (!IsParametric()) { // If Point Light with a cubemap or a spot light with cookie
+                rot = Quaternion.Inverse(rot);
+                DirectionData = new Vector4(rot.x, rot.y, rot.z, rot.w);
+            }
+        }
+
+        // Force update scale
+        public void UpdateScale() {
+            Vector3 lscale = transform.lossyScale;
+            if (IsAreaLight()) SetAreaLight();
+            SquaredScale = (lscale.x + lscale.y + lscale.z) / 3;
+            SquaredScale *= SquaredScale;
+            MarkRangeDirtyAndRequestUpdate();
         }
 
         // Recalculates squared culling range for the light

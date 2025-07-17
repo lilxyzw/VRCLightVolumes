@@ -59,7 +59,7 @@ namespace VRCLightVolumes
             IList<PointLightVolume> pixelLights,
             float[] pixelLightRadii,
             Vector2[] pixelLightAreas,
-            int resolution = 256) {
+            int resolution = 256, string infoString = "") {
             
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             
@@ -84,10 +84,10 @@ namespace VRCLightVolumes
             countShader.GetKernelThreadGroupSizes(countKernel, out uint countKernelX, out uint countKernelY, out _);
             int ratioKernel = countShader.FindKernel(ShaderConstants.RatioKernel);
             countShader.GetKernelThreadGroupSizes(ratioKernel, out uint ratioKernelX, out _, out _);
-            
+
             // Create and initialize GPU resources
             RenderTexture tempRT = RenderTexture.GetTemporary(resolution, resolution, 16, RenderTextureFormat.R8);
-            var nullRT = new RenderTargetIdentifier();
+            var nullRT = new RenderTargetIdentifier(BuiltinRenderTextureType.None);
             Debug.Assert(tempRT.width % countKernelX == 0 && tempRT.height % countKernelY == 0);
             using GraphicsBuffer occlusionBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, probePositions.Length * 4, sizeof(float));
             float[] occlusionBufferInit = new float[occlusionBuffer.count];
@@ -98,12 +98,29 @@ namespace VRCLightVolumes
 
             // Find all GI contributors - these are the occluders
             MeshRenderer[] occluders = Object.FindObjectsByType<MeshRenderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
-                .Where(mr => GameObjectUtility.AreStaticEditorFlagsSet(mr.gameObject, StaticEditorFlags.ContributeGI))
-                .ToArray();
-            Mesh[] occluderMeshes = occluders.Select(mr => mr.GetComponent<MeshFilter>().sharedMesh).ToArray();
-            Matrix4x4[] occluderMatrices = occluders.Select(mr => Matrix4x4.TRS(mr.transform.position, mr.transform.rotation, mr.transform.lossyScale)).ToArray();
-            Bounds[] occluderBounds = occluders.Select(mr => mr.bounds).ToArray();
-            
+                .Where(mr => GameObjectUtility.AreStaticEditorFlagsSet(mr.gameObject, StaticEditorFlags.ContributeGI)).ToArray();
+
+            // Filter out occluders without valid mesh data
+            List<MeshRenderer> validOccluders = new List<MeshRenderer>();
+            List<Mesh> validOccluderMeshes = new List<Mesh>();
+            List<Matrix4x4> validOccluderMatrices = new List<Matrix4x4>();
+            List<Bounds> validOccluderBounds = new List<Bounds>();
+
+            for (int i = 0; i < occluders.Length; i++) {
+                MeshFilter meshFilter = occluders[i].GetComponent<MeshFilter>();
+                if (meshFilter != null && meshFilter.sharedMesh != null) {
+                    validOccluders.Add(occluders[i]);
+                    validOccluderMeshes.Add(meshFilter.sharedMesh);
+                    validOccluderMatrices.Add(Matrix4x4.TRS(occluders[i].transform.position, occluders[i].transform.rotation, occluders[i].transform.lossyScale));
+                    validOccluderBounds.Add(occluders[i].bounds);
+                }
+            }
+
+            occluders = validOccluders.ToArray();
+            Mesh[] occluderMeshes = validOccluderMeshes.ToArray();
+            Matrix4x4[] occluderMatrices = validOccluderMatrices.ToArray();
+            Bounds[] occluderBounds = validOccluderBounds.ToArray();
+
             // Set up command buffer with uniforms that don't change per probe
             using CommandBuffer cmd = new CommandBuffer();
             cmd.name = "Light Volume Occlusion Baking";
@@ -193,7 +210,7 @@ namespace VRCLightVolumes
                     // But doing flushing too rarely will cause CommandBuffer operations to become slow.
                     if (probesProcessed++ % 1024 == 0) {
                         float progress = (float)probesProcessed / totalProbesNeedingOcclusion;
-                        string progressTitle = "Light Volume Occlusion Baking (1/2)";
+                        string progressTitle = "Light Volume Shadow Mask Baking " + infoString;
                         string progressMessage = $"Dispatching probe bakes ({probesProcessed}/{totalProbesNeedingOcclusion})";
                         if (EditorUtility.DisplayCancelableProgressBar(progressTitle, progressMessage, progress)) {
                             EditorUtility.ClearProgressBar();
@@ -210,7 +227,7 @@ namespace VRCLightVolumes
             cmd.DispatchCompute(countShader, ratioKernel, (occlusionBuffer.count + (int)ratioKernelX - 1) / (int)ratioKernelX,1,1);
             
             // Read back the occlusion data
-            EditorUtility.DisplayProgressBar("Light Volume Occlusion Baking (2/2)", "Waiting for GPU to finish...", -1);
+            EditorUtility.DisplayProgressBar("Light Volume Shadow Mask Baking " + infoString, "Waiting for GPU to finish...", -1);
             float[] occlusion = new float[occlusionBuffer.count];
             cmd.RequestAsyncReadback(occlusionBuffer, readback => {
                 using NativeArray<float> occlusionReadback = readback.GetData<float>();
@@ -227,7 +244,7 @@ namespace VRCLightVolumes
             Object.DestroyImmediate(whiteMat);
 
             stopwatch.Stop();
-            Debug.Log("[LightVolumeOcclusionBaker] Occlusion baking took " + stopwatch.ElapsedMilliseconds + " ms for " + probePositions.Length + " probes.");
+            Debug.Log("[LightVolumeOcclusionBaker] Shadow mask baking took " + stopwatch.ElapsedMilliseconds + " ms for " + probePositions.Length + " probes.");
             
             return occlusion;
             
@@ -289,11 +306,6 @@ namespace VRCLightVolumes
                     shadowLightArea[lightIdx] = new Vector2(width, height);
                 } else if (light.Shape != PointLightVolume.LightShape.LUT || light.FalloffLUT == null) {
                     lightInfluenceRadius = ComputePointLightSquaredBoundingSphere(light.Color, light.Intensity, light.LightSourceSize, lightBrightnessCutoff);
-                    if (light.Type == PointLightVolume.LightType.SpotLight) {
-                        lightRadius = light.LightSourceSize * Mathf.Clamp01(1 - Mathf.Cos(light.Angle * Mathf.Deg2Rad * 0.5f));
-                    } else {
-                        lightRadius = light.LightSourceSize;
-                    }
                 }
                 shadowLightInfluenceRadii[lightIdx] = lightInfluenceRadius;
                 shadowLightRadii[lightIdx] = Mathf.Max(voxelRadius, lightRadius);
@@ -391,7 +403,7 @@ namespace VRCLightVolumes
                     for (int voxelX = 0; voxelX < volumeResolution.x; voxelX++) {
                         int centerIdx = voxelX + voxelY * volumeResolution.x + voxelZ * volumeResolution.x * volumeResolution.y;
 
-                        Color sum = Color.black;
+                        Color sum = Color.clear;
                         float weightSum = 0.0f;
                         for (int dz = -1; dz <= 1; dz++)
                             for (int dy = -1; dy <= 1; dy++)
@@ -424,7 +436,7 @@ namespace VRCLightVolumes
             float[] shadowLightInfluenceRadii,
             float[] shadowLightRadii,
             Vector2[] shadowLightArea,
-            bool blurOcclusion) {
+            bool blurOcclusion, string infoString = "") {
             
             // For each probe, we need to find the lights that affect it. 4 entries per probe. -1 means no light affects this probe.
             int[] perProbeLights = new int[volumeResolution.x * volumeResolution.y * volumeResolution.z * 4];
@@ -455,7 +467,7 @@ namespace VRCLightVolumes
                         continue;
                     
                     // Assign the light to the probe's shadowmask slot
-                    perProbeLights[probeIdx * 4 + shadowmaskIndex] = lightIdx;
+                    perProbeLights[probeIdx * 4 + Mathf.Clamp(shadowmaskIndex, 0, 3)] = lightIdx;
                     anyLightsAffectVolume = true;
                     
                     // If we already filled all slots, we can stop
@@ -470,7 +482,7 @@ namespace VRCLightVolumes
                 return null;
             
             // Calculate occlusion factors for each probe position and populate the texture
-            float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, shadowLights, shadowLightRadii, shadowLightArea, 256);
+            float[] occlusionFactors = ComputeOcclusionFactors(probePositions, perProbeLights, shadowLights, shadowLightRadii, shadowLightArea, 256, infoString);
             Color[] occlusionColors = new Color[volumeResolution.x * volumeResolution.y * volumeResolution.z];
             for (int texelIdx = 0; texelIdx < occlusionColors.Length; texelIdx++) {
                 occlusionColors[texelIdx] = new Color(
