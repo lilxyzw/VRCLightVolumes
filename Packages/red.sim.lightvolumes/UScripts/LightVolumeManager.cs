@@ -328,7 +328,7 @@ namespace VRCLightVolumes {
                     }
 #endif
                     if (instance.IsAdditive) _additiveCount++;
-                    else if (instance.BakeOcclusion) _occlusionCount++;
+                    if (instance.BakeOcclusion) _occlusionCount++;
                     _enabledIDs[_enabledCount] = i;
                     _enabledCount++;
                     instance.IsIterartedThrough = true;
