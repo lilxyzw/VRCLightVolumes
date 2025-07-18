@@ -305,7 +305,7 @@ namespace VRCLightVolumes
                     lightRadius = Mathf.Sqrt(width * width + height * height) / 2.0f;
                     shadowLightArea[lightIdx] = new Vector2(width, height);
                 } else if (light.Shape != PointLightVolume.LightShape.LUT || light.FalloffLUT == null) {
-                    lightInfluenceRadius = ComputePointLightSquaredBoundingSphere(light.Color, light.Intensity, light.LightSourceSize, lightBrightnessCutoff);
+                    lightInfluenceRadius = Mathf.Sqrt(ComputePointLightSquaredBoundingSphere(light.Color, light.Intensity, light.LightSourceSize, lightBrightnessCutoff));
                 }
                 shadowLightInfluenceRadii[lightIdx] = lightInfluenceRadius;
                 shadowLightRadii[lightIdx] = Mathf.Max(voxelRadius, lightRadius);
