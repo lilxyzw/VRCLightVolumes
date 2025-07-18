@@ -552,9 +552,9 @@ void LV_SampleVolume(uint id, float3 localUVW, inout float3 L0, inout float3 L1r
     LV_SampleLightVolumeTex(uvw0, uvw1, uvw2, l0, l1r, l1g, l1b);
 
     // Sample occlusion
-    float3 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id].xyz;
+    float4 uvwOcclusion = _UdonLightVolumeOcclusionUvw[id];
     [branch] if (uvwOcclusion.x >= 0) {
-        occlusion = 1.0f - LV_SAMPLE(_UdonLightVolume, uvwOcclusion + uvwScaled);
+        occlusion = 1.0f - LV_SAMPLE(_UdonLightVolume, uvwOcclusion.xyz + uvwScaled * uvwOcclusion.w);
     } else {
         occlusion = 1;
     }
