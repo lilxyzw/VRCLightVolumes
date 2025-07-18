@@ -635,6 +635,7 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
 
     // Initializing output variables
     occlusion = 1;
+    float4 mOcclusion = 1; // Multiplicative occlusion. Applies on top of regular occlusion
     
     // Clamping gloabal iteration counts
     uint volumesCount = min((uint) _UdonLightVolumeCount, VRCLV_MAX_VOLUMES_COUNT);
@@ -670,8 +671,9 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
         [branch] if (LV_PointLocalAABB(localUVW)) { // Intersection test
             [branch] if (id < additiveCount) { // Sampling additive volumes
                 [branch] if (addVolumesCount < maxOverdraw) {
-                    float4 unusedOcclusion; // Will be stripped by compiler
-                    LV_SampleVolume(id, localUVW, L0, L1r, L1g, L1b, unusedOcclusion);
+                    float4 occ; // Multiplicative occlusion
+                    LV_SampleVolume(id, localUVW, L0, L1r, L1g, L1b, occ);
+                    mOcclusion *= occ;
                     addVolumesCount++;
                 } 
             } else if (isNoA) { // First, searching for volume A
@@ -690,6 +692,7 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
     // If no volumes found, using Light Probes as fallback
     [branch] if (isNoA && lightProbesBlend) {
         LV_SampleLightProbe(L0, L1r, L1g, L1b);
+        occlusion *= mOcclusion;
         return;
     }
         
@@ -714,6 +717,7 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
         L1g += L1g_A;
         L1b += L1b_A;
         occlusion = occlusion_A;
+        occlusion *= mOcclusion;
         return;
     }
     
@@ -742,6 +746,7 @@ void LV_LightVolumeSH(float3 worldPos, inout float3 L0, inout float3 L1r, inout 
 
     // Lerping occlusion
     occlusion = lerp(occlusion_B, occlusion_A, mask);
+    occlusion *= mOcclusion;
 
     // Lerping SH components
     L0  += lerp(L0_B,  L0_A,  mask);
@@ -757,6 +762,7 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
 
     // Initializing output variables
     occlusion = 1;
+    float4 mOcclusion = 1; // Multiplicative occlusion. Applies on top of regular occlusion
     
     // Clamping gloabal iteration counts
     uint additiveCount = min((uint) _UdonLightVolumeAdditiveCount, VRCLV_MAX_VOLUMES_COUNT);
@@ -788,8 +794,9 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
         [branch] if (LV_PointLocalAABB(localUVW)) { // Intersection test
             [branch] if (id < additiveCount) { // Sampling additive volumes
                 [branch] if (addVolumesCount < maxOverdraw) {
-                    float4 unusedOcclusion;
-                    LV_SampleVolume(id, localUVW, L0, L1r, L1g, L1b, unusedOcclusion);
+                    float4 occ; // Multiplicative occlusion
+                    LV_SampleVolume(id, localUVW, L0, L1r, L1g, L1b, occ);
+                    mOcclusion *= occ;
                     addVolumesCount++;
                 } 
             } else if (isNoA) { // First, searching for volume A
@@ -806,7 +813,10 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
     }
 
     // If no volumes found, or we don't need the occlusion data, we are done
-    [branch] if (isNoA || _UdonLightVolumeOcclusionCount == 0) return;
+    [branch] if (isNoA || _UdonLightVolumeOcclusionCount == 0) {
+        occlusion *= mOcclusion;
+        return;
+    }
     
     // Fallback to lowest weight light volume if outside of every volume
     localUVW_A = isNoA ? localUVW : localUVW_A;
@@ -816,12 +826,17 @@ void LV_LightVolumeAdditiveSH(float3 worldPos, inout float3 L0, inout float3 L1r
     occlusion = LV_SampleVolumeOcclusion(volumeID_A, localUVW_A);
     float mask = LV_BoundsMask(localUVW_A, _UdonLightVolumeInvLocalEdgeSmooth[volumeID_A]);
     
-    [branch] if (mask == 1 || (_UdonLightVolumeSharpBounds && isNoB)) return; // Returning A result if it's the center of mask or out of bounds
+    [branch] if (mask == 1 || (_UdonLightVolumeSharpBounds && isNoB)) {
+        occlusion *= mOcclusion;
+        return; // Returning A result if it's the center of mask or out of bounds
+    }
 
     // Blending Volume A and Volume B
     [branch] if (isNoB) occlusion = lerp(1, occlusion, mask);
     else occlusion = lerp(LV_SampleVolumeOcclusion(volumeID_B, localUVW_B), occlusion, mask);
 
+    occlusion *= mOcclusion;
+    
 }
 
 // Calculates speculars for light volumes or any SH L1 data with privided f0

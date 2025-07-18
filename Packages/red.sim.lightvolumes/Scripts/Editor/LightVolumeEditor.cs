@@ -60,7 +60,7 @@ namespace VRCLightVolumes {
             if (vCount < 0) {
                 EditorGUILayout.HelpBox("Volume density is too high and impossible to calculate and store! Consider using lower density.", MessageType.Error);
             } else {
-                bool bakeOcclusion = LightVolume.PointLightShadows && !LightVolume.Additive;
+                bool bakeOcclusion = LightVolume.PointLightShadows;
                 int occlusionVCount = bakeOcclusion ? LightVolume.GetOcclusionVoxelCount() : 0;
                 GUILayout.Label($"Size in VRAM: {SizeInVRAM(vCount, occlusionVCount)} MB");
                 GUILayout.Label($"Size in bundle: {SizeInBundle(vCount, occlusionVCount)} MB (Approximately)");
@@ -127,10 +127,6 @@ namespace VRCLightVolumes {
             hiddenFields.Add("BakeryVolume");
 #endif
 
-            if (LightVolume.Additive) {
-                hiddenFields.Add("PointLightShadows");
-                hiddenFields.Add("BlurShadows");
-            }
             if (!LightVolume.PointLightShadows) {
                 hiddenFields.Add("BlurShadows");
                 hiddenFields.Add("ShadowsScale");
