@@ -6,7 +6,7 @@
 |----|
 |[VRC Light Volumes System](../Documentation/HowToUse.md)|
 |[Regular Light Volumes](../Documentation/HowToUse_RegularLightVolumes.md)|
-|**Point Light Volumes**<br />• [Point Light Volumes Placement](#Point-Light-Volumes-Placement)<br />• [Light Shape](#Light-Shape)<br />• [Baked Point Light Volume Shadows](#Baked-Point-Light-Volume-Shadows)<br />• [Point Light Volume Component Description](#Point-Light-Volume-Component-Description)|
+|**Point Light Volumes**<br />• [Point Light Volumes Placement](#Point-Light-Volumes-Placement)<br />• [Light Shape](#Light-Shape)<br />• [Baked Point Light Volume Shadow Masks](#Baked-Point-Light-Volume-Shadow-Masks)<br />• [Point Light Volume Component Description](#Point-Light-Volume-Component-Description)|
 |[Audio Link Integration](../Documentation/HowToUse_AudioLinkIntegration.md)|
 |[TV Screens Integration](../Documentation/HowToUse_TVScreensIntegration.md)|
 |[How Light Volumes Work?](../Documentation/HowToUse_HowItWorks.md)|
@@ -101,7 +101,7 @@ Duplicated LUTs, Cubemaps, and Cookie textures are only uploaded to VRChat once 
 - **`RGBA Half`** – The recommended format for most cases. Supports HDR and works well with LUTs. It uses half precision, so minimal banding may still be visible, but usually unnoticeable.
 - **`RGBA Float`** – The highest quality format with full HDR support and no banding. It’s also the most memory-heavy and is typically overkill for general use.
 
-## Baked Point Light Volume Shadows
+## Baked Point Light Volume Shadow Masks
 
 **Point Light Volumes** do not support real-time shadows. However, you can bake static shadows (shadow masks) for them. While this goes against the idea of Point Light Volumes being fully movable, it can still be useful for static lights or lights that move only slightly. That said, this feature is intended for rare and specific use cases.
 
@@ -113,11 +113,13 @@ Keep in mind that baked shadows are voxel-based and are stored directly inside e
 
 Press `Bake Shadow Mask` in your **Light Volumes Setup** component or simply rebake your scene lighting to bake your shadow mask.
 
+If you bake a shadow mask for an **Additive Volume**, this shadow mask will work as a **Multiplicative** shadow mask. It's very useful if you want to add more shadows on top. Why it's multiplicative instead of additive? It's because shadows works this way: to accumulate more shadows, you need to multiply the masks instead of adding them together.
+
 > [!Important]
 > Shadow Masks baking doesn't support transparent or semi-transparent mesh materials! So, if you have meshes like glass, water or foliage, disable them completely while baking shadow masks!
 
 > [!Warning]
-> If you changed volume `Resolution` and pressed `Bake Shadow Mask` in your **Light Volumes Setup** component to rebake shadow mask, it will generate the wrong shadow mask UVW and will just not work correctly. `Resolution` must stay the same as for the baked light volume textures. If you want to change `Resolution`, please, rebake the whole scene.
+> If you changed volume `Resolution` and pressed `Bake Shadow Mask` in your **Light Volumes Setup**, it will generate the wrong shadow mask UVW and will just not work correctly. `Resolution` must stay the same as for the baked light volume textures. If you changed `Resolution`, please, rebake the whole scene.
 
 > [!IMPORTANT]
 > Each Light Volume can support a maximum of **4 shadow-casting point lights** that intersects with each other.
