@@ -20,7 +20,7 @@ namespace VRCLightVolumes {
         [Header("Volume Setup")]
         [Tooltip("Defines whether this volume can be moved in runtime. Disabling this option slightly improves performance.")]
         public bool Dynamic;
-        [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable lights like flashlights, projectors, disco balls, etc. They can also project light onto static lightmapped objects if the surface shader supports it.")]
+        [Tooltip("Additive volumes apply their light on top of others as an overlay. Useful for movable and togglable lights. They can also project light onto static lightmapped objects if the surface shader supports it.")]
         public bool Additive;
         [Tooltip("Multiplies the volume’s color by this value.")]
         [ColorUsage(showAlpha: false)]
@@ -41,11 +41,11 @@ namespace VRCLightVolumes {
         public Texture3D ShadowsTexture;
 
         [Header("Color Correction")]
-        [Tooltip("Makes volume brighter or darker.\nUpdates volume color after atlas packing only!")]
+        [Tooltip("Makes volume brighter or darker")]
         public float Exposure = 0;
-        [Tooltip("Makes dark volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
+        [Tooltip("Makes dark volume colors brighter or darker.")]
         [Range(-1, 1)] public float Shadows = 0;
-        [Tooltip("Makes bright volume colors brighter or darker.\nUpdates volume color after atlas packing only!")]
+        [Tooltip("Makes bright volume colors brighter or darker.")]
         [Range(-1, 1)] public float Highlights = 0;
 
         [Header("Baking Setup")]

@@ -1,5 +1,10 @@
-[VRC Light Volumes](/README.md) | [How to Use](/Documentation/HowToUse.md) | [Best Practices](/Documentation/BestPractices.md) | [Udon Sharp API](/Documentation/UdonSharpAPI.md) | **For Shader Developers** | [Compatible Shaders](/Documentation/CompatibleShaders.md)
+[VRC Light Volumes](../README.md) | [How to Use](../Documentation/HowToUse.md) | [Best Practices](../Documentation/BestPractices.md) | [Udon Sharp API](../Documentation/UdonSharpAPI.md) | **For Shader Developers** | [Compatible Shaders](../Documentation/CompatibleShaders.md)
+
 # For shader developers
+
+| Menu |
+| --- |
+|**For Shader Developers**<br />• [Integrating Light Volumes with Amplify Shader Editor (ASE)](#Integrating-Light-Volumes-with-Amplify-Shader-Editor-(ASE))<br />• [Light Volume integration through shader code](#Light-Volume-integration-through-shader-code)<br />• [Shader Functions](#Shader-Functions)|
 
 If you are a shader developer, it should be easy to integrate Light Volumes support into your shader.
 
@@ -7,32 +12,29 @@ Both shader code way with a .cginc file and Amplify Shader Editor way with speci
 
 ## Integrating Light Volumes with Amplify Shader Editor (ASE)
 
+![](../Documentation/Preview_15.png)
+
+Screenshot above shows the regular Light Volumes and Speculars integration into a PBR shader in Amplify Shader Editor.
+
 There are few ASE nodes available for you for an easy integration. Look into `Packages/VRC Light Volumes/Shaders/ASE Shaders` folder to check the integration examples.
 
-### LightVolume
-
-Required to get the Spherical Harmonics components. Using the output values you get from it, you can calculate the speculars for your custom lighting setup.
-
-`AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. 
-
-### LightVolumeEvaluate
-
-Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
-
-You should usually multiply it by your "Albedo" and add to the final color, as an emission.
-
-### LightVolumeSpecular
-
-Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
-
-`Dominant Direction` flag specifies if you want to use a simpler and lighter way of generating speculars. Generates one color specular for the dominant light direction instead of three color speculars in a regular method.
+| ASE Node | Description |
+| --- | --- |
+| Light Volume | Required to get the Spherical Harmonics components. Using the output values you get from it, you can calculate the speculars for your custom lighting setup. <br/> `AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. |
+| Light Volume L0 | Required to get the L0 spherical harmonics component, or just the overall ambient color, with no directionality. This is much lighter than the LightVolume node, and recommended to use in places where there are no directionality needed. <br/> `AdditiveOnly` flag specifies if you need to only sample additive volumes. Useful for static lightmapped meshes. |
+| Light Volume Evaluate | Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example. <br/> You should usually multiply it by your "Albedo" and add to the final color, as an emission. |
+| Light Volume Specular | Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color! <br/> `Dominant Direction` flag specifies if you want to use a simpler and lighter way of generating speculars. Generates one color specular for the dominant light direction instead of three color speculars in a regular method. |
+| Is Light Volumes | Returns `0` if there are no light volumes support on the current scene, or `1` if light volumes system is provided. |
+| Light Volumes Version | Returns the light volumes version. `0` means that light volumes are not presented in the scene. `1`, `2` or any other values in future, shows the global light volumes verison presented in the scene. |
 
 ## Light Volume integration through shader code
 
 First of all, you need to include the "LightVolumes.cginc" file provided with this asset, into your shader:  `#include "LightVolumes.cginc"`. 
 Also be sure that you included the "UnityCG.cginc" file **BEFORE** to support the fallback to unity's light probes:  `#include "UnityCG.cginc"`
 
-All the functions are recommended to use in the fragment shader. All the calculations are cheap enough.
+> [!IMPORTANT]
+> All the functions are recommended to use in the fragment shader. All the calculations are cheap enough, unless your shader is not drawing geometry in many transparent layers.
+> If you're making a shader for transparent particles, or even foliage, you might consider integrating light volumes functions on the vertex shader instead!
 
 ### 1. Basic Light Volumes Integration
 
@@ -42,6 +44,7 @@ Evaluate the returned SH data using `LightVolumeEvaluate()` But you can use your
 
 Typically, the result color should be multiplied by the albedo and added to the final fragment color. You may also apply AO or other adjustments before combining it.
 
+> [!TIP]
 > `LightVolumeSH()` automatically falls back to Unity’s built-in light probes if Light Volumes are not available. No need for a manual check.
 
 ### 2. Additive Light Volumes for Lightmapped Geometry
@@ -52,16 +55,16 @@ Call a `LightVolumeAdditiveSH()` function there to get SH components. This funct
 
 Then evaluate the color with `LightVolumeEvaluate()` and **add** the resulting color to your lightmap output.
 
-> You can also check `_UdonLightVolumeEnabled > 0` to skip evaluation entirely when not LightVolumes are not represented in the scene.
+> [!TIP]
+>  You can also check `_UdonLightVolumeEnabled > 0` to skip evaluation entirely when not LightVolumes are not represented in the scene.
 
 ### 3. Custom SH Evaluation Notes
 
 If you use a custom evaluation method instead of `LightVolumeEvaluate()`, make sure you use L1 components too.
 
-Using L0 only (ambient term) results in unrealistic shading and can make objects look translucent.
-You must consider L1 directions—or at least the dominant direction and its magnitude for proper shading.
-
-> Test your method with strong directional lighting baked into a volume. Incorrect evaluation may cause color artifacts or exposure issues.
+> [!WARNING]
+> Using L0 only (ambient term) results in unrealistic shading and can make objects look translucent.
+> You must consider L1 directions—or at least the dominant direction and its magnitude for proper shading.
 
 ### 4. Specular Lighting (Optional but Recommended)
 
@@ -74,6 +77,7 @@ Add the result straight to your final fragment color.
 
 These functions already apply albedo internally **do not multiply again**. You can still apply your own specular occlusion/masking if needed.
 
+> [!NOTE]
 > For more advanced shading (e.g. anisotropic specular), implement your own model based on SH data.
 
 ## Shader Functions
@@ -85,107 +89,134 @@ Required to get the Spherical Harmonics components. Using the output values you 
 
 Also this values are required to calculate the final light you get from the light volume.
 
-```
+```hlsl
 void LightVolumeSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b)
 ```
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r`<br/>`out float3 L1g`<br/>`out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
-`float3 worldPos` - World position of the current fragment
+### float3 LightVolumeSH_L0()
 
-`out float3 L0` - Outputs ambient color of the current fragment.
+Returns ambient color L0, without calculating L1. Cheaper then LightVolumeSH(). Should be used where directionality is not important, like particles or volumetric fog.
 
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
-
-### float3 LightVolumeEvaluate()
-Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
-
-You should usually multiply it by your "Albedo" and add to the final color, as an emission.
-
-```
-float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b)
+```hlsl
+float3 LightVolumeSH_L0(float3 worldPos)
 ```
 
-`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
-
-`float3 L0`, `float3 L1r`, `float3 L1g`, `float3 L1b` - Spherical Harmonics components you got from the LightVolumeSH() function.
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment.|
 
 ### void LightVolumeAdditiveSH()
 Returns Spherical Harmonics components, just as LightVolumeSH() does, but only for volumes that work in additive mode. This function is much lighter than LightVolumeSH(), and useful for shaders that can be used in baked lightmaps mode.
 
 Evaluate it and add to your lightmaps color if you want to implement the additive volumes support for the baked lightmaps.
 
-```
+```hlsl
 void LightVolumeAdditiveSH(float3 worldPos, out float3 L0, out float3 L1r, out float3 L1g, out float3 L1b)
 ```
 
-`float3 worldPos` - World position of the current fragment
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r` <br/> `out float3 L1g` <br/> `out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
-`out float3 L0` - Outputs ambient color of the current fragment.
+### float3 LightVolumeAdditiveSH_L0()
 
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+Returns ambient color L0, without calculating L1, just as LightVolumeSH_L0() does, but only for volumes that work in additive mode. This function is much lighter than LightVolumeSH_L0(), and useful for shaders that can be used in baked lightmaps mode.
+
+Evaluate it and add to your lightmaps color if you want to implement the additive volumes support for the baked lightmaps.
+
+```hlsl
+float3 LightVolumeAdditiveSH_L0(float3 worldPos)
+```
+
+| Function argument | Description |
+| --- | --- |
+|`float3 worldPos` | World position of the current fragment. |
+
+### float3 LightVolumeEvaluate()
+
+Calculates the final color you get from the light volume in some kind of a physically realistic way. But alternatively you can implement your own "Evaluate" function to make the result matching your toon shader, for example.
+
+You should usually multiply it by your "Albedo" and add to the final color, as an emission.
+
+```hlsl
+float3 LightVolumeEvaluate(float3 worldNormal, float3 L0, float3 L1r, float3 L1g, float3 L1b)
+```
+
+| Function argument | Description |
+| --- | --- |
+|`float3 worldNormal` | World normal of the current fragment. Must be normalized to avoid artefacts.|
+|`float3 L0` <br/> `float3 L1r` <br/> `float3 L1g` <br/> `float3 L1b` | Spherical Harmonics components you got from the LightVolumeSH() function.|
 
 ### float3 LightVolumeSpecular()
 Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
 
 Usually works much better for avatars, because can show several color speculars at the same time for each of R, G, B light directions. Slightly less performant than LightVolumeSpecularDominant()
 
-```
+```hlsl
 float3 LightVolumeSpecular(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 albedo` - Final albedo color
-
-`float smoothness` - Final surface smoothness
-
-`float metallic` - Final surface metalness
-
-`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
-
-`float3 viewDir` - World space camera view direction. Must be normalized.
-
-`out float3 L0` - Outputs ambient color of the current fragment.
-
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+| Function argument | Description |
+| --- | --- |
+|`float3 albedo` | Final albedo color.|
+|`float smoothness` | Final surface smoothness.|
+|`float metallic` | Final surface metalness.|
+|`float3 worldNormal` | World normal of the current fragment. Must be normalized to avoid artefacts.|
+|`float3 viewDir` | World space camera view direction. Must be normalized.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r` <br/> `out float3 L1g` <br/> `out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
 You can also provide the surface's specular color directly.
 
-```
+```hlsl
 float3 LightVolumeSpecular(float3 specColor, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 specColor` - Final surface specular color
+| Function argument | Description |
+| --- | --- |
+|`float3 specColor` | Final surface specular color. |
 
 ### float3 LightVolumeSpecularDominant()
 Calculates approximated speculars based on SH components. Can be used with Light Volumes or even with any other SH L1 values, like Unity default light probes. The result should be added to the final color, just like emission. You should NOT multiply this by albedo color!
 
 Usually works better for static PBR surfaces, because can show a one color specular for the dominant light direction. Slightly more performant than LightVolumeSpecular()
 
-```
+```hlsl
 float3 LightVolumeSpecularDominant(float3 albedo, float smoothness, float metallic, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 albedo` - Final albedo color
-
-`float smoothness` - Final surface smoothness
-
-`float metallic` - Final surface metalness
-
-`float3 worldNormal` - World normal of the current fragment. Must be normalized to avoid artefacts.
-
-`float3 viewDir` - World space camera view direction. Must be normalized.
-
-`out float3 L0` - Outputs ambient color of the current fragment.
-
-`out float3 L1r`, `out float3 L1g`, `out float3 L1b` - Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.
+| Function argument | Description |
+| --- | --- |
+|`float3 albedo` | Final albedo color.|
+|`float smoothness` | Final surface smoothness.|
+|`float metallic` | Final surface metalness.|
+|`float3 worldNormal` | World normal of the current fragment. Must be normalized to avoid artefacts.|
+|`float3 viewDir` | World space camera view direction. Must be normalized.|
+|`out float3 L0` | Outputs ambient color of the current fragment.|
+|`out float3 L1r` <br/> `out float3 L1g` <br/> `out float3 L1b` | Outputs vectors that stores the Red, Green and Blue light directions and power, as a magnitude of these vectors.|
 
 You can also provide the surface's specular color directly.
 
-```
+```hlsl
 float3 LightVolumeSpecularDominant(float3 specColor, float3 worldNormal, float3 viewDir, float3 L0, float3 L1r, float3 L1g, float3 L1b)
 ```
 
-`float3 specColor` - Final surface specular color
+| Function argument | Description |
+| --- | --- |
+|`float3 specColor` | Final surface specular color.|
 
-### float \_UdonLightVolumeEnabled
-A global float variable that is not defined and stores `0` if there are no light volumes support on the current scene, or stores `1` if light volumes system is provided.
+### float LightVolumesEnabled()
+Returns `0` if there are no light volumes support on the current scene, or `1` if light volumes system is provided.
 
 It's not mandatory to check the light volumes support by yourself, because **LightVolumeSH()** and **LightVolumeAdditiveSH()** functions already do it and fallback to Unity Light probes instead of using the light volumes.
+
+### float LightVolumesVersion()
+
+Returns the light volumes version. `0` means that light volumes are not presented in the scene. `1`, `2` or any other values in future, shows the global light volumes verison presented in the scene.
