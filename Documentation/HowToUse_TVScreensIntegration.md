@@ -31,7 +31,7 @@ It works visually similar to [LTCGI](https://github.com/PiMaker/ltcgi) in some c
 ## TV Screen Quick Setup
 
 1. Create a **separate scene** and bake the area affected by the screen light as an **additive light volume**.
-   See the [Additive Volumes section](#How-to-Bake-an-Additive-Light-Volume) for detailed steps.
+   See the [Additive Volumes section](https://github.com/REDSIM/VRCLightVolumes/blob/main/Documentation/HowToUse_RegularLightVolumes.md#additive-light-volumes) for detailed steps.
 
 > [!IMPORTANT]
 > Remove all unnecessary lights during baking. Keep only the screen mesh with a **bright emissive material**.
