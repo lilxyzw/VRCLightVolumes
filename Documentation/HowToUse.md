@@ -49,8 +49,8 @@ You just need to use a [shader that has VRC Light Volumes support](/Documentatio
    Volumes with higher weight have higher priority in overlapping areas.
 8. Select your `Baking Mode` based on the lightmapper you're using.
    **Bakery** is highly recommended due to faster baking and better quality results.
-9. Bake the scene.
-10. For reference, check out the `Example` scene in the `Packages/VRC Light Volumes/Example` folder to see a working setup.
+9. Bake the scene lighting with your lightmapper (Unity Progressive or Bakery).
+10. For reference, check out the `Example` scene in the `Assets/Samples/VRC Light Volumes/[version]/Examples` folder to see a working setup. You need to import the Samples through the Package Manager to see this folder. This process [described here](https://github.com/REDSIM/VRCLightVolumes/tree/main?tab=readme-ov-file#install-example-scenes-and-assets).
 
 > [!IMPORTANT]
 > The number of active Light Volumes is limited to 32 per scene at a time. However, you can dynamically enable and disable volumes at runtime to work with more than 32 total, just not simultaneously.
