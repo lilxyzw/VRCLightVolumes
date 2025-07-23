@@ -7,6 +7,7 @@
 | Shader                                                       | Description                                                  | Supported since |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | :-------------: |
 | [Poiyomi Toon Shader](https://github.com/poiyomi/PoiyomiToonShader) | One of the most popular toon shaders in VRChat. **Poiyomi Shaders** are feature-rich shaders for Unity's Built-In Rendering Pipeline, intended for use with **VRChat.** They support multiple shading modes and robust light handling, and are designed to be easy-to-use and performant. They're also **free** and **open-source**! |     v.9.2.67     |
+| [lilToon Shader](https://github.com/lilxyzw/lilToon)         | One of the most popular Japanese toon shaders in VRChat. <br/>**WARNING!**<br/> To support Light Volumes v.2.0.0,  you must also have **VRC Light Volumes Package** included into your project, otherwise the Light Volumes v.1.0.0 will be used as a fallback.   |    v.1.20.2     |
 | [Filamented by Silent](https://gitlab.com/s-ilent/filamented) | One of the best PBR shaders available. Supports Mono SH, Specular AA, Specular Occlusion and more. Highly recommended to use instead of Standard Unity shader. |  Jul 05, 2025   |
 | [Silent Cel Shading Shader](https://gitlab.com/s-ilent/SCSS/-/tree/crosstone-testing?ref_type=heads) | Simple, but powerful toon shader. Shaders for Unity for cel shading, designed to take Unity's lighting into account while also presenting materials in the best possible way. Featuring lots of features with good performance! |  Jul 21, 2025   |
 | [Unity Standard Particles Plus by Silent](https://github.com/s-ilent/unity-standard-particles-plus) | Unity Particle shaders, but with Light Volumes support.      |  Jul 21, 2025   |
@@ -20,7 +21,6 @@
 
 | Shader Name                                                  | Description                                                  | Supported since |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | :-------------: |
-| [lilToon Shader](https://github.com/lilxyzw/lilToon)         | One of the most popular Japanese toon shaders in VRChat.     |    v.1.10.0     |
 | [GeneLit by Momoma](https://github.com/momoma-null/GeneLit)  | Physically based rendering (PBR) shaders for Unity derived from [Filament shaders](https://github.com/google/filament). More beautiful and accurate rendering than Unity Standard shaders. |     v.1.0.7     |
 | [Moriohs Toon Shader](https://gitlab.com/xMorioh/moriohs-toon-shader) | Toon/Master Shader that not just correctly respects the entirety of Unity's Lighting System in a NPR Workflow but would also include several PBR approaches for different features. |     v.2.1.0     |
 | [Cottonfox Fur Shader](https://github.com/jamestruhlar/cottonfoxfur/) | A fur shader that supports Light Volumes                     |        -        |
