@@ -427,7 +427,8 @@ namespace VRCLightVolumes {
 
                 LightVolumeDataList.Clear();
 
-                for (int i = 0; i < LightVolumes.Count; i++) {
+                int lvCount = (int)Mathf.Min(LightVolumes.Count, Mathf.Min(Mathf.Floor(atlas.BoundsUvwMax.Length / 4), Mathf.Floor(atlas.BoundsUvwMin.Length / 4)));
+                for (int i = 0; i < lvCount; i++) {
 
                     if (LightVolumes[i] == null) continue;
                     var lightVolumeInstance = LightVolumes[i].LightVolumeInstance;
